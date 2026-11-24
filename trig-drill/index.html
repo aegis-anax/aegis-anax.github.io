@@ -720,6 +720,23 @@ renderDash();newTest();
 if(location.hash==='#selftest'){const r=window.__selftest(150);const d=document.createElement('pre');d.className='card';d.id='selftest';d.style.whiteSpace='pre-wrap';d.textContent='SELFTEST '+JSON.stringify(r,null,1);document.querySelector('.wrap').prepend(d)}
 </script>
 
+<style>
+#updbar{position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:9999;display:flex;align-items:center;gap:12px;max-width:calc(100% - 32px);padding:10px 12px 10px 16px;border-radius:10px;background:var(--paper);color:var(--ink);border:1px solid var(--accent);box-shadow:0 6px 24px rgba(0,0,0,.25);font-family:var(--f-body)}
+#updbar button{background:var(--accent);color:var(--paper);border-color:var(--accent);white-space:nowrap}
+</style>
+<script>
+// Update check: when the hosted page changes, show a banner asking to refresh. Progress is in localStorage, so a refresh keeps it.
+(()=>{const live=/github\.io$/.test(location.hostname);let base=null,shown=false;
+ const get=()=>fetch(location.pathname+'?u='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():null).catch(()=>null);
+ function banner(){if(shown)return;shown=true;const b=document.createElement('div');b.id='updbar';b.setAttribute('role','status');
+  b.innerHTML='<span>This page was updated.</span><button type="button">Refresh</button>';b.querySelector('button').onclick=()=>location.reload();document.body.appendChild(b)}
+ async function check(fetcher=get){const t=await fetcher();if(t==null)return;if(base===null){base=t;return}if(t!==base)banner()}
+ window.__updCheck=check;
+ if(live){check();setInterval(check,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)check()})}
+ if(location.hash==='#updtest'){(async()=>{const seq=['A','A',null,'B'],r=[];for(const s of seq){await check(()=>Promise.resolve(s));r.push(!!document.getElementById('updbar'))}
+  const p=document.createElement('pre');p.id='updtest';p.textContent='UPDTEST '+JSON.stringify(r)+(JSON.stringify(r)==='[false,false,false,true]'?' PASS':' FAIL');document.body.prepend(p)})()}
+})();
+</script>
 </body>
 </html>
 
