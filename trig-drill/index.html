@@ -590,10 +590,11 @@ if(!S.masteryPass){
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function gen(c,lv){for(let t=0;t<20;t++){try{const q=pick(G[c][lv])();if(q.choices.length===4&&q.answer>=0)return q}catch(e){}}throw new Error('generator failed '+c+lv)}
 function buildTest(){const on=CON.map(c=>c[0]).filter(c=>!S.off.includes(c));const N=S.len;const cnt={};on.forEach(c=>cnt[c]=0);let left=N;
+  const masteryFinal=!S.masteryPass&&CON.every(([c])=>S.m[c]&&S.lv[c]===3);
   if(N>=on.length){on.forEach(c=>cnt[c]=1);left-=on.length}
   const w=on.map(c=>S.m[c]&&!S.beyond&&S.lv[c]<4?0.4:1+(S.acc[c]!=null?(1-S.acc[c])*2:0.5));const tot=w.reduce((a,b)=>a+b,0);
   while(left>0){let r=Math.random()*tot,i=0;while(r>w[i]&&i<on.length-1){r-=w[i];i++}cnt[on[i]]++;left--}
-  const qs=[],seen=new Set();for(const c of on)for(let i=0;i<cnt[c];i++){let q;for(let t=0;t<10;t++){let lv=S.lv[c];if(lv>1&&Math.random()<.25)lv=lv>3?rnd(3,lv-1):rnd(1,lv-1);q=gen(c,lv);if(!seen.has(q.q+q.choices.join()))break}seen.add(q.q+q.choices.join());qs.push(q)}
+  const qs=[],seen=new Set();for(const c of on)for(let i=0;i<cnt[c];i++){let q;for(let t=0;t<10;t++){let lv=S.lv[c];if(!masteryFinal&&lv>1&&Math.random()<.25)lv=lv>3?rnd(3,lv-1):rnd(1,lv-1);q=gen(c,lv);if(!seen.has(q.q+q.choices.join()))break}seen.add(q.q+q.choices.join());qs.push(q)}
   return qs}
 let TEST=null,ANS=[],DONE=false,CONFIRM=false,RESULT=null;
 
@@ -663,7 +664,7 @@ function grade(){const per={};TEST.forEach((q,i)=>{const ok=ANS[i]===q.answer;(p
     else if(S.beyond&&L===5&&S.st[c]>=5){S.lv[c]=6;S.g[c]=true;S.st[c]=0;ch.push([c,'up',6])}}
   const s=TEST.filter((q,i)=>ANS[i]===q.answer).length;const full=S.off.length===0&&TEST.length>=FINAL_N;
   S.hist.push({s,n:TEST.length,d:Date.now(),full});
-  S.ready=full&&s===TEST.length&&CON.every(([c])=>S.m[c]);if(S.ready){S.masteryPass=true;ch.push(['ALL','ready'])}save();
+  S.ready=full&&s===TEST.length&&CON.every(([c])=>S.m[c])&&(S.masteryPass||TEST.every(q=>q.lv===3));if(S.ready){S.masteryPass=true;ch.push(['ALL','ready'])}save();
   RESULT={s,n:TEST.length,ch};DONE=true;renderDash();renderTest();el('result').scrollIntoView({behavior:'smooth'})}
 
 // ================= self-test (open with #selftest) =================
