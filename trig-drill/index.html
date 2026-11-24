@@ -353,12 +353,43 @@ const FACTS=[
  ['Where does $y=\\sin x$ reach its maximum for $0\\le x\\le2\\pi$?','x=\\frac{\\pi}{2}',['x=0','x=\\pi','x=\\frac{3\\pi}{2}']],
  ['Where does $y=\\cos x$ reach its minimum for $0\\le x\\le2\\pi$?','x=\\pi',['x=0','x=\\frac{3\\pi}{2}','x=\\frac{\\pi}{2}']],
  ['What is the $y$-intercept of $y=\\cos x$?','1',['0','-1','\\frac{\\pi}{2}']],['What is the amplitude of $y=\\tan x$?','\\text{none}',['1','\\pi','2']]];
-G.Gr[1]=[
+// ---- property tables (class notation: n ∈ I, odd multiples written (2n-1)π/2)
+const NI=',\\ n\\in\\mathbb{I}',ODDP='\\frac{(2n-1)\\pi}{2}',NONE='\\text{none}';
+const XNE=v=>`\\{x\\in\\mathbb{R}\\mid x\\ne${v}${NI}\\}`,ALLX='\\{x\\in\\mathbb{R}\\}',ALLY='\\{y\\in\\mathbb{R}\\}',RNG1='\\{y\\in\\mathbb{R}\\mid-1\\le y\\le1\\}',RNG2='\\{y\\in\\mathbb{R}\\mid y\\le-1\\text{ or }y\\ge1\\}';
+const ODDS='\\text{Odd: rotational symmetry about the origin}',EVENS='\\text{Even: symmetric about the }y\\text{-axis}';
+const PNT=(x,y)=>`\\left(${x},\\ ${y}\\right)`;
+const PFN={sin:x=>Math.sin(x),cos:x=>Math.cos(x),tan:x=>Math.tan(x),csc:x=>1/Math.sin(x),sec:x=>1/Math.cos(x),cot:x=>Math.cos(x)/Math.sin(x)};
+const PASY={sin:[],cos:[],tan:[-3*PI/2,-PI/2,PI/2,3*PI/2],csc:[-2*PI,-PI,0,PI,2*PI],sec:[-3*PI/2,-PI/2,PI/2,3*PI/2],cot:[-2*PI,-PI,0,PI,2*PI]};
+// [question, values per function, extra distractors, functions it applies to, hint]
+const PROPS={
+ dom:['What is the domain of',{sin:ALLX,cos:ALLX,tan:XNE(ODDP),csc:XNE('n\\pi'),sec:XNE(ODDP),cot:XNE('n\\pi')},[XNE('2n\\pi'),XNE('\\frac{n\\pi}{2}'),'\\{x\\in\\mathbb{R}\\mid-1\\le x\\le1\\}'],null,'The domain leaves out exactly the $x$-values where the function divides by 0, which are its vertical asymptotes. sin and cos never divide by 0. tan and sec divide by $\\cos x$, which is 0 at $x='+ODDP+'$. csc and cot divide by $\\sin x$, which is 0 at $x=n\\pi$.'],
+ ran:['What is the range of',{sin:RNG1,cos:RNG1,tan:ALLY,csc:RNG2,sec:RNG2,cot:ALLY},['\\{y\\in\\mathbb{R}\\mid y\\ne0\\}','\\{y\\in\\mathbb{R}\\mid y\\ge0\\}','\\{y\\in\\mathbb{R}\\mid-1<y<1\\}'],null,'sin and cos stay between $-1$ and $1$. Their reciprocals flip that: since $|\\sin x|\\le1$, $|\\csc x|\\ge1$, giving a gap between $-1$ and $1$. tan and cot hit every real number.'],
+ zer:['What are the zeros ($x$-intercepts) of',{sin:'x=n\\pi'+NI,cos:'x='+ODDP+NI,tan:'x=n\\pi'+NI,csc:NONE,sec:NONE,cot:'x='+ODDP+NI},['x=2n\\pi'+NI,'x=\\frac{n\\pi}{2}'+NI],null,'sin is 0 at $0,\\pi,2\\pi,\\dots$ so $x=n\\pi$. cos is 0 at $\\frac{\\pi}{2},\\frac{3\\pi}{2},\\dots$ so $x='+ODDP+'$. tan has the zeros of sin, cot has the zeros of cos. csc and sec are $\\frac{1}{\\text{something}}$, which is never 0, so there are no zeros.'],
+ yi:['What is the $y$-intercept of',{sin:PNT(0,0),cos:PNT(0,1),tan:PNT(0,0),csc:NONE,sec:PNT(0,1),cot:NONE},[PNT(0,-1),PNT('\\frac{\\pi}{2}',0)],null,'Put $x=0$: $\\sin0=0$, $\\cos0=1$, $\\tan0=0$, $\\sec0=\\frac{1}{1}=1$. $\\csc0$ and $\\cot0$ divide by $\\sin0=0$, so there is no $y$-intercept (there is an asymptote at $x=0$).'],
+ per:['What is the period of',{sin:'2\\pi',cos:'2\\pi',tan:'\\pi',csc:'2\\pi',sec:'2\\pi',cot:'\\pi'},['4\\pi','\\frac{\\pi}{2}'],null,'sin, cos and their reciprocals csc, sec repeat every $2\\pi$. tan and cot repeat every $\\pi$. A reciprocal always keeps the period of the original.'],
+ amp:['What is the amplitude of',{sin:'1',cos:'1',tan:NONE,csc:NONE,sec:NONE,cot:NONE},['2','2\\pi'],null,'Amplitude only exists when there is a max and a min: $\\frac{\\max-\\min}{2}=\\frac{1-(-1)}{2}=1$ for sin and cos. tan, csc, sec and cot go to infinity, so they have no amplitude.'],
+ axis:['What is the equation of the axis of the curve for',{sin:'y=0',cos:'y=0'},['y=1','x=0','y=-1'],['sin','cos'],'Axis of the curve $=\\frac{\\max+\\min}{2}=\\frac{1+(-1)}{2}=0$, so $y=0$ (the $x$-axis).'],
+ max:['Where are the (local) maximum points of',{sin:PNT('\\frac{\\pi}{2}+2n\\pi',1)+NI,cos:PNT('2n\\pi',1)+NI,tan:NONE,csc:PNT('\\frac{3\\pi}{2}+2n\\pi',-1)+NI,sec:PNT('(2n-1)\\pi',-1)+NI,cot:NONE},[PNT('n\\pi',1)+NI],null,'sin peaks at $\\frac{\\pi}{2}$, cos peaks at $0$, then every $2\\pi$. For csc and sec the local maxima are the tops of the downward branches, which sit where sin or cos is at its minimum $-1$. tan and cot have no turning points.'],
+ min:['Where are the (local) minimum points of',{sin:PNT('\\frac{3\\pi}{2}+2n\\pi',-1)+NI,cos:PNT('(2n-1)\\pi',-1)+NI,tan:NONE,csc:PNT('\\frac{\\pi}{2}+2n\\pi',1)+NI,sec:PNT('2n\\pi',1)+NI,cot:NONE},[PNT('n\\pi',-1)+NI],null,'sin bottoms out at $\\frac{3\\pi}{2}$, cos at $\\pi$, then every $2\\pi$. For csc and sec the local minima are the bottoms of the upward branches, which sit where sin or cos is at its max $1$. tan and cot have no turning points.'],
+ sym:['What symmetry does the graph have:',{sin:ODDS,cos:EVENS,tan:ODDS,csc:ODDS,sec:EVENS,cot:ODDS},['\\text{Symmetric about the }x\\text{-axis}','\\text{No symmetry}'],null,'cos is even ($\\cos(-x)=\\cos x$), so it mirrors across the $y$-axis, and so does its reciprocal sec. sin is odd ($\\sin(-x)=-\\sin x$), so a $180^\\circ$ turn about the origin matches it, and the same goes for csc, tan and cot.'],
+ asy:['What are the vertical asymptotes of',{sin:NONE,cos:NONE,tan:'x='+ODDP+NI,csc:'x=n\\pi'+NI,sec:'x='+ODDP+NI,cot:'x=n\\pi'+NI},['x=2n\\pi'+NI,'x=\\frac{n\\pi}{2}'+NI],null,'Asymptotes are where the denominator is 0. tan and sec have $\\cos x$ underneath: $x='+ODDP+'$. csc and cot have $\\sin x$ underneath: $x=n\\pi$. sin and cos have no denominator, so none.'],
+ end:['Which describes the end behaviour of',{sin:'\\text{As }x\\to\\pm\\infty,\\ y\\text{ keeps oscillating between }-1\\text{ and }1',cos:'\\text{As }x\\to\\pm\\infty,\\ y\\text{ keeps oscillating between }-1\\text{ and }1'},['\\text{As }x\\to\\infty,\\ y\\to\\infty','\\text{As }x\\to\\infty,\\ y\\to0','\\text{As }x\\to\\infty,\\ y\\to1'],['sin','cos'],'A periodic graph never settles on one value or shoots off to infinity: it repeats the same wave forever.'],
+ shape:['Which best describes the shape of',{sin:'\\text{Sinusoidal and periodic}',cos:'\\text{Sinusoidal and periodic}',tan:'\\text{Periodic, but not sinusoidal}',csc:'\\text{Periodic, but not sinusoidal}',sec:'\\text{Periodic, but not sinusoidal}',cot:'\\text{Periodic, but not sinusoidal}'},['\\text{Sinusoidal, but not periodic}','\\text{Neither sinusoidal nor periodic}'],null,'Sinusoidal means a smooth wave shaped like sine. All six trig functions repeat (periodic), but only sin and cos are smooth waves: the rest have asymptotes.']};
+const PEASY=['dom','ran','zer','yi','per','amp','axis','max','min'];
+function propQ(sec,lv,fns,keys,graph){let k,f;do{k=pick(keys);f=pick(fns)}while(!(f in PROPS[k][1]));const P=PROPS[k],ans=P[1][f];
+ const cands=shuffle(Object.values(P[1]).filter(v=>v!==ans)).concat(shuffle(P[2]));
+ const svg=graph?plot({f:PFN[f],x0:-2*PI,x1:2*PI,y0:-3,y1:3,xstep:PI/2,xlab:i=>pText(i,2),ystep:1,asym:PASY[f],label:'graph of y = '+f+' x'}):'';
+ return Q(sec,lv,`${P[0]} $y=\\${f} x$?${graph?' (Graph shown.)':''}`,mc(ans,cands,null),P[4]+` Answer: $${ans}$.`,svg)}
+const ODDF=[['x=\\frac{\\pi}{2}+n\\pi'+NI,['x=n\\pi'+NI,'x=\\frac{\\pi}{2}+2n\\pi'+NI,'x=\\frac{n\\pi}{2}'+NI]],['x=-\\frac{\\pi}{2},\\ \\frac{\\pi}{2},\\ \\frac{3\\pi}{2}',['x=0,\\ \\frac{\\pi}{2},\\ \\pi','x=-\\pi,\\ \\pi,\\ 3\\pi','x=\\frac{\\pi}{2},\\ \\frac{3\\pi}{2},\\ \\frac{5\\pi}{2}']]];
+function oddFormQ(sec,lv){const w=rnd(0,1),[a,c]=ODDF[w];
+ const q=w===0?`Which formula gives the same $x$-values as $x=${ODDP}${NI}$?`:`Substitute $n=0,1,2$ into $x=${ODDP}$. Which values do you get?`;
+ return Q(sec,lv,q,mc(a,c,null),`$n=0$: $\\frac{(-1)\\pi}{2}=-\\frac{\\pi}{2}$. $n=1$: $\\frac{\\pi}{2}$. $n=2$: $\\frac{3\\pi}{2}$. These are the odd multiples of $\\frac{\\pi}{2}$, spaced $\\pi$ apart, the same list as $\\frac{\\pi}{2}+n\\pi$. ($n\\in\\mathbb{I}$ means $n$ is any integer.)`)}
+G.Gr[1]=[()=>propQ('Gr',1,['sin','cos'],PEASY,true),()=>propQ('Gr',1,['sin','cos','tan'],['dom','ran','zer','yi','per','asy','sym','shape'],true),
 ()=>{const keys=Object.keys(BASE),k=pick(keys);const isT=k.includes('tan');
  return Q('Gr',1,'Which function is graphed?',mc(k,shuffle(keys.filter(z=>z!==k)),null),`Check $x=0$: ${k.includes('cos')?'cosine starts at a max or min':isT?'tangent passes through the origin and has asymptotes at $x=\\frac{\\pi}{2}+n\\pi$':'sine starts at 0'}. ${k.includes('-')?'Here it is flipped (negative).':''} So it is $${k}$.`,piPlot(BASE[k],2*PI,isT?3:2,isT?[PI/2,3*PI/2]:[]))},
 ()=>{const f=pick(FACTS);return Q('Gr',1,f[0],mc(f[1],f[2],null),`Answer: $${f[1]}$. Sketch $y=\\sin x$, $y=\\cos x$ and $y=\\tan x$ from $0$ to $2\\pi$ to see it.`)}];
 const QTR=[[0,1],[1,6],[1,4],[1,3],[1,2],[2,3],[3,4],[5,6],[1,1],[7,6],[5,4],[4,3],[3,2],[5,3],[7,4],[11,6],[2,1]];
-G.Gr[2]=[
+G.Gr[2]=[()=>propQ('Gr',2,['sin','cos','tan'],Object.keys(PROPS),false),()=>propQ('Gr',2,['sin','cos','tan'],Object.keys(PROPS),false),()=>oddFormQ('Gr',2),
 ()=>{const fn=pick(['sin','cos']);let i,j;do{i=rnd(0,QTR.length-2);j=rnd(i+1,QTR.length-1)}while(j-i>8);const A=QTR[i],B=QTR[j],a=A[0]*PI/A[1],b=B[0]*PI/B[1];const fa=tv(fn,a),fb=tv(fn,b),df=fb-fa,ans=df/(b-a);
  const D=v=>dec(v,3);const c=[D(-ans),D(df)];if(Math.abs(df)>1e-9)c.push(D((b-a)/df));c.push(D(df/((b-a)*180/PI)));
  return Q('Gr',2,`Find the average rate of change of $y=\\${fn} x$ from $x=${pt(...A)}$ to $x=${pt(...B)}$ (3 decimals).`,mc(D(ans),c,()=>D(ans+rnd(-20,20)/50)),`$\\frac{f(b)-f(a)}{b-a}=\\frac{${exT(fb)}-\\left(${exT(fa)}\\right)}{${pt(...B)}-${pt(...A)}}\\approx${D(ans)}$.`)},
@@ -375,13 +406,13 @@ G.Gr[3]=[
  return Q('Gr',3,`An object's height is $${eq}$. For $0\\le t<${P}$, when is it ${lab[ask]}?`,mc(T(ans),[0,1,2,3].map(n=>T(qt(n))),null),`Period $=\\frac{2\\pi}{${kk}}=${P}$ s, so key points are every $${num(P/4)}$ s starting at $t=${num(s)}$. ${f==='sin'?'Sine: axis going up, then max, axis going down, then min.':'Cosine: max, axis going down, then min, axis going up.'}${A<0?' $a<0$ flips it.':''} Steepest climb is on the axis going up, steepest drop is on the axis going down, and the slope is 0 at the max. Answer: $${T(ans)}$.`)}];
 // ---- 4.6 reciprocal
 const RECF={'y=\\csc x':[x=>1/Math.sin(x),[0,PI,2*PI]],'y=\\sec x':[x=>1/Math.cos(x),[PI/2,3*PI/2]],'y=\\cot x':[x=>Math.cos(x)/Math.sin(x),[0,PI,2*PI]],'y=\\tan x':[Math.tan,[PI/2,3*PI/2]]};
-G.X[1]=[
+G.X[1]=[()=>propQ('X',1,['csc','sec','cot'],['dom','ran','zer','yi','per','amp','max','min','sym','asy','shape'],true),()=>propQ('X',1,['csc','sec','cot'],['dom','ran','zer','yi','per','amp','max','min','sym','asy','shape'],true),
 ()=>{const keys=Object.keys(RECF),k=pick(keys);
  return Q('X',1,'Which function is graphed? (Dashed lines are asymptotes.)',mc(k,keys.filter(z=>z!==k),null),`Asymptotes at ${RECF[k][1].length===3?'$x=n\\pi$ (where $\\sin x=0$)':'$x=\\frac{\\pi}{2}+n\\pi$ (where $\\cos x=0$)'}. ${k.includes('csc')||k.includes('sec')?'U-shaped branches that never get between -1 and 1 mean csc or sec.':'Branches that cross every height mean tan or cot.'} So it is $${k}$.`,piPlot(RECF[k][0],2*PI,4,RECF[k][1]))},
 ()=>{const fn=pick(['csc','sec','cot']),A=pick([[0,1],[1,2],[1,1],[3,2]]),x=A[0]*PI/A[1];
  return Q('X',1,`What is the value of $\\${fn}${pt(...A)}$?`,exactMC(fn,x),`$\\${fn} x=${fn==='csc'?'\\frac{1}{\\sin x}':fn==='sec'?'\\frac{1}{\\cos x}':'\\frac{\\cos x}{\\sin x}'}$. At $${pt(...A)}$ that is $${exT(tv(fn,x))}$. Dividing by 0 means undefined.`)}];
 const RANGE2='\\{y\\in\\mathbb{R}\\mid y\\le-1\\text{ or }y\\ge1\\}';
-G.X[2]=[
+G.X[2]=[()=>propQ('X',2,['csc','sec','cot'],['dom','ran','zer','yi','per','amp','max','min','sym','asy','shape'],false),()=>propQ('X',2,['sin','cos','tan','csc','sec','cot'],['dom','ran','zer','yi','per','amp','max','min','sym','asy','shape'],false),()=>oddFormQ('X',2),
 ()=>{const f=pick([
  ['What are the asymptotes of $y=\\sec x$?','x=\\frac{\\pi}{2}+n\\pi,\\ n\\in\\mathbb{I}',['x=n\\pi,\\ n\\in\\mathbb{I}','x=2n\\pi,\\ n\\in\\mathbb{I}','x=\\frac{\\pi}{4}+n\\pi,\\ n\\in\\mathbb{I}'],'$\\sec x=\\frac{1}{\\cos x}$, undefined where $\\cos x=0$.'],
  ['What are the asymptotes of $y=\\csc x$?','x=n\\pi,\\ n\\in\\mathbb{I}',['x=\\frac{\\pi}{2}+n\\pi,\\ n\\in\\mathbb{I}','x=2n\\pi,\\ n\\in\\mathbb{I}','x=\\frac{\\pi}{4}+n\\pi,\\ n\\in\\mathbb{I}'],'$\\csc x=\\frac{1}{\\sin x}$, undefined where $\\sin x=0$.'],
@@ -574,7 +605,7 @@ for(const c of ['P','R','U','C','Gr','X','T','M'])G[c][6]=[()=>{
 }];
 
 // ================= adaptive engine =================
-const CON=[['P','4.1','Trig prereq skills','Special triangles, related angles, CAST in degrees'],['R','4.2','Radian measure','Converting, arc length, angular speed'],['U','4.3','Unit circle & exact values','Exact values in radians, reciprocal ratios'],['C','4.4','Trig on the Cartesian plane','Point on terminal arm, solving for θ'],['Gr','4.5','Graphs of trig functions','sin, cos, tan graphs, rates of change'],['X','4.6','Graphs of reciprocal functions','csc, sec, cot: asymptotes and range'],['T','4.7','Transformations','Amplitude, period, phase shift, matching graphs'],['M','4.8','Modelling','Writing equations, Ferris wheels, tides']];
+const CON=[['P','4.1','Trig prereq skills','Special triangles, related angles, CAST in degrees'],['R','4.2','Radian measure','Converting, arc length, angular speed'],['U','4.3','Unit circle & exact values','Exact values in radians, reciprocal ratios'],['C','4.4','Trig on the Cartesian plane','Point on terminal arm, solving for θ'],['Gr','4.5','Graphs of trig functions','Properties: domain, range, zeros, symmetry, period, rates of change'],['X','4.6','Graphs of reciprocal functions','csc, sec, cot: domain, range, asymptotes, turning points'],['T','4.7','Transformations','Amplitude, period, phase shift, matching graphs'],['M','4.8','Modelling','Writing equations, Ferris wheels, tides']];
 const NAME=Object.fromEntries(CON.map(c=>[c[0],c[1]+' '+c[2]]));
 const UP=3,MASTER=4,DROP=2,FINAL_N=15,KEY='unit4-trig-drill-v1';
 function fresh(){const o={lv:{},st:{},ms:{},m:{},g:{},ready:false,masteryPass:false,acc:{},hist:[],len:15,off:[],beyond:false};CON.forEach(([c])=>{o.lv[c]=1;o.st[c]=0;o.m[c]=false});return o}
@@ -691,4 +722,5 @@ if(location.hash==='#selftest'){const r=window.__selftest(150);const d=document.
 
 </body>
 </html>
+
 
