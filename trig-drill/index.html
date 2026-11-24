@@ -706,6 +706,27 @@ function grade(){const per={};TEST.forEach((q,i)=>{const ok=ANS[i]===q.answer;(p
   S.ready=full&&s===TEST.length&&CON.every(([c])=>S.m[c])&&(S.masteryPass||TEST.every(q=>q.lv===3));if(S.ready){S.masteryPass=true;ch.push(['ALL','ready'])}save();
   RESULT={s,n:TEST.length,ch};DONE=true;renderDash();renderTest();el('result').scrollIntoView({behavior:'smooth'})}
 
+// ---- from the class quizzes/notes: evaluating a ratio, property locations, reciprocal rules, zeros of transformed sinusoids
+G.C[2].push(()=>{const fn=pick(['sin','cos','tan','sin','cos','tan','csc','sec','cot']);let n,d,v;
+ do{d=pick([5,7,9,10,11]);n=rnd(1,2*d-1);v=tv(fn,n*PI/d)}while(gcd(n,d)!==1||v===null||!isFinite(v)||Math.abs(v)>50);
+ const th=n*PI/d,b=rel([n,d]),bv=b[0]*PI/b[1],F={sin:Math.sin,cos:Math.cos,tan:Math.tan,csc:x=>1/Math.sin(x),sec:x=>1/Math.cos(x),cot:x=>1/Math.tan(x)}[fn],D=x=>dec(x,4);
+ const q=quadOf([n,d]);
+ return Q('C',2,`Solve the ratio: find $\\${fn}${pt(n,d)}$ (4 decimals).`,mc(D(v),[D(bv),D(-v),D(F(th*PI/180)),D(th)],()=>D(v+rnd(-200,200)/100)),`"Solve the ratio" means find the number $\\${fn}${pt(n,d)}$, not an angle. Calculator in <b>radian</b> mode${fn==='csc'||fn==='sec'||fn==='cot'?` (use $\\frac{1}{\\${CO2[fn]}}$)`:''}: $\\approx${D(v)}$. Sign check: $${pt(n,d)}$ is in Quadrant ${q}, so it is ${v>0?'positive':'negative'}.`,ucSVG(th))});
+const CO2={csc:'sin',sec:'cos',cot:'tan'};
+const LOC={nPi:{sin:'Zeros',cos:'Turning points',tan:'Zeros',csc:'Vertical asymptotes',sec:'Turning points',cot:'Vertical asymptotes'},odd:{sin:'Turning points',cos:'Zeros',tan:'Vertical asymptotes',csc:'Turning points',sec:'Vertical asymptotes',cot:'Zeros'}};
+function locQ(sec,lv,fns){const f=pick(fns),w=pick(['nPi','odd']),ans=LOC[w][f],ex=w==='nPi'?'x=n\\pi':'x=\\frac{(2n-1)\\pi}{2}';
+ return Q(sec,lv,`What property of $y=\\${f} x$ is located by $${ex},\\ n\\in\\mathbb{I}$?`,mc(ans,['Zeros','Turning points','Vertical asymptotes','y-intercepts'],null,x=>x),`$${ex}$ gives ${w==='nPi'?'$\\dots,-\\pi,0,\\pi,2\\pi,\\dots$ (where $\\sin x=0$, $\\cos x=\\pm1$)':'$\\dots,-\\frac{\\pi}{2},\\frac{\\pi}{2},\\frac{3\\pi}{2},\\dots$ (where $\\cos x=0$, $\\sin x=\\pm1$)'}. For $y=\\${f} x$ those are its ${ans.toLowerCase()}.`,plot({f:PFN[f],x0:-2*PI,x1:2*PI,y0:-3,y1:3,xstep:PI/2,xlab:i=>pText(i,2),ystep:1,asym:PASY[f],label:'graph of y = '+f+' x'}))}
+G.Gr[2].push(()=>locQ('Gr',2,['sin','cos','tan']));G.X[2].push(()=>locQ('X',2,['sin','cos','tan','csc','sec','cot']));
+const RECR=[
+ ['The $x$-intercepts of a function become what on its reciprocal?','Vertical asymptotes',['x-intercepts','Turning points','Horizontal asymptotes'],'$\\frac{1}{0}$ is undefined, so every zero of $f$ becomes a vertical asymptote of $\\frac{1}{f}$. That is why $\\csc x$ has asymptotes at $x=n\\pi$, the zeros of $\\sin x$.'],
+ ['Where does a function intersect its reciprocal?','Where y = ±1',['Where y = 0','Only at x = 0','They never intersect'],'$f=\\frac{1}{f}$ means $f^2=1$, so $f=\\pm1$. For $\\sin x$ and $\\csc x$ that is at the max and min points.'],
+ ['A local maximum of $y=\\cos x$ becomes what on $y=\\sec x$?','A local minimum',['A local maximum','A vertical asymptote','A zero'],'Local maximums of a function become local minimums on its reciprocal (and the other way around): $\\cos0=1$ is a max, $\\sec0=1$ is a min of the upward branch.'],
+ ['On an interval where $\\sin x>0$, what is the sign of $\\csc x$?','Positive',['Negative','Zero','It changes sign'],'Intervals of positive and negative are the same for a function and its reciprocal: $\\frac{1}{\\text{positive}}$ is positive.'],
+ ['On an interval where $\\cos x$ is increasing, $\\sec x$ is:','Decreasing',['Increasing','Constant','Always undefined'],'Intervals of increase and decrease are switched: as $\\cos x$ gets bigger, $\\frac{1}{\\cos x}$ gets smaller.'],
+ ['What are the horizontal asymptotes of $y=\\csc x$?','None',['y = 0','y = 1','y = ±1'],'Reciprocal trig functions do NOT have horizontal asymptotes. They are periodic, so they never level off like rational functions.']];
+G.X[1].push(()=>{const r=pick(RECR);return Q('X',1,r[0],mc(r[1],r[2],null,x=>x),r[3])});
+G.T[2].push(()=>{const E=randE(),A=Math.abs(E.a),cs=rnd(0,2);E.c=cs===0?pick([1,-1])*(A+rnd(1,3)):cs===1?pick([1,-1])*A:rnd(-(A-1),A-1);const ans=['0','1','2'][cs];
+ return Q('T',2,`How many zeros does $${eqT(E)}$ have in one period?`,mc(ans,['0','1','2','3'],null),`Range: from $c-|a|=${E.c-A}$ to $c+|a|=${E.c+A}$. ${cs===0?'0 is outside that range, so the graph never reaches the x-axis: no zeros.':cs===1?'0 is exactly the '+(E.c>0?'minimum':'maximum')+', so the graph just touches the x-axis once per period.':'0 is strictly inside the range, so the wave crosses the x-axis twice per period.'}`)});
 // ================= self-test (open with #selftest) =================
 window.__selftest=(n=150)=>{const bad=[];let count=0;for(const c in G)for(const lv in G[c])G[c][lv].forEach((g,gi)=>{for(let i=0;i<n;i++){count++;let q;try{q=g()}catch(e){bad.push(`${c}${lv}.${gi} threw: ${e.message}`);continue}
   const txt=q.q+q.choices.join('|')+q.why;if(q.choices.length!==4)bad.push(`${c}${lv}.${gi} has ${q.choices.length} choices: ${q.q}`);else if(new Set(q.choices).size!==4)bad.push(`${c}${lv}.${gi} duplicate choices`);
