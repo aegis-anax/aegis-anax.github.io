@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+try { const theme = localStorage.getItem('trig-drill-theme'); document.documentElement.dataset.theme = ['light','dark','mastery'].includes(theme) ? theme : 'dark'; }
+catch (_) { document.documentElement.dataset.theme = 'dark'; }
+</script>
+<style>body{margin:0;font-family:system-ui,sans-serif}[hidden]{display:none!important}*,*::before,*::after{box-sizing:border-box}</style>
+<title>Unit 4 Trig Drill</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one-column workbook. Progress ledger on top, the test sheet below, a sticky answer bar at the bottom. */
+:root{
+  --bg:#eef2f6;--paper:#ffffff;--ink:#15202b;--ink2:#46556a;--muted:#75849a;--line:#d9e0e8;--grid:#e6ebf1;
+  --accent:#1d5cc4;--accent-soft:#e2ebfa;--ok:#18794a;--ok-soft:#e0f2e8;--bad:#b3302b;--bad-soft:#f9e3e1;--gold:#a26a00;--gold-soft:#fbf0d9;
+  --f-display:'Space Grotesk',system-ui,sans-serif;--f-body:'Inter',system-ui,-apple-system,sans-serif;--f-mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e131a;--paper:#151c25;--ink:#e5ebf2;--ink2:#b3bfcc;--muted:#8494a6;--line:#263241;--grid:#1d2733;
+  --accent:#72a4f2;--accent-soft:#1a2940;--ok:#52c48d;--ok-soft:#123024;--bad:#f07d74;--bad-soft:#3a1b19;--gold:#e5b452;--gold-soft:#33280f;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e131a;--paper:#151c25;--ink:#e5ebf2;--ink2:#b3bfcc;--muted:#8494a6;--line:#263241;--grid:#1d2733;
+  --accent:#72a4f2;--accent-soft:#1a2940;--ok:#52c48d;--ok-soft:#123024;--bad:#f07d74;--bad-soft:#3a1b19;--gold:#e5b452;--gold-soft:#33280f;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:820px;margin:0 auto;padding-block:20px 120px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+h1{font-family:var(--f-display);font-size:1.75rem;margin:0;letter-spacing:-.01em;text-wrap:balance}
+h2{font-family:var(--f-display);font-size:1.1rem;margin:0}
+.sub{color:var(--ink2);margin:4px 0 0}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:16px}
+.ledger{display:flex;flex-direction:column;gap:2px}
+.row{display:grid;grid-template-columns:24px 44px minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 4px;border-bottom:1px solid var(--grid)}
+.row:last-child{border-bottom:0}
+.code{font-family:var(--f-mono);font-size:.8rem;color:var(--muted)}
+.cname{min-width:0}
+.cname small{display:block;color:var(--muted);font-size:.75rem}
+.pips{display:flex;gap:4px;align-items:center}
+.pip{width:22px;height:8px;border-radius:2px;background:var(--grid);border:1px solid var(--line)}
+.pip.on{background:var(--accent);border-color:var(--accent)}
+.row.mastered .pip.on{background:var(--ok);border-color:var(--ok)}
+.tag{font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:4px;background:var(--accent-soft);color:var(--accent);white-space:nowrap}
+.tag.ok{background:var(--ok-soft);color:var(--ok)}
+.tag.bad{background:var(--bad-soft);color:var(--bad)}
+.tag.gold{background:var(--gold-soft);color:var(--gold)}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px}
+button{font:inherit;font-weight:600;border-radius:8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);padding:8px 14px;cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+button:focus-visible,select:focus-visible,input:focus-visible+.lt{outline:2px solid var(--accent);outline-offset:2px}
+button.link{border:0;background:none;color:var(--muted);padding:4px;font-weight:500;text-decoration:underline}
+.lvsel{margin-left:6px;font-size:.75rem;font-weight:600;padding:3px 4px;color:var(--accent);background:var(--accent-soft);border-color:transparent}
+.lvsel.ok{color:var(--ok);background:var(--ok-soft)}
+.lvsel.gold{color:var(--gold);background:var(--gold-soft)}
+.pip.x{width:14px}
+@media (max-width:540px){.pip{display:none}.row{grid-template-columns:20px 34px minmax(0,1fr) auto;gap:8px}}
+.pip.x.on,.row.mastered .pip.x.on{background:var(--gold);border-color:var(--gold)}
+select{font:inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
+.hist{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.hist span{font-family:var(--f-mono);font-size:.75rem;padding:2px 6px;border-radius:4px;background:var(--grid);color:var(--ink2)}
+.goal{display:flex;gap:10px;align-items:baseline;flex-wrap:nowrap;margin-top:10px;color:var(--ink2);font-size:.9rem}
+.q{display:flex;flex-direction:column;gap:10px}
+.qhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.8rem;color:var(--muted)}
+.qnum{font-family:var(--f-mono);color:var(--ink);font-weight:500}
+.stem{font-size:1rem}
+.fig-wrap{overflow-x:auto}
+.plot-work{border:1px solid var(--line);border-radius:9px;padding:10px;background:var(--paper)}
+.plot-work h3{font-size:.9rem;margin:0 0 3px}.plot-work p{font-size:.78rem;color:var(--muted);margin:0 0 8px}
+.plot-work canvas{display:block;width:100%;max-width:620px;aspect-ratio:1.65;border:1px solid var(--line);border-radius:5px;touch-action:none;cursor:crosshair}
+.plot-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;font-size:.8rem}.plot-tools button{padding:4px 9px;font-size:.8rem}
+.plot-tools label{display:flex;gap:4px;align-items:center}.plot-tools input[type=number]{width:68px;padding:4px}
+svg.plot,svg.fig{display:block;max-width:100%;height:auto}
+svg.plot{width:560px}
+svg.fig{width:280px}
+.choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media (max-width:560px){.choices{grid-template-columns:minmax(0,1fr)}}
+.ch{position:relative;display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer;min-width:0}
+.ch input{position:absolute;opacity:0;pointer-events:none}
+.lt{flex:none;width:24px;height:24px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-family:var(--f-mono);font-size:.75rem;color:var(--ink2)}
+.ct{min-width:0;overflow-x:auto}
+.ch:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.ch:has(input:checked) .lt{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.done .ch{cursor:default}
+.ch.right{border-color:var(--ok);background:var(--ok-soft)}
+.ch.right .lt{background:var(--ok);border-color:var(--ok);color:var(--paper)}
+.ch.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.ch.wrong .lt{background:var(--bad);border-color:var(--bad);color:var(--paper)}
+.why{border-left:3px solid var(--accent);padding:6px 12px;background:var(--accent-soft);border-radius:0 6px 6px 0;font-size:.92rem;overflow-x:auto}
+details summary{cursor:pointer;color:var(--muted);font-size:.85rem}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--paper);border-top:1px solid var(--line);padding-block:10px calc(10px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));z-index:5}
+.bar-in{max-width:820px;margin:0 auto;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.meter{flex:1;min-width:120px;height:6px;background:var(--grid);border-radius:3px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent);width:0}
+.count{font-family:var(--f-mono);font-size:.85rem;color:var(--ink2)}
+.score{font-family:var(--f-display);font-size:2.2rem;font-weight:700;line-height:1}
+.changes{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.changes div{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.9rem}
+.warn{color:var(--bad);font-size:.9rem}
+.muted{color:var(--muted)}
+.fig text{font-family:var(--f-body)}
+.gl{stroke:var(--grid);stroke-width:1}
+.ax{stroke:var(--ink2);stroke-width:1.4}
+.f1{stroke:var(--accent);stroke-width:2.6;fill:none}
+.asy{stroke:var(--muted);stroke-width:1.2;stroke-dasharray:5 4}
+.tl{fill:var(--muted);font-size:12px;font-family:var(--f-mono)}
+.fl{fill:var(--ink);font-size:13px}
+.uc{stroke:var(--ink2);stroke-width:1.4;fill:none}
+.arm{stroke:var(--accent);stroke-width:2.4}
+.arc{stroke:var(--gold);stroke-width:2;fill:none}
+.dot{fill:var(--accent)}
+.side{stroke:var(--ink);stroke-width:2;fill:none}
+.dash{stroke:var(--muted);stroke-width:1.2;stroke-dasharray:4 4}
+:root[data-theme="light"]{
+  --bg:#eef2f6;--paper:#ffffff;--ink:#15202b;--ink2:#46556a;--muted:#75849a;--line:#d9e0e8;--grid:#e6ebf1;
+  --accent:#1d5cc4;--accent-soft:#e2ebfa;--ok:#18794a;--ok-soft:#e0f2e8;--bad:#b3302b;--bad-soft:#f9e3e1;--gold:#a26a00;--gold-soft:#fbf0d9;color-scheme:light}
+:root[data-theme="mastery"]{
+  --bg:#0b0d10;--paper:#16191c;--ink:#f4eee1;--ink2:#c7bca9;--muted:#a99b83;--line:#48402f;--grid:#2b2b29;
+  --accent:#f2cc72;--accent-soft:#45351b;--ok:#89c9b1;--ok-soft:#19372f;--bad:#ee9285;--bad-soft:#3e2422;--gold:#f7d98d;--gold-soft:#45351b;color-scheme:dark}
+:root[data-theme="mastery"] .card{border-color:#51452e;box-shadow:0 6px 24px rgba(0,0,0,.12)}
+:root[data-theme="mastery"] h1{color:#f7d98d;text-shadow:0 0 20px rgba(242,204,114,.2)}
+:root[data-theme="mastery"] button.primary{color:#17140d}
+.topline{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+#theme-picker{position:relative;flex:none;font-size:.85rem}
+#theme-picker summary{list-style:none;cursor:pointer;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);padding:6px 10px;white-space:nowrap}
+#theme-picker summary::-webkit-details-marker{display:none}
+#theme-picker summary::after{content:' ▾';color:var(--muted)}
+#theme-picker summary:focus-visible,.theme-menu button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.theme-menu{position:absolute;right:0;top:calc(100% + 5px);z-index:10;min-width:190px;background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:5px;box-shadow:0 10px 28px rgba(0,0,0,.22)}
+.theme-menu button,.theme-locked{display:block;width:100%;text-align:left;border:0;border-radius:5px;padding:7px 9px;background:transparent;color:var(--ink);font:inherit}
+.theme-menu button:hover{background:var(--accent-soft)}
+.theme-menu button[aria-current="true"]{color:var(--accent);font-weight:700}
+.theme-locked{position:relative;color:var(--muted);cursor:not-allowed}
+.theme-locked::after{content:attr(data-tip);display:none;position:absolute;right:calc(100% + 8px);top:0;width:190px;padding:8px;border-radius:6px;background:var(--ink);color:var(--paper);box-shadow:0 4px 14px rgba(0,0,0,.25);font-size:.78rem;line-height:1.35}
+.theme-locked:hover::after,.theme-locked:focus-visible::after{display:block}
+@media (max-width:540px){.theme-locked::after{right:0;top:100%}}
+@media (prefers-reduced-motion:no-preference){.meter i{transition:width .2s}}
+</style>
+
+<script>window.MathJax={tex:{inlineMath:[['$','$']]},svg:{fontCache:'global'},startup:{typeset:false}};</script>
+<script src="./tex-svg.js"></script>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="topline"><h1>Unit 4 Trig Drill</h1><details id="theme-picker"><summary id="theme-label" aria-label="Choose colour theme">Theme: Dark</summary><div class="theme-menu" role="group" aria-label="Colour themes"><button type="button" data-set-theme="dark">Dark</button><button type="button" data-set-theme="light">Light</button><span id="mastery-locked" class="theme-locked" tabindex="0" data-tip="Master all 8 sections, then score 100% on a full test to unlock." title="Master all 8 sections, then score 100% on a full test to unlock.">🔒 Mastery</span><button type="button" data-set-theme="mastery" hidden>Mastery</button></div></details></div>
+    <p class="sub">MHF4U · Trigonometric Functions. Fresh mixed tests cover all sections. Streaks count individual questions at your current section level, across tests: 3 correct moves up, while 2 incorrect moves down. You do not need three perfect tests. Master all sections and score 100% on a full test to unlock Mastery, Challenge, Genius, and Einstein.</p>
+  </header>
+  <section class="card" id="dash"></section>
+  <section id="test" style="display:flex;flex-direction:column;gap:14px"></section>
+</div>
+<div class="bar" id="bar"><div class="bar-in">
+  <span class="count" id="count"></span><div class="meter"><i id="meterfill"></i></div>
+  <span id="barmsg" class="warn"></span>
+  <button class="primary" id="submit">Submit test</button>
+</div></div>
+
+<script>
+// ================= math helpers =================
+const PI=Math.PI,S2=Math.SQRT2,S3=Math.sqrt(3);
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b)[a,b]=[b,a%b];return a||1};
+const $m=t=>'$'+t+'$';
+const dec=(x,p)=>{const r=Math.round(x*10**p)/10**p;return (Object.is(r,-0)?0:r).toFixed(p)};
+const num=x=>{const r=Math.round(x*1000)/1000;return ''+r};
+function fr(p,q){if(q<0){p=-p;q=-q}const g=gcd(p,q);p/=g;q/=g;if(q===1)return ''+p;return (p<0?'-':'')+'\\frac{'+Math.abs(p)+'}{'+q+'}'}
+function pt(n,d=1){if(n===0)return '0';if(d<0){n=-n;d=-d}const g=gcd(n,d);n/=g;d/=g;const s=n<0?'-':'',a=Math.abs(n),nu=(a===1?'':a)+'\\pi';return d===1?s+nu:s+'\\frac{'+nu+'}{'+d+'}'}
+function pText(n,d=1){if(n===0)return '0';if(d<0){n=-n;d=-d}const g=gcd(n,d);n/=g;d/=g;const s=n<0?'−':'',a=Math.abs(n),nu=(a===1?'':a)+'π';return d===1?s+nu:s+nu+'/'+d}
+const EX=[[0,'0'],[.5,'\\frac{1}{2}'],[S2/2,'\\frac{\\sqrt{2}}{2}'],[S3/2,'\\frac{\\sqrt{3}}{2}'],[1,'1'],[S3,'\\sqrt{3}'],[1/S3,'\\frac{1}{\\sqrt{3}}'],[2,'2'],[S2,'\\sqrt{2}'],[2/S3,'\\frac{2}{\\sqrt{3}}']];
+const UND='\\text{undefined}';
+function exT(v){if(v===null)return UND;const a=Math.abs(v);for(const[x,t]of EX)if(Math.abs(a-x)<1e-9)return (v<0&&a>1e-9?'-':'')+t;throw new Error('no exact value for '+v)}
+function tv(fn,x){const s=Math.sin(x),c=Math.cos(x),z=u=>Math.abs(u)<1e-9;
+  switch(fn){case'sin':return z(s)?0:s;case'cos':return z(c)?0:c;case'tan':return z(c)?null:z(s)?0:s/c;
+  case'csc':return z(s)?null:1/s;case'sec':return z(c)?null:1/c;case'cot':return z(s)?null:z(c)?0:c/s}}
+const EXPOOL=(()=>{const o=[UND];for(const[x,t]of EX){o.push(t);if(x)o.push('-'+t)}return o})();
+const CO={sin:'cos',cos:'sin',tan:'cot',cot:'tan',sec:'csc',csc:'sec'};
+const SIGN={sin:[1,1,-1,-1],cos:[1,-1,-1,1],tan:[1,-1,1,-1],csc:[1,1,-1,-1],sec:[1,-1,-1,1],cot:[1,-1,1,-1]};
+// special angles in [0, 2pi) as [n,d] meaning n*pi/d
+const SPEC=(()=>{const m=new Map();for(const d of[6,4])for(let n=0;n<2*d;n++){const g=gcd(n,d);const k=(n/g)+'/'+(d/g);if(!m.has(k))m.set(k,[n/g,d/g])}return[...m.values()]})();
+const NONAX=SPEC.filter(([n,d])=>d!==1&&d!==2);
+const quadOf=([n,d])=>Math.floor((n/d)/0.5)+1;
+function rel([n,d]){const r=n/d;if(r<.5)return[n,d];if(r<1)return[d-n,d];if(r<1.5)return[n-d,d];return[2*d-n,d]}
+const RELF={1:'\\beta=\\theta',2:'\\beta=\\pi-\\theta',3:'\\beta=\\theta-\\pi',4:'\\beta=2\\pi-\\theta'};
+function inQuad(b,q){return q===1?[1,b]:q===2?[b-1,b]:q===3?[b+1,b]:[2*b-1,b]} // beta = pi/b placed in quadrant q
+
+// multiple choice builder: ans + candidate distractors (priority order) + optional filler
+function mc(ans,cands,fill,wrap=$m){const out=[ans],seen=new Set([ans]);
+  for(const c of cands){if(c==null||seen.has(c))continue;seen.add(c);out.push(c);if(out.length===4)break}
+  let g=0;while(out.length<4&&fill&&g++<300){const c=fill();if(c!=null&&!seen.has(c)){seen.add(c);out.push(c)}}
+  const ch=shuffle(out);return{choices:ch.map(wrap),answer:ch.indexOf(ans)}}
+function Q(c,lv,q,m,why,svg){return{c,lv,q,choices:m.choices,answer:m.answer,why,svg:svg||''}}
+function exactMC(fn,x){const v=tv(fn,x),ans=exT(v),cv=tv(CO[fn],x);const inv=u=>u===null?0:u===0?null:1/u;
+  const c=[];if(v!==null&&v!==0)c.push(exT(-v));c.push(exT(cv));c.push(exT(inv(v)));if(cv!==null&&cv!==0)c.push(exT(-cv));
+  return mc(ans,shuffle(c.slice(0,3)).concat(c.slice(3)),()=>pick(EXPOOL))}
+
+// ================= figures =================
+let CLIP=0;
+function plot(o){const W=560,H=280,L=44,R=14,T=12,B=30;const X=x=>L+(x-o.x0)/(o.x1-o.x0)*(W-L-R),Y=y=>T+(o.y1-y)/(o.y1-o.y0)*(H-T-B);
+  const id='cp'+(CLIP++);let s=`<svg viewBox="0 0 ${W} ${H}" class="plot" role="img" aria-label="${o.label||'graph of a function'}"><defs><clipPath id="${id}"><rect x="${L}" y="${T}" width="${W-L-R}" height="${H-T-B}"/></clipPath></defs>`;
+  const xs=[];for(let i=Math.ceil(o.x0/o.xstep-1e-9);i*o.xstep<=o.x1+1e-9;i++)xs.push(i);
+  const every=xs.length>13?2:1;
+  for(const i of xs){const x=X(i*o.xstep);s+=`<line class="gl" x1="${x}" y1="${T}" x2="${x}" y2="${H-B}"/>`;if(i%every===0)s+=`<text class="tl" x="${x}" y="${H-10}" text-anchor="middle">${o.xlab(i)}</text>`}
+  for(let y=Math.ceil(o.y0/o.ystep)*o.ystep;y<=o.y1+1e-9;y+=o.ystep){const yy=Y(y);s+=`<line class="gl" x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}"/><text class="tl" x="${L-6}" y="${yy+4}" text-anchor="end">${num(y)}</text>`}
+  if(o.y0<=0&&o.y1>=0)s+=`<line class="ax" x1="${L}" y1="${Y(0)}" x2="${W-R}" y2="${Y(0)}"/>`;
+  if(o.x0<=0&&o.x1>=0)s+=`<line class="ax" x1="${X(0)}" y1="${T}" x2="${X(0)}" y2="${H-B}"/>`;
+  for(const a of(o.asym||[]))if(a>=o.x0-1e-9&&a<=o.x1+1e-9)s+=`<line class="asy" x1="${X(a)}" y1="${T}" x2="${X(a)}" y2="${H-B}"/>`;
+  const big=(o.y1-o.y0)*4;let d='',pen=false,py=null;const N=900;
+  for(let i=0;i<=N;i++){const x=o.x0+(o.x1-o.x0)*i/N;const y=o.f(x);
+    if(!isFinite(y)||Math.abs(y)>big||(py!==null&&Math.abs(y-py)>(o.y1-o.y0)*1.2)){pen=false;py=isFinite(y)&&Math.abs(y)<=big?y:null;if(py===null)continue}
+    d+=(pen?'L':'M')+X(x).toFixed(1)+' '+Y(y).toFixed(1);pen=true;py=y}
+  s+=`<path class="f1" clip-path="url(#${id})" d="${d}"/></svg>`;return s}
+function piPlot(f,x1,y,asym,label){return plot({f,x0:0,x1,y0:-y,y1:y,xstep:PI/2,xlab:i=>pText(i,2),ystep:1,asym,label})}
+function ePlot(E){const k=E.p/E.q,P=2*PI/k,qs=PI*E.q/(2*E.p),A=Math.abs(E.a);const y0=E.c-A-1,y1=E.c+A+1;
+  return plot({f:x=>Ev(E,x),x0:0,x1:2*P,y0,y1,xstep:qs,xlab:i=>pText(i*E.q,2*E.p),ystep:(y1-y0)>12?2:1,label:'graph of a sinusoidal function'})}
+function triSVG(o,a,h){const s=Math.min(200/a,130/o),Ax=40,Ay=170,Bx=40+a*s,Cy=170-o*s;
+  return `<svg viewBox="0 0 300 200" class="fig" role="img" aria-label="right triangle"><path class="side" d="M${Ax} ${Ay}L${Bx} ${Ay}L${Bx} ${Cy}Z"/><path class="side" d="M${Bx-12} ${Ay}L${Bx-12} ${Ay-12}L${Bx} ${Ay-12}" style="stroke-width:1.2"/>
+  <path class="arc" d="M${Ax+26} ${Ay}A26 26 0 0 0 ${Ax+26*Math.cos(Math.atan2(o,a))} ${Ay-26*Math.sin(Math.atan2(o,a))}"/><text class="fl" x="${Ax+32}" y="${Ay-6}">θ</text>
+  <text class="fl" x="${(Ax+Bx)/2}" y="${Ay+20}" text-anchor="middle">${a}</text><text class="fl" x="${Bx+8}" y="${(Ay+Cy)/2+4}">${o}</text><text class="fl" x="${(Ax+Bx)/2-12}" y="${(Ay+Cy)/2-8}" text-anchor="end">${h}</text></svg>`}
+function arcPath(cx,cy,r,x){if(x<1e-6)return'';const ex=cx+r*Math.cos(x),ey=cy-r*Math.sin(x);if(x>2*PI-1e-6)return `<circle class="arc" cx="${cx}" cy="${cy}" r="${r}"/>`;return `<path class="arc" d="M${cx+r} ${cy}A${r} ${r} 0 ${x>PI?1:0} 0 ${ex.toFixed(1)} ${ey.toFixed(1)}"/>`}
+function ucSVG(x,lab){const c=130,R=95,px=c+R*Math.cos(x),py=c-R*Math.sin(x);
+  return `<svg viewBox="0 0 260 260" class="fig" role="img" aria-label="unit circle with an angle in standard position"><line class="ax" x1="15" y1="${c}" x2="245" y2="${c}"/><line class="ax" x1="${c}" y1="15" x2="${c}" y2="245"/><circle class="uc" cx="${c}" cy="${c}" r="${R}"/>
+  ${arcPath(c,c,26,x)}<line class="arm" x1="${c}" y1="${c}" x2="${px}" y2="${py}"/><circle class="dot" cx="${px}" cy="${py}" r="5"/>
+  <text class="tl" x="${c+R+3}" y="${c+16}">1</text><text class="tl" x="${c+5}" y="${c-R-4}">1</text><text class="fl" x="${c+30*Math.cos(x/2)+4}" y="${c-30*Math.sin(x/2)-4}">${lab||'θ'}</text></svg>`}
+function cartSVG(x,y,lx,ly){const c=130,s=95/Math.max(Math.abs(x),Math.abs(y)),px=c+x*s,py=c-y*s;let a=Math.atan2(y,x);if(a<0)a+=2*PI;
+  const tx=px+(x>=0?8:-8),ta=x>=0?'start':'end',ty=py+(y>=0?-8:18);
+  return `<svg viewBox="0 0 260 260" class="fig" role="img" aria-label="point on the terminal arm of an angle"><line class="ax" x1="10" y1="${c}" x2="250" y2="${c}"/><line class="ax" x1="${c}" y1="10" x2="${c}" y2="250"/>
+  <line class="dash" x1="${px}" y1="${py}" x2="${px}" y2="${c}"/>${arcPath(c,c,22,a)}<line class="arm" x1="${c}" y1="${c}" x2="${px}" y2="${py}"/><circle class="dot" cx="${px}" cy="${py}" r="5"/>
+  <text class="fl" x="${tx}" y="${ty}" text-anchor="${ta}">P(${lx}, ${ly})</text><text class="fl" x="${c+26}" y="${c-10}">θ</text></svg>`}
+const mn=v=>(''+v).replace('-','−');
+
+// ================= sinusoid objects (4.7 / 4.8) =================
+// E = {f:'sin'|'cos', a, p, q (k=p/q), j (shift = j quarter-periods), c}
+const KOPT=[{p:1,q:1},{p:2,q:1},{p:3,q:1},{p:4,q:1},{p:1,q:2},{p:1,q:3}];
+function Ev(E,x){const k=E.p/E.q,d=E.j*E.q*PI/(2*E.p);return E.a*Math[E.f](k*(x-d))+E.c}
+const aT=a=>a===1?'':a===-1?'-':''+a;
+const kT=E=>E.q===1?(E.p===1?'':''+E.p):`\\frac{${E.p}}{${E.q}}`;
+const dT=E=>pt(Math.abs(E.j)*E.q,2*E.p);
+const perT=E=>pt(2*E.q,E.p);
+function eqT(E,v='x',lhs='y'){const k=kT(E),sg=E.j>0?'-':'+';let t;
+  if(E.j!==0&&k)t=`\\${E.f}\\left[${k}\\left(${v}${sg}${dT(E)}\\right)\\right]`;
+  else if(E.j!==0)t=`\\${E.f}\\left(${v}${sg}${dT(E)}\\right)`;
+  else if(k)t=`\\${E.f}(${k}${v})`;else t=`\\${E.f} ${v}`;
+  return `${lhs}=${aT(E.a)}${t}${E.c>0?'+'+E.c:E.c<0?'-'+(-E.c):''}`}
+function randE(){const k=pick(KOPT);let a;do{a=rnd(-4,4)}while(a===0);return{f:pick(['sin','cos']),a,p:k.p,q:k.q,j:rnd(-3,3),c:rnd(-3,3)}}
+function isEq(f,g){for(let i=0;i<40;i++){const x=-3+i*0.31;if(Math.abs(f(x)-g(x))>1e-6)return false}return true}
+function variants(E){const v=[{...E,a:-E.a},{...E,f:E.f==='sin'?'cos':'sin'},{...E,c:E.c===0?pick([-2,2]):-E.c},{...E,a:E.a+(E.a>0?1:-1)},E.j!==0?{...E,j:-E.j}:{...E,j:pick([-1,1])}];
+  const ko=pick(KOPT.filter(k=>k.p!==E.p||k.q!==E.q));v.push({...E,p:ko.p,q:ko.q});return shuffle(v)}
+function pickVar(E,base,n=3){const out=[];for(const v of variants(base)){if(isEq(x=>Ev(v,x),x=>Ev(E,x)))continue;if(out.some(o=>isEq(x=>Ev(o,x),x=>Ev(v,x))))continue;out.push(v);if(out.length===n)break}return out}
+function readWhy(E){const A=Math.abs(E.a);return `Max $${E.c+A}$, min $${E.c-A}$ → amplitude $${A}$, axis $y=${E.c}$. Period $${perT(E)}$ → $k=\\frac{2\\pi}{\\text{period}}=${kT(E)||1}$. ${E.j===0?'No horizontal shift':'Phase shift $'+dT(E)+'$ '+(E.j>0?'right':'left')}${E.a<0?', reflected in the axis':''}. ${E.f==='sin'?'Sine starts on the axis':'Cosine starts at a max'}${E.a<0?' (flipped)':''}.`}
+
+// ================= generators =================
+const G={P:{},R:{},U:{},C:{},Gr:{},X:{},T:{},M:{}};
+const TRI=[[3,4,5],[5,12,13],[8,15,17],[7,24,25],[20,21,29]];
+// ---- 4.1 prereq (degrees)
+G.P[1]=[
+()=>{let[a,b,h]=pick(TRI);if(Math.random()<.5)[a,b]=[b,a];const fn=pick(['sin','cos','tan']);const V={sin:[a,h],cos:[b,h],tan:[a,b]},W={sin:'\\frac{\\text{opp}}{\\text{hyp}}',cos:'\\frac{\\text{adj}}{\\text{hyp}}',tan:'\\frac{\\text{opp}}{\\text{adj}}'};
+ const ans=fr(...V[fn]);const c=shuffle(['sin','cos','tan'].filter(f=>f!==fn).map(f=>fr(...V[f])));c.push(fr(V[fn][1],V[fn][0]));
+ return Q('P',1,`Using the triangle, find $\\${fn}\\theta$.`,mc(ans,c,()=>fr(pick([a,b,h]),pick([a,b,h]))),`$\\${fn}\\theta=${W[fn]}=${ans}$. Opposite is across from $\\theta$, adjacent touches it, and the hypotenuse is across from the right angle.`,triSVG(a,b,h))},
+()=>{const deg=pick([30,45,60]),fn=pick(['sin','cos','tan']),x=deg*PI/180;
+ return Q('P',1,`Find the exact value of $\\${fn}${deg}^\\circ$.`,exactMC(fn,x),`Special triangles: 30-60-90 has sides $1,\\sqrt{3},2$ and 45-45-90 has $1,1,\\sqrt{2}$. So $\\${fn}${deg}^\\circ=${exT(tv(fn,x))}$.`)}];
+G.P[2]=[
+()=>{let t;do{t=rnd(91,359)}while(t%90===0);const q=Math.floor(t/90)+1,b=q===2?180-t:q===3?t-180:360-t;const D=v=>v+'^\\circ';
+ const c=[90-b,360-t,t-180,180-t,t-90].filter(v=>v>0&&v!==b).map(D);
+ return Q('P',2,`What is the related acute angle of $${t}^\\circ$?`,mc(D(b),c,()=>D(rnd(1,89))),`$${t}^\\circ$ is in Quadrant ${q}, so $\\beta=${q===2?'180^\\circ-\\theta':q===3?'\\theta-180^\\circ':'360^\\circ-\\theta'}=${b}^\\circ$.`)},
+()=>{const q=rnd(1,4),[f1,f2]=shuffle(['sin','cos','tan']).slice(0,2);const cond=f=>`\\${f}\\theta ${SIGN[f][q-1]>0?'>':'<'} 0`;
+ return Q('P',2,`In which quadrant is $\\theta$ if $${cond(f1)}$ and $${cond(f2)}$?`,mc('Quadrant '+q,['Quadrant 1','Quadrant 2','Quadrant 3','Quadrant 4'],null,x=>x),`CAST: All are positive in Q1, Sin in Q2, Tan in Q3, Cos in Q4. Only Quadrant ${q} matches both signs.`)}];
+G.P[3]=[
+()=>{const b=pick([30,45,60]),q=rnd(2,4),t=q===2?180-b:q===3?180+b:360-b,fn=pick(['sin','cos','tan']),x=t*PI/180;
+ return Q('P',3,`Find the exact value of $\\${fn}${t}^\\circ$.`,exactMC(fn,x),`Related acute angle $${b}^\\circ$, Quadrant ${q}. CAST says $\\${fn}$ is ${tv(fn,x)>0?'positive':'negative'} there, so $\\${fn}${t}^\\circ=${exT(tv(fn,x))}$.`)},
+()=>{const b=pick([30,45,60]),fn=pick(['sin','cos','tan']);const sg=pick([1,-1]);const v=sg*tv(fn,b*PI/180);const qs=[1,2,3,4].filter(q=>SIGN[fn][q-1]===sg);
+ const ang=q=>q===1?b:q===2?180-b:q===3?180+b:360-b;const P=(q1,q2)=>`${ang(q1)}^\\circ,\\ ${ang(q2)}^\\circ`;const ans=P(...qs);
+ const wrong=[[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]].filter(p=>p[0]!==qs[0]||p[1]!==qs[1]).map(p=>P(...p));
+ return Q('P',3,`Solve $\\${fn}\\theta=${exT(v)}$ for $0^\\circ\\le\\theta\\le360^\\circ$.`,mc(ans,shuffle(wrong),null),`Related angle $${b}^\\circ$. $\\${fn}$ is ${sg>0?'positive':'negative'} in Quadrants ${qs.join(' and ')}, giving $${ans}$.`)}];
+// ---- 4.2 radians
+G.R[1]=[
+()=>{const deg=pick([15,20,30,36,40,45,60,72,75,90,100,105,120,135,140,150,165,210,225,240,270,300,315,330]);const ans=pt(deg,180);
+ return Q('R',1,`Convert $${deg}^\\circ$ to radians (exact).`,mc(ans,[pt(180,deg),pt(deg,360),pt(deg,90),pt(2*deg,180)],()=>pt(rnd(1,11),pick([3,4,5,6,9,12]))),`Multiply by $\\frac{\\pi}{180^\\circ}$: $${deg}^\\circ\\times\\frac{\\pi}{180^\\circ}=${ans}$.`)},
+()=>{const d=pick([3,4,5,6,9,10,12,18]);let n;do{n=rnd(1,2*d-1)}while(gcd(n,d)!==1);const deg=180*n/d;const D=v=>(Number.isInteger(v)?v:dec(v,1))+'^\\circ';
+ return Q('R',1,`Convert $${pt(n,d)}$ to degrees.`,mc(D(deg),[D(deg/2),D(deg*2),D(deg+180),D(180*d/n)],()=>D(rnd(1,35)*10)),`Multiply by $\\frac{180^\\circ}{\\pi}$: $${pt(n,d)}\\times\\frac{180^\\circ}{\\pi}=${D(deg)}$.`)}];
+G.R[2]=[
+()=>{const r=rnd(3,20);let th,thT;if(Math.random()<.5){const d=pick([3,4,5,6]);let n;do{n=rnd(1,2*d-1)}while(gcd(n,d)!==1);th=n*PI/d;thT=pt(n,d)}else{th=rnd(5,55)/10;thT=''+th}
+ const a=r*th,U=v=>dec(v,1)+'\\text{ cm}';
+ return Q('R',2,`An arc on a circle of radius ${r} cm subtends a central angle of $${thT}$ radians. How long is the arc (1 decimal)?`,mc(U(a),[U(r*th*180/PI),U(r/th),U(2*r*th),U(th/r)],()=>U(a*(0.5+Math.random()))),`$a=r\\theta=${r}\\times${thT}\\approx${dec(a,1)}$ cm. $\\theta$ has to be in radians.`)},
+()=>{const d=pick([3,4,6]);let n;do{n=rnd(1,2*d-1)}while(gcd(n,d)!==1);const th=n*PI/d,a=rnd(50,300)/10,r=a/th,U=v=>dec(v,1)+'\\text{ cm}';
+ return Q('R',2,`An arc measuring ${a} cm subtends a central angle of $${pt(n,d)}$. Find the radius (1 decimal).`,mc(U(r),[U(a*th),U(th/a),U(r*2),U(a/(th*180/PI))],()=>U(r*(0.4+Math.random()*1.2))),`$r=\\frac{a}{\\theta}=\\frac{${a}}{${pt(n,d)}}\\approx${dec(r,1)}$ cm.`)},
+()=>{let r,a;do{r=rnd(4,20);a=rnd(5,60)}while(a%r===0||a/r>6.2);const ans=fr(a,r);
+ return Q('R',2,`What central angle, in radians, is subtended by an arc of ${a} cm on a circle of radius ${r} cm?`,mc(ans,[fr(r,a),''+a*r,fr(a,2*r),fr(2*a,r)],()=>fr(rnd(1,30),rnd(2,9))),`$\\theta=\\frac{a}{r}=\\frac{${a}}{${r}}=${ans}$ rad.`)},
+()=>{const x=rnd(5,60)/10,ans=x*180/PI,D=v=>dec(v,1)+'^\\circ';
+ return Q('R',2,`Convert ${x} radians to degrees (nearest tenth).`,mc(D(ans),[D(x*PI/180),D(x*180),D(ans/2),D(x*PI)],()=>D(ans+rnd(-40,40))),`$${x}\\times\\frac{180^\\circ}{\\pi}\\approx${D(ans)}$.`)},
+()=>{const vals=[];let g=0;while(vals.length<4&&g++<200){const d=pick([2,3,4,5,6,9,12]);const n=rnd(Math.ceil(d/2),2*d-1);if(gcd(n,d)!==1)continue;const v=n/d;if(vals.some(u=>Math.abs(u[0]-v)<0.04))continue;vals.push([v,pt(n,d)])}
+ vals.sort((a,b)=>b[0]-a[0]);
+ return Q('R',2,'Which radian measure is the largest?',mc(vals[0][1],vals.slice(1).map(v=>v[1]),null),`Write each as a decimal times $\\pi$: ${vals.map(v=>`$${v[1]}\\approx${dec(v[0],2)}\\pi$`).join(', ')}.`)}];
+G.R[3]=[
+()=>{const n=rnd(1,3),mins=pick([1,2,3,4,5]),r=rnd(2,6),t=mins*60;const u=s=>s+'\\text{ rad/s}';const ans=u(pt(2*n,t));
+ return Q('R',3,`A ball travels around a circle of radius ${r} m ${n===1?'once':n+' times'} in ${mins} minute${mins>1?'s':''}. What is its angular speed?`,mc(ans,[u(pt(2*n,mins)),u(pt(n,t)),u(pt(2*n*r,t))],()=>u(pt(rnd(1,4),pick([15,30,45,60,90,120])))),`Angle $=${n}\\times2\\pi=${pt(2*n)}$ rad and time $=${t}$ s. $\\omega=\\frac{\\theta}{t}=\\frac{${pt(2*n)}}{${t}}=${pt(2*n,t)}$ rad/s. The radius doesn't matter for angular speed.`)},
+()=>{const r=rnd(2,9),L=rnd(1,4)+pick([.125,.25,.5,.75,.375]),ans=2*PI*r*L,U=v=>dec(v,2)+'\\text{ m}';
+ return Q('R',3,`Someone walks around a circular path ${L} times. The radius is ${r} m. How far did they walk?`,mc(U(ans),[U(PI*r*L),U(PI*r*r*L),U(2*PI*L),U(2*PI*r)],()=>U(ans*(0.6+Math.random()*0.8))),`One lap is $2\\pi r=2\\pi(${r})$, so distance $=2\\pi(${r})(${L})\\approx${dec(ans,2)}$ m.`)},
+()=>{const deg=rnd(4,60)*5,r=rnd(3,15),a=r*deg*PI/180,U=v=>dec(v,1)+'\\text{ cm}';
+ return Q('R',3,`A central angle of $${deg}^\\circ$ is in a circle of radius ${r} cm. Find the arc length (1 decimal).`,mc(U(a),[U(r*deg),U(r*deg/180),U(a*2),U(a/2)],()=>U(a*(0.5+Math.random()))),`Convert first: $${deg}^\\circ=${pt(deg,180)}$. Then $a=r\\theta=${r}\\times${pt(deg,180)}\\approx${dec(a,1)}$ cm.`)}];
+// ---- 4.3 unit circle & exact values
+const PT=(x)=>`\\left(${exT(tv('cos',x))},\\ ${exT(tv('sin',x))}\\right)`;
+G.U[1]=[
+()=>{const A=pick([[0,1],[1,6],[1,4],[1,3],[1,2]]),x=A[0]*PI/A[1],c=tv('cos',x),s=tv('sin',x);const sw=`\\left(${exT(s)},\\ ${exT(c)}\\right)`;
+ return Q('U',1,`Which point is on the unit circle at $\\theta=${pt(...A)}$?`,mc(PT(x),[sw,...shuffle([[1,6],[1,4],[1,3],[0,1],[1,2]].map(B=>PT(B[0]*PI/B[1])))],null),`On the unit circle, the point is $(\\cos\\theta,\\sin\\theta)=${PT(x)}$.`,ucSVG(x))},
+()=>{const A=pick(NONAX.filter(([n,d])=>n/d>.5)),[n,d]=A,R=rel(A),ans=pt(...R),q=quadOf(A);
+ const c=[pt(n,d),pt(Math.abs(d-n),d),pt(Math.abs(2*d-n),d),pt(Math.abs(n-d),d),R[1]*1>2*R[0]?pt(R[1]-2*R[0],2*R[1]):null];
+ return Q('U',1,`What is the related acute angle of $${pt(n,d)}$?`,mc(ans,shuffle(c),()=>pt(1,pick([2,3,4,6,12]))),`$${pt(n,d)}$ is in Quadrant ${q}, so $${RELF[q]}=${ans}$.`,ucSVG(n*PI/d))}];
+G.U[2]=[
+()=>{const A=pick(NONAX),x=A[0]*PI/A[1],fn=pick(['sin','cos','tan']),q=quadOf(A);
+ return Q('U',2,`Find the exact value of $\\${fn}${pt(...A)}$.`,exactMC(fn,x),`Related angle $${pt(...rel(A))}$, Quadrant ${q}. $\\${fn}$ is ${tv(fn,x)>0?'positive':'negative'} there, so the answer is $${exT(tv(fn,x))}$.`)},
+()=>{const A=pick(NONAX.filter(([n,d])=>n/d>.5)),x=A[0]*PI/A[1],c=tv('cos',x),s=tv('sin',x);const P=(u,v)=>`\\left(${exT(u)},\\ ${exT(v)}\\right)`;
+ return Q('U',2,`What are the coordinates of the point on the unit circle at $\\theta=${pt(...A)}$?`,mc(P(c,s),shuffle([P(-c,s),P(c,-s),P(s,c),P(-c,-s)]),null),`Related angle $${pt(...rel(A))}$ gives the size; Quadrant ${quadOf(A)} gives the signs. Point $=(\\cos\\theta,\\sin\\theta)=${P(c,s)}$.`,ucSVG(x))}];
+G.U[3]=[
+()=>{const A=pick(SPEC),x=A[0]*PI/A[1],fn=pick(['csc','sec','cot']);const base={csc:'sin',sec:'cos',cot:'tan'}[fn];
+ return Q('U',3,`Find the exact value of $\\${fn}${pt(...A)}$.`,exactMC(fn,x),`$\\${fn}\\theta=\\frac{1}{\\${base}\\theta}$. $\\${base}${pt(...A)}=${exT(tv(base,x))}$, so $\\${fn}${pt(...A)}=${exT(tv(fn,x))}$.`)},
+()=>{const A=pick(NONAX),k=pick([-1,1]),fn=pick(['sin','cos','tan']),n2=A[0]+2*A[1]*k*(k<0?1:1),shown=k<0?pt(A[0]-2*A[1],A[1]):pt(A[0]+2*A[1],A[1]),x=A[0]*PI/A[1];
+ return Q('U',3,`Find the exact value of $\\${fn}\\left(${shown}\\right)$.`,exactMC(fn,x),`$${shown}$ is coterminal with $${pt(...A)}$ (they differ by $2\\pi$). So it equals $\\${fn}${pt(...A)}=${exT(tv(fn,x))}$.`)}];
+// ---- 4.4 Cartesian plane
+function sqrtS(n){let k=1;for(let i=2;i*i<=n;i++)while(n%(i*i)===0){n/=i*i;k*=i}return[k,n]}
+function rq(p,k,m){if(m===1)return fr(p,k);const g=gcd(p,k);p/=g;k/=g;return (p<0?'-':'')+`\\frac{${Math.abs(p)}}{${k===1?'':k}\\sqrt{${m}}}`}
+function rinv(k,m,p){if(m===1)return fr(k,p);const g=gcd(k,p);k/=g;p/=g;const nu=(k===1?'':k)+`\\sqrt{${m}}`;return (p<0?'-':'')+(Math.abs(p)===1?nu:`\\frac{${nu}}{${Math.abs(p)}}`)}
+function six(x,y){const[k,m]=sqrtS(x*x+y*y);return{sin:rq(y,k,m),cos:rq(x,k,m),tan:fr(y,x),csc:rinv(k,m,y),sec:rinv(k,m,x),cot:fr(x,y),k,m,
+  neg:{sin:rq(-y,k,m),cos:rq(-x,k,m),tan:fr(-y,x),csc:rinv(k,m,-y),sec:rinv(k,m,-x),cot:fr(-x,y)}}}
+const rT=(k,m)=>m===1?''+k:`${k===1?'':k}\\sqrt{${m}}`;
+G.C[1]=[
+()=>{let[a,b,h]=pick(TRI);if(Math.random()<.5)[a,b]=[b,a];const x=b*pick([1,-1]),y=a*pick([1,-1]),fn=pick(['sin','cos','tan']),V=six(x,y);
+ return Q('C',1,`The point $P(${x}, ${y})$ is on the terminal arm of $\\theta$. Find $\\${fn}\\theta$.`,mc(V[fn],shuffle([V.neg[fn],...['sin','cos','tan'].filter(f=>f!==fn).map(f=>V[f]),V[{sin:'csc',cos:'sec',tan:'cot'}[fn]]]),()=>fr(rnd(-h,h)||1,h)),`$r=\\sqrt{x^2+y^2}=\\sqrt{${x*x}+${y*y}}=${h}$. ${fn==='sin'?'$\\sin\\theta=\\frac{y}{r}$':fn==='cos'?'$\\cos\\theta=\\frac{x}{r}$':'$\\tan\\theta=\\frac{y}{x}$'} $=${V[fn]}$.`,cartSVG(x,y,mn(x),mn(y)))},
+()=>{const q=rnd(1,4),fn=pick(['sin','cos','tan']);const sx=q===1||q===4?1:-1,sy=q<=2?1:-1;
+ return Q('C',1,`$\\theta$ is in standard position with its terminal arm in Quadrant ${q}. What is the sign of $\\${fn}\\theta$?`,mc(SIGN[fn][q-1]>0?'Positive':'Negative',['Positive','Negative','Zero','Undefined'],null,x=>x),`In Quadrant ${q}, $x$ is ${sx>0?'positive':'negative'} and $y$ is ${sy>0?'positive':'negative'}. CAST: ${['All','Sin','Tan','Cos'][q-1]} positive in Q${q}.`)}];
+G.C[2]=[
+()=>{let x,y,k,m;do{x=rnd(-6,6);y=rnd(-6,6);[k,m]=sqrtS(x*x+y*y)}while(!x||!y||m===1);const fn=pick(['sin','cos','tan','csc','sec','cot']),V=six(x,y);
+ const others=['sin','cos','tan','csc','sec','cot'].filter(f=>f!==fn);
+ return Q('C',2,`The terminal arm of $\\theta$ passes through $(${x}, ${y})$. Find the exact value of $\\${fn}\\theta$.`,mc(V[fn],[V.neg[fn],...shuffle(others.map(f=>V[f]))],null),`$r=\\sqrt{${x*x}+${y*y}}=${rT(k,m)}$. Using $x=${x}$, $y=${y}$, $r=${rT(k,m)}$: $\\${fn}\\theta=${V[fn]}$.`,cartSVG(x,y,mn(x),mn(y)))},
+()=>{const b=pick([4,6,3]),q=rnd(1,4),a=rnd(1,5);const sx=q===1||q===4?1:-1,sy=q<=2?1:-1;const r3=v=>(v===1?'':v)+'\\sqrt{3}';
+ let X,Y;if(b===4){X=''+(sx*a);Y=''+(sy*a)}else if(b===6){X=(sx<0?'-':'')+r3(a);Y=''+(sy*a)}else{X=''+(sx*a);Y=(sy<0?'-':'')+r3(a)}
+ const ang=qq=>pt(...inQuad(b,qq));
+ return Q('C',2,`The point $(${X}, ${Y})$ is on the terminal arm of $\\theta$, $0\\le\\theta<2\\pi$. Find the exact principal angle.`,mc(ang(q),[1,2,3,4].filter(z=>z!==q).map(ang),null),`$\\tan\\beta=\\left|\\frac{y}{x}\\right|$ gives $\\beta=\\frac{\\pi}{${b}}$. The point is in Quadrant ${q}, so $\\theta=${ang(q)}$.`)}];
+G.C[3]=[
+()=>{const fn=pick(['sin','cos','tan','csc','sec']),b=pick([6,4,3]);if((fn==='sin'||fn==='cos'||fn==='csc'||fn==='sec')&&false);const sg=pick([1,-1]);const v=sg*tv(fn,PI/b);
+ const qs=[1,2,3,4].filter(q=>SIGN[fn][q-1]===sg);const P=(q1,q2)=>`\\theta=${pt(...inQuad(b,q1))},\\ ${pt(...inQuad(b,q2))}`;const ans=P(...qs);
+ const wrong=[[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]].filter(p=>p[0]!==qs[0]||p[1]!==qs[1]).map(p=>P(...p));wrong.push(`\\theta=${pt(...inQuad(b,qs[0]))}`);
+ return Q('C',3,`Solve $\\${fn}\\theta=${exT(v)}$ for $0\\le\\theta\\le2\\pi$.`,mc(ans,shuffle(wrong),null),`${['csc','sec'].includes(fn)?`Flip it first: $\\${fn==='csc'?'sin':'cos'}\\theta=${exT(1/v)}$. `:''}Related angle $\\beta=\\frac{\\pi}{${b}}$. $\\${fn}$ is ${sg>0?'positive':'negative'} in Quadrants ${qs.join(' and ')}, giving $${ans}$.`)},
+()=>{const fn=pick(['sin','cos','tan']),sg=pick([1,-1]);let v;do{v=fn==='tan'?rnd(2,40)/10:rnd(5,95)/100}while(Math.abs(v-.5)<.01||Math.abs(v-1)<.01);const b=fn==='sin'?Math.asin(v):fn==='cos'?Math.acos(v):Math.atan(v);
+ const qa=q=>q===1?b:q===2?PI-b:q===3?PI+b:2*PI-b;const qs=[1,2,3,4].filter(q=>SIGN[fn][q-1]===sg);const P=(q1,q2)=>`\\theta\\approx${dec(qa(q1),4)},\\ ${dec(qa(q2),4)}`;
+ const ans=P(...qs);const wrong=[[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]].filter(p=>p[0]!==qs[0]||p[1]!==qs[1]).map(p=>P(...p));const degv=q=>dec(qa(q)*180/PI,4);
+ return Q('C',3,`Solve $\\${fn}\\theta=${sg*v}$ for $0\\le\\theta\\le2\\pi$ (4 decimals).`,mc(ans,shuffle(wrong).slice(0,2).concat([`\\theta\\approx${degv(qs[0])},\\ ${degv(qs[1])}`]),null),`Related angle: $\\beta=\\${fn}^{-1}(${v})\\approx${dec(b,4)}$ (radian mode). $\\${fn}$ is ${sg>0?'positive':'negative'} in Quadrants ${qs.join(' and ')}: $${ans}$.`)},
+()=>{let[a,b,h]=pick(TRI);if(Math.random()<.5)[a,b]=[b,a];const q=rnd(1,4),x=(q===1||q===4?1:-1)*b,y=(q<=2?1:-1)*a,V=six(x,y);const[g1,g2]=shuffle(['sin','cos','tan']).slice(0,2);
+ return Q('C',3,`If $\\${g1}\\theta=${V[g1]}$ and $\\theta$ is in Quadrant ${q}, find $\\${g2}\\theta$.`,mc(V[g2],[V.neg[g2],V[g1],V[{sin:'csc',cos:'sec',tan:'cot'}[g2]],V.neg[g1]],()=>fr(rnd(-h,h)||1,h)),`Draw the triangle: $x=${x}$, $y=${y}$, $r=${h}$ (signs from Quadrant ${q}). So $\\${g2}\\theta=${V[g2]}$.`,'')}];
+// ---- 4.5 graphs
+const BASE={'y=\\sin x':x=>Math.sin(x),'y=\\cos x':x=>Math.cos(x),'y=-\\sin x':x=>-Math.sin(x),'y=-\\cos x':x=>-Math.cos(x),'y=\\tan x':x=>Math.tan(x)};
+const FACTS=[
+ ['What is the period of $y=\\sin x$?','2\\pi',['\\pi','\\frac{\\pi}{2}','4\\pi']],['What is the period of $y=\\cos x$?','2\\pi',['\\pi','1','4\\pi']],
+ ['What is the period of $y=\\tan x$?','\\pi',['2\\pi','\\frac{\\pi}{2}','4\\pi']],['What is the amplitude of $y=\\cos x$?','1',['2','2\\pi','\\pi']],
+ ['What is the range of $y=\\sin x$?','\\{y\\in\\mathbb{R}\\mid-1\\le y\\le1\\}',['\\{y\\in\\mathbb{R}\\}','\\{y\\in\\mathbb{R}\\mid0\\le y\\le1\\}','\\{y\\in\\mathbb{R}\\mid-1<y<1\\}']],
+ ['What are the zeros of $y=\\sin x$ for $0\\le x\\le2\\pi$?','0,\\ \\pi,\\ 2\\pi',['\\frac{\\pi}{2},\\ \\frac{3\\pi}{2}','0,\\ 2\\pi','\\frac{\\pi}{2},\\ \\pi,\\ \\frac{3\\pi}{2}']],
+ ['What are the zeros of $y=\\cos x$ for $0\\le x\\le2\\pi$?','\\frac{\\pi}{2},\\ \\frac{3\\pi}{2}',['0,\\ \\pi,\\ 2\\pi','\\pi','\\frac{\\pi}{2},\\ \\pi']],
+ ['Where does $y=\\sin x$ reach its maximum for $0\\le x\\le2\\pi$?','x=\\frac{\\pi}{2}',['x=0','x=\\pi','x=\\frac{3\\pi}{2}']],
+ ['Where does $y=\\cos x$ reach its minimum for $0\\le x\\le2\\pi$?','x=\\pi',['x=0','x=\\frac{3\\pi}{2}','x=\\frac{\\pi}{2}']],
+ ['What is the $y$-intercept of $y=\\cos x$?','1',['0','-1','\\frac{\\pi}{2}']],['What is the amplitude of $y=\\tan x$?','\\text{none}',['1','\\pi','2']]];
+G.Gr[1]=[
+()=>{const keys=Object.keys(BASE),k=pick(keys);const isT=k.includes('tan');
+ return Q('Gr',1,'Which function is graphed?',mc(k,shuffle(keys.filter(z=>z!==k)),null),`Check $x=0$: ${k.includes('cos')?'cosine starts at a max or min':isT?'tangent passes through the origin and has asymptotes at $x=\\frac{\\pi}{2}+n\\pi$':'sine starts at 0'}. ${k.includes('-')?'Here it is flipped (negative).':''} So it is $${k}$.`,piPlot(BASE[k],2*PI,isT?3:2,isT?[PI/2,3*PI/2]:[]))},
+()=>{const f=pick(FACTS);return Q('Gr',1,f[0],mc(f[1],f[2],null),`Answer: $${f[1]}$. Sketch $y=\\sin x$, $y=\\cos x$ and $y=\\tan x$ from $0$ to $2\\pi$ to see it.`)}];
+const QTR=[[0,1],[1,6],[1,4],[1,3],[1,2],[2,3],[3,4],[5,6],[1,1],[7,6],[5,4],[4,3],[3,2],[5,3],[7,4],[11,6],[2,1]];
+G.Gr[2]=[
+()=>{const fn=pick(['sin','cos']);let i,j;do{i=rnd(0,QTR.length-2);j=rnd(i+1,QTR.length-1)}while(j-i>8);const A=QTR[i],B=QTR[j],a=A[0]*PI/A[1],b=B[0]*PI/B[1];const fa=tv(fn,a),fb=tv(fn,b),df=fb-fa,ans=df/(b-a);
+ const D=v=>dec(v,3);const c=[D(-ans),D(df)];if(Math.abs(df)>1e-9)c.push(D((b-a)/df));c.push(D(df/((b-a)*180/PI)));
+ return Q('Gr',2,`Find the average rate of change of $y=\\${fn} x$ from $x=${pt(...A)}$ to $x=${pt(...B)}$ (3 decimals).`,mc(D(ans),c,()=>D(ans+rnd(-20,20)/50)),`$\\frac{f(b)-f(a)}{b-a}=\\frac{${exT(fb)}-\\left(${exT(fa)}\\right)}{${pt(...B)}-${pt(...A)}}\\approx${D(ans)}$.`)},
+()=>{const fn=pick(['sin','cos']);let i,j;do{i=rnd(0,QTR.length-2);j=rnd(i+1,QTR.length-1)}while(j-i>8);const A=QTR[i],B=QTR[j];const df=tv(fn,B[0]*PI/B[1])-tv(fn,A[0]*PI/A[1]);const s=Math.abs(df)<1e-9?'Zero':df>0?'Positive':'Negative';
+ return Q('Gr',2,`For $y=\\${fn} x$ (graphed), is the average rate of change from $x=${pt(...A)}$ to $x=${pt(...B)}$ positive, negative, zero, or undefined?`,mc(s,['Positive','Negative','Zero','Undefined'],null,x=>x),`Compare the heights: $f\\left(${pt(...B)}\\right)-f\\left(${pt(...A)}\\right)=${dec(df,3)}$. The interval width is positive, so the rate is ${s.toLowerCase()}.`,piPlot(x=>Math[fn](x),2*PI,1.5,[]))},
+()=>{const f=pick([['What are the asymptotes of $y=\\tan x$?','x=\\frac{\\pi}{2}+n\\pi,\\ n\\in\\mathbb{I}',['x=n\\pi,\\ n\\in\\mathbb{I}','x=\\frac{\\pi}{2}+2n\\pi,\\ n\\in\\mathbb{I}','x=\\frac{\\pi}{4}+n\\pi,\\ n\\in\\mathbb{I}']],['What is the range of $y=\\tan x$?','\\{y\\in\\mathbb{R}\\}',['\\{y\\in\\mathbb{R}\\mid-1\\le y\\le1\\}','\\{y\\in\\mathbb{R}\\mid y\\ne0\\}','\\{y\\in\\mathbb{R}\\mid y\\ge0\\}']],['Where are the zeros of $y=\\tan x$?','x=n\\pi,\\ n\\in\\mathbb{I}',['x=\\frac{\\pi}{2}+n\\pi,\\ n\\in\\mathbb{I}','x=2n\\pi,\\ n\\in\\mathbb{I}','\\text{none}']]]);
+ return Q('Gr',2,f[0],mc(f[1],f[2],null),`$\\tan x=\\frac{\\sin x}{\\cos x}$. Asymptotes are where $\\cos x=0$ and zeros are where $\\sin x=0$. Answer: $${f[1]}$.`,piPlot(Math.tan,2*PI,3,[PI/2,3*PI/2]))}];
+G.Gr[3]=[
+()=>{const P=pick([2,4,8,12]),A=rnd(2,6)*pick([1,-1]),c=rnd(3,12),f=pick(['sin','cos']),s=pick([0,P/4,P/2]);const ask=pick(['inc','dec','max']);
+ const qt=n=>((s+n*P/4)%P+P)%P;let off;// quarter index for each feature, base sin with a>0: inc 0, max 1, dec 2, min 3. cos: max 0, dec 1, min 2, inc 3
+ const base=f==='sin'?{inc:0,max:1,dec:2}:{max:0,dec:1,inc:3};off=base[ask]+(A<0?2:0);const ans=qt(off);const T=v=>`t=${num(v)}\\text{ s}`;
+ const kk=pt(2,P);const eq=`h(t)=${A}\\${f}\\left[${kk}\\left(t${s?'-'+num(s):''}\\right)\\right]+${c}`;
+ const lab={inc:'increasing fastest (greatest instantaneous rate of change)',dec:'decreasing fastest (most negative instantaneous rate of change)',max:'at its maximum height (instantaneous rate of change is zero)'};
+ return Q('Gr',3,`An object's height is $${eq}$. For $0\\le t<${P}$, when is it ${lab[ask]}?`,mc(T(ans),[0,1,2,3].map(n=>T(qt(n))),null),`Period $=\\frac{2\\pi}{${kk}}=${P}$ s, so key points are every $${num(P/4)}$ s starting at $t=${num(s)}$. ${f==='sin'?'Sine: axis going up, then max, axis going down, then min.':'Cosine: max, axis going down, then min, axis going up.'}${A<0?' $a<0$ flips it.':''} Steepest climb is on the axis going up, steepest drop is on the axis going down, and the slope is 0 at the max. Answer: $${T(ans)}$.`)}];
+// ---- 4.6 reciprocal
+const RECF={'y=\\csc x':[x=>1/Math.sin(x),[0,PI,2*PI]],'y=\\sec x':[x=>1/Math.cos(x),[PI/2,3*PI/2]],'y=\\cot x':[x=>Math.cos(x)/Math.sin(x),[0,PI,2*PI]],'y=\\tan x':[Math.tan,[PI/2,3*PI/2]]};
+G.X[1]=[
+()=>{const keys=Object.keys(RECF),k=pick(keys);
+ return Q('X',1,'Which function is graphed? (Dashed lines are asymptotes.)',mc(k,keys.filter(z=>z!==k),null),`Asymptotes at ${RECF[k][1].length===3?'$x=n\\pi$ (where $\\sin x=0$)':'$x=\\frac{\\pi}{2}+n\\pi$ (where $\\cos x=0$)'}. ${k.includes('csc')||k.includes('sec')?'U-shaped branches that never get between -1 and 1 mean csc or sec.':'Branches that cross every height mean tan or cot.'} So it is $${k}$.`,piPlot(RECF[k][0],2*PI,4,RECF[k][1]))},
+()=>{const fn=pick(['csc','sec','cot']),A=pick([[0,1],[1,2],[1,1],[3,2]]),x=A[0]*PI/A[1];
+ return Q('X',1,`What is the value of $\\${fn}${pt(...A)}$?`,exactMC(fn,x),`$\\${fn} x=${fn==='csc'?'\\frac{1}{\\sin x}':fn==='sec'?'\\frac{1}{\\cos x}':'\\frac{\\cos x}{\\sin x}'}$. At $${pt(...A)}$ that is $${exT(tv(fn,x))}$. Dividing by 0 means undefined.`)}];
+const RANGE2='\\{y\\in\\mathbb{R}\\mid y\\le-1\\text{ or }y\\ge1\\}';
+G.X[2]=[
+()=>{const f=pick([
+ ['What are the asymptotes of $y=\\sec x$?','x=\\frac{\\pi}{2}+n\\pi,\\ n\\in\\mathbb{I}',['x=n\\pi,\\ n\\in\\mathbb{I}','x=2n\\pi,\\ n\\in\\mathbb{I}','x=\\frac{\\pi}{4}+n\\pi,\\ n\\in\\mathbb{I}'],'$\\sec x=\\frac{1}{\\cos x}$, undefined where $\\cos x=0$.'],
+ ['What are the asymptotes of $y=\\csc x$?','x=n\\pi,\\ n\\in\\mathbb{I}',['x=\\frac{\\pi}{2}+n\\pi,\\ n\\in\\mathbb{I}','x=2n\\pi,\\ n\\in\\mathbb{I}','x=\\frac{\\pi}{4}+n\\pi,\\ n\\in\\mathbb{I}'],'$\\csc x=\\frac{1}{\\sin x}$, undefined where $\\sin x=0$.'],
+ ['What are the asymptotes of $y=\\cot x$?','x=n\\pi,\\ n\\in\\mathbb{I}',['x=\\frac{\\pi}{2}+n\\pi,\\ n\\in\\mathbb{I}','x=2n\\pi,\\ n\\in\\mathbb{I}','\\text{none}'],'$\\cot x=\\frac{\\cos x}{\\sin x}$, undefined where $\\sin x=0$.'],
+ ['What is the range of $y=\\csc x$?',RANGE2,['\\{y\\in\\mathbb{R}\\}','\\{y\\in\\mathbb{R}\\mid-1\\le y\\le1\\}','\\{y\\in\\mathbb{R}\\mid y\\ne0\\}'],'$|\\sin x|\\le1$, so $|\\csc x|\\ge1$.'],
+ ['What is the range of $y=\\cot x$?','\\{y\\in\\mathbb{R}\\}',[RANGE2,'\\{y\\in\\mathbb{R}\\mid-1\\le y\\le1\\}','\\{y\\in\\mathbb{R}\\mid y\\ne0\\}'],'$\\cot x$ takes every real value between each pair of asymptotes.'],
+ ['Which function has asymptotes $x=n\\pi$ and range $'+RANGE2+'$?','y=\\csc x',['y=\\sec x','y=\\cot x','y=\\tan x'],'Asymptotes at $x=n\\pi$ means $\\sin x=0$ is in the denominator; the gap in the range means csc.'],
+ ['Where does $y=\\csc x$ have a local minimum for $0<x<2\\pi$?','x=\\frac{\\pi}{2}',['x=\\frac{3\\pi}{2}','x=\\pi','x=\\frac{\\pi}{4}'],'csc has a local min of 1 where $\\sin x$ has its max of 1.'],
+ ['What is the local maximum value of $y=\\sec x$ near $x=\\pi$?','-1',['1','0','\\text{undefined}'],'$\\cos\\pi=-1$, so $\\sec\\pi=-1$. That branch opens downward.'],
+ ['Which statement is true for $y=\\sec x$?','\\text{It has the same period as }y=\\cos x',['\\text{It has zeros at }x=\\frac{\\pi}{2}+n\\pi','\\text{Its period is }\\pi','\\text{Its range is }\\{y\\in\\mathbb{R}\\}'],'Reciprocals keep the period ($2\\pi$). They never have zeros, because $\\frac{1}{u}\\ne0$.']]);
+ return Q('X',2,f[0],mc(f[1],f[2],null),f[3]+` Answer: $${f[1]}$.`)}];
+G.X[3]=[
+()=>{const a=rnd(2,5),c=rnd(-3,3),fn=pick(['csc','sec']);const R=(lo,hi)=>`\\{y\\in\\mathbb{R}\\mid y\\le${lo}\\text{ or }y\\ge${hi}\\}`;
+ return Q('X',3,`What is the range of $y=${a}\\${fn} x${c>0?'+'+c:c<0?c:''}$?`,mc(R(c-a,c+a),[R(-a,a),`\\{y\\in\\mathbb{R}\\mid${c-a}\\le y\\le${c+a}\\}`,R(c-1,c+1),R(-a+c*0-c,a+c*0-c)],()=>R(c-a-rnd(1,3),c+a+rnd(1,3))),`$|${a}\\${fn} x|\\ge${a}$, then shift by $${c}$: $y\\le${c-a}$ or $y\\ge${c+a}$.`)},
+()=>{const k=rnd(2,4),fn=pick(['csc','sec','cot']);const per=fn==='cot'?pt(1,k):pt(2,k);
+ return Q('X',3,`What is the period of $y=\\${fn}(${k}x)$?`,mc(per,[fn==='cot'?pt(2,k):pt(1,k),pt(2*k),pt(k),fn==='cot'?'\\pi':'2\\pi'],null),`The base period of $\\${fn}$ is $${fn==='cot'?'\\pi':'2\\pi'}$. Divide by $k=${k}$: $${per}$.`)},
+()=>{const k=rnd(2,4),fn=pick(['csc','sec']);const ans=fn==='csc'?`x=\\frac{n\\pi}{${k}},\\ n\\in\\mathbb{I}`:`x=${pt(1,2*k)}+\\frac{n\\pi}{${k}},\\ n\\in\\mathbb{I}`;
+ const c=[fn==='csc'?'x=n\\pi,\\ n\\in\\mathbb{I}':'x=\\frac{\\pi}{2}+n\\pi,\\ n\\in\\mathbb{I}',fn==='csc'?`x=${pt(1,2*k)}+\\frac{n\\pi}{${k}},\\ n\\in\\mathbb{I}`:`x=\\frac{n\\pi}{${k}},\\ n\\in\\mathbb{I}`,`x=${k}n\\pi,\\ n\\in\\mathbb{I}`];
+ return Q('X',3,`What are the asymptotes of $y=\\${fn}(${k}x)$?`,mc(ans,c,null),`Asymptotes are where $\\${fn==='csc'?'sin':'cos'}(${k}x)=0$: $${k}x=${fn==='csc'?'n\\pi':'\\frac{\\pi}{2}+n\\pi'}$. Divide by ${k}: $${ans}$.`)}];
+// ---- 4.7 transformations
+G.T[1]=[
+()=>{const E=randE(),A=Math.abs(E.a);return Q('T',1,`What is the amplitude of $${eqT(E)}$?`,mc(''+A,[''+E.a,''+2*A,''+E.c,''+(A+Math.abs(E.c))],()=>''+rnd(1,8)),`Amplitude $=|a|=|${E.a}|=${A}$. The sign only means a reflection.`)},
+()=>{const E=randE();return Q('T',1,`What is the period of $${eqT(E)}$?`,mc(perT(E),[pt(2*E.p,E.q),pt(E.q,E.p),'2\\pi',pt(4*E.q,E.p)],()=>pt(rnd(1,6),rnd(1,4))),`Period $=\\frac{2\\pi}{k}=\\frac{2\\pi}{${kT(E)||1}}=${perT(E)}$.`)},
+()=>{const E=randE();if(E.c===0)E.c=pick([-2,-1,1,2,3]);const D=v=>`${Math.abs(v)}\\text{ unit${Math.abs(v)===1?'':'s'} ${v>0?'up':'down'}}`;
+ return Q('T',1,`What is the vertical translation of $${eqT(E)}$?`,mc(D(E.c),[D(-E.c),D(Math.abs(E.a)),D(-Math.abs(E.a)),D(E.c*2)],()=>D(pick([-5,-4,-3,-2,-1,1,2,3,4,5]))),`$c=${E.c}$, so the graph moves ${Math.abs(E.c)} unit${Math.abs(E.c)===1?'':'s'} ${E.c>0?'up':'down'}.`)},
+()=>{const m=pick([2,3,4,6,12]),a=rnd(1,5);return Q('T',1,`What is the period of $y=${a===1?'':a}\\sin\\left(\\frac{\\pi}{${m}}x\\right)$?`,mc(''+2*m,[''+m,pt(2,m),`${2*m}\\pi`],null),`Period $=\\frac{2\\pi}{\\pi/${m}}=2\\pi\\cdot\\frac{${m}}{\\pi}=${2*m}$.`)}];
+G.T[2]=[
+()=>{const E=randE();if(E.j===0)E.j=pick([-2,-1,1,2]);const D=(t,r)=>`${t}\\text{ ${r?'right':'left'}}`;const kd=pt(Math.abs(E.j),2);
+ return Q('T',2,`What is the phase shift of $${eqT(E)}$?`,mc(D(dT(E),E.j>0),[D(dT(E),E.j<0),D(kd,E.j>0),D(kd,E.j<0)],()=>D(pt(1,pick([2,3,4,6])),Math.random()<.5)),`Inside it reads $(x${E.j>0?'-':'+'}${dT(E)})$, which means a shift of $${dT(E)}$ ${E.j>0?'right':'left'} (the opposite of the sign you see).`)},
+()=>{const k=rnd(2,4),[m,n]=pick([[1,6],[1,4],[1,3],[1,2],[2,3],[3,4]]),s=pick([1,-1]),f=pick(['sin','cos']);const D=(t,r)=>`${t}\\text{ ${r?'right':'left'}}`;
+ return Q('T',2,`What is the phase shift of $y=\\${f}\\left(${k}x${s>0?'-':'+'}${pt(k*m,n)}\\right)$?`,mc(D(pt(m,n),s>0),[D(pt(k*m,n),s>0),D(pt(m,n),s<0),D(pt(k*m,n),s<0)],null),`Factor out $k$ first: $${k}x${s>0?'-':'+'}${pt(k*m,n)}=${k}\\left(x${s>0?'-':'+'}${pt(m,n)}\\right)$. So the shift is $${pt(m,n)}$ ${s>0?'right':'left'}. Not factoring is the classic trap.`)},
+()=>{const E=randE(),A=Math.abs(E.a),mx=Math.random()<.5;const v=mx?E.c+A:E.c-A;
+ return Q('T',2,`What is the ${mx?'maximum':'minimum'} value of $${eqT(E)}$?`,mc(''+v,[''+(mx?E.c-A:E.c+A),''+(mx?A:-A),''+(E.c+(mx?1:-1)*E.a*-1),''+(mx?E.c+2*A:E.c-2*A)],()=>''+rnd(-8,8)),`${mx?'Max':'Min'} $=c${mx?'+':'-'}|a|=${E.c}${mx?'+':'-'}${A}=${v}$.`)},
+()=>{const E=randE(),A=Math.abs(E.a);const R=(l,h)=>`\\{y\\in\\mathbb{R}\\mid${l}\\le y\\le${h}\\}`;
+ return Q('T',2,`What is the range of $${eqT(E)}$?`,mc(R(E.c-A,E.c+A),[R(-A,A),R(E.c-2*A,E.c+2*A),R(Math.min(E.c,E.a),Math.max(E.c,E.a)),R(E.c-1,E.c+1)],()=>R(E.c-A-rnd(1,2),E.c+A)),`From the axis $y=${E.c}$, go up and down by the amplitude $${A}$: $${E.c-A}\\le y\\le${E.c+A}$.`)}];
+G.T[3]=[
+()=>{const E=randE();const vs=pickVar(E,E);
+ return Q('T',3,'Which equation matches the graph?',mc(eqT(E),vs.map(v=>eqT(v)),null),readWhy(E),ePlot(E))},
+()=>{const E=randE();let R;const opts=[E.f==='cos'?{...E,f:'sin',j:E.j-1}:{...E,f:'cos',j:E.j+1},{...E,a:-E.a,j:E.j+2},{...E,a:-E.a,j:E.j-2}];R=pick(opts);
+ if(!isEq(x=>Ev(R,x),x=>Ev(E,x)))throw new Error('rewrite mismatch');
+ const vs=pickVar(E,R);return Q('T',3,`Which equation has exactly the same graph as $${eqT(E)}$?`,mc(eqT(R),vs.map(v=>eqT(v)),null),`A shift of a quarter period turns cos into sin: $\\cos\\theta=\\sin\\left(\\theta+\\frac{\\pi}{2}\\right)$. A half-period shift is the same as flipping the sign of $a$. $${eqT(R)}$ produces the same points.`)}];
+// ---- 4.8 modelling
+const KFROMP=[['\\pi','2',['\\frac{1}{2}','\\pi','\\frac{\\pi}{2}']],['4\\pi','\\frac{1}{2}',['2','4\\pi','\\frac{1}{4}']],['\\frac{2\\pi}{3}','3',['\\frac{1}{3}','\\frac{2\\pi}{3}','\\frac{3}{2}']],['\\frac{\\pi}{2}','4',['\\frac{1}{4}','\\frac{\\pi}{2}','2']],['12','\\frac{\\pi}{6}',['\\frac{6}{\\pi}','12','\\frac{1}{6}']],['8','\\frac{\\pi}{4}',['\\frac{4}{\\pi}','8','\\frac{1}{4}']],['6','\\frac{\\pi}{3}',['\\frac{3}{\\pi}','6','\\frac{1}{3}']],['24','\\frac{\\pi}{12}',['\\frac{12}{\\pi}','24','\\frac{\\pi}{24}']],['10','\\frac{\\pi}{5}',['\\frac{5}{\\pi}','10','\\frac{2\\pi}{5}']]];
+G.M[1]=[
+()=>{const A=rnd(1,8),c=rnd(-4,10),M=c+A,m=c-A;return Q('M',1,`A sinusoidal function has a maximum of ${M} and a minimum of ${m}. What is its amplitude?`,mc(''+A,[''+(M-m),''+c,''+(M+m)],()=>''+rnd(1,16)),`Amplitude $=\\frac{\\max-\\min}{2}=\\frac{${M}-(${m})}{2}=${A}$.`)},
+()=>{const A=rnd(1,8),c=rnd(-4,10),M=c+A,m=c-A;return Q('M',1,`A sinusoidal function has a maximum of ${M} and a minimum of ${m}. What is the equation of its axis?`,mc('y='+c,['y='+A,'y='+(M-m),'y='+(M+m)],()=>'y='+rnd(-6,12)),`Axis $y=\\frac{\\max+\\min}{2}=\\frac{${M}+(${m})}{2}=${c}$.`)},
+()=>{const r=pick(KFROMP);return Q('M',1,`A sinusoidal function has a period of $${r[0]}$. What is $k$?`,mc(r[1],r[2],null),`$k=\\frac{2\\pi}{\\text{period}}=\\frac{2\\pi}{${r[0]}}=${r[1]}$.`)}];
+G.M[2]=[
+()=>{const E=randE();E.a=Math.abs(E.a)||2;if(E.j===0)E.j=pick([-1,1,2]);const M=E.c+E.a,m=E.c-E.a;
+ const base=[{...E,a:2*E.a},{...E,j:-E.j},{...E,p:E.q,q:E.p},{...E,c:M},{...E,a:E.c||3,c:E.a}];const vs=[];for(const v of shuffle(base)){if(v.a===0)continue;if(isEq(x=>Ev(v,x),x=>Ev(E,x)))continue;if(vs.some(o=>isEq(x=>Ev(o,x),x=>Ev(v,x))))continue;vs.push(v)}
+ for(const v of pickVar(E,E,6)){if(vs.length>=3)break;if(!vs.some(o=>isEq(x=>Ev(o,x),x=>Ev(v,x))))vs.push(v)}
+ return Q('M',2,`A ${E.f==='sin'?'sine':'cosine'} function has a maximum of ${M}, a minimum of ${m}, a period of $${perT(E)}$, and a phase shift of $${dT(E)}$ to the ${E.j>0?'right':'left'}. Which equation is it?`,mc(eqT(E),vs.map(v=>eqT(v)),null),`$a=\\frac{${M}-(${m})}{2}=${E.a}$, $c=\\frac{${M}+(${m})}{2}=${E.c}$, $k=\\frac{2\\pi}{${perT(E)}}=${kT(E)||1}$, $d=${E.j>0?'':'-'}${dT(E)}$. So $${eqT(E)}$.`)},
+()=>{const E=randE();const R=E.f==='cos'?{...E,f:'sin',j:E.j-1}:{...E,f:'cos',j:E.j+1};const vs=pickVar(E,R);
+ return Q('M',2,`Which equation models the graph? (Hint: it is written as a ${R.f==='sin'?'sine':'cosine'}.)`,mc(eqT(R),vs.map(v=>eqT(v)),null),readWhy(R),ePlot(E))}];
+G.M[3]=[
+()=>{const D=pick([20,30,40,50,60]),b=pick([1,2,3]),T=pick([30,40,60,80,90,120]),A=D/2,H=A+b,kk=pt(2,T),k=2*PI/T;
+ const intro=`A Ferris wheel has a diameter of ${D} m and its centre is ${H} m above the ground. One rotation takes ${T} s. A rider gets on at the lowest point at $t=0$.`;
+ if(Math.random()<.5){const eq=(s,amp,f,kt)=>`h(t)=${s<0?'-':''}${amp}\\${f}\\left(${kt}t\\right)+${H}`;
+  return Q('M',3,intro+` Which equation gives the rider's height $h$, in metres, after $t$ seconds?`,mc(eq(-1,A,'cos',kk),[eq(1,A,'cos',kk),eq(-1,D,'cos',kk),eq(-1,A,'cos',pt(1,T)),eq(-1,A,'sin',kk)],null),`Amplitude = radius = ${A} m, axis $h=${H}$, $k=\\frac{2\\pi}{${T}}=${kk}$. Starting at the bottom means a minimum at $t=0$, which is $-\\cos$.`)}
+ let t;do{t=rnd(3,T-3)}while(t%(T/4)===0);const h=(f,s,amp)=>s*amp*Math[f](k*t)+H,U=v=>dec(v,1)+'\\text{ m}';
+ return Q('M',3,intro+` How high is the rider after ${t} s (1 decimal)?`,mc(U(h('cos',-1,A)),[U(h('cos',1,A)),U(-A*Math.cos(k*t*PI/180)+H),U(h('cos',-1,D)),U(h('sin',-1,A))],()=>U(rnd(b*10,(D+b)*10)/10)),`$h(t)=-${A}\\cos\\left(${kk}t\\right)+${H}$, so $h(${t})\\approx${dec(h('cos',-1,A),1)}$ m. Use radian mode.`)},
+()=>{const hi=rnd(8,14),lo=rnd(1,5),half=pick([4,5,6]),P=2*half,t1=rnd(1,5),A=(hi-lo)/2,c=(hi+lo)/2,k=PI/half;let t;do{t=rnd(t1+1,t1+P-1)}while((t-t1)%(half/2)===0);
+ const d=(f,sh,amp,deg)=>amp*Math[f]((deg?PI/180:1)*k*(t-(sh?t1:0)))+c,U=v=>dec(v,1)+'\\text{ m}';const ans=d('cos',1,A);
+ return Q('M',3,`High tide is ${hi} m at ${t1}:00 a.m. Low tide is ${lo} m ${half} hours later. Using a cosine model with $t$ in hours after midnight, how deep is the water at ${t>12?t-12:t}:00 ${t>=12?'p.m.':'a.m.'} ($t=${t}$, 1 decimal)?`,mc(U(ans),[U(d('cos',0,A)),U(d('sin',1,A)),U(d('cos',1,A,1)),U(d('cos',1,hi-lo))],()=>U(lo+Math.random()*(hi-lo))),`$a=\\frac{${hi}-${lo}}{2}=${A}$, axis $${c}$, period $${P}$ h so $k=\\frac{2\\pi}{${P}}=${pt(1,half)}$, max at $t=${t1}$: $d(t)=${A}\\cos\\left[${pt(1,half)}(t-${t1})\\right]+${c}$, so $d(${t})\\approx${dec(ans,1)}$ m.`)}];
+
+// ================= Level 4 (Challenge) and Level 5 (Genius) =================
+// exact numbers a + b√2 + c√3 + d√6 with rational coefficients [num,den]
+const R0=[0,1];
+const rn=(n,d=1)=>{if(d<0){n=-n;d=-d}const g=gcd(n,d);return[n/g,d/g]};
+const radd=(a,b)=>rn(a[0]*b[1]+b[0]*a[1],a[1]*b[1]);
+const rmul=(a,b)=>rn(a[0]*b[0],a[1]*b[1]);
+const BM=[[[0,1],[1,1],[2,1],[3,1]],[[1,1],[0,2],[3,1],[2,2]],[[2,1],[3,1],[0,3],[1,3]],[[3,1],[2,2],[1,3],[0,6]]];
+const Xz=()=>[R0,R0,R0,R0];
+const Xadd=(A,B)=>A.map((a,i)=>radd(a,B[i]));
+const Xmul=(A,B)=>{let o=Xz();for(let i=0;i<4;i++)for(let j=0;j<4;j++){if(!A[i][0]||!B[j][0])continue;const[k,f]=BM[i][j];o[k]=radd(o[k],rmul(rmul(A[i],B[j]),[f,1]))}return o};
+const Xsc=(A,r)=>A.map(a=>rmul(a,r));
+const XE=[[0,Xz()],[.5,[[1,2],R0,R0,R0]],[S2/2,[R0,[1,2],R0,R0]],[S3/2,[R0,R0,[1,2],R0]],[1,[[1,1],R0,R0,R0]],[S3,[R0,R0,[1,1],R0]],[1/S3,[R0,R0,[1,3],R0]],[2,[[2,1],R0,R0,R0]],[S2,[R0,[1,1],R0,R0]],[2/S3,[R0,R0,[2,3],R0]]];
+function toX(v){const a=Math.abs(v);for(const[x,X]of XE)if(Math.abs(a-x)<1e-9)return v<0?Xsc(X,[-1,1]):X;throw new Error('toX '+v)}
+const Xval=A=>A[0][0]/A[0][1]+A[1][0]/A[1][1]*S2+A[2][0]/A[2][1]*S3+A[3][0]/A[3][1]*Math.sqrt(6);
+function Xtex(A){const L=A.reduce((l,a)=>l*a[1]/gcd(l,a[1]),1);const k=A.map(a=>a[0]*L/a[1]);const sy=['','\\sqrt{2}','\\sqrt{3}','\\sqrt{6}'];
+  const t=[];k.forEach((c,i)=>{if(c===0)return;const ab=Math.abs(c);t.push([c<0,i===0?''+ab:(ab===1?'':ab)+sy[i]])});
+  if(!t.length)return'0';const body=t.map((x,i)=>(x[0]?'-':(i?'+':''))+x[1]).join('');
+  if(L===1)return body;if(t.length===1)return(t[0][0]?'-':'')+`\\frac{${t[0][1]}}{${L}}`;return`\\frac{${body}}{${L}}`}
+// exact-value expression, degrees or radians
+function exprQ(c,lv,deg){const fns=lv>=5?['sin','cos','tan','csc','sec','cot']:['sin','cos','tan'];
+  const angs=deg?[0,30,45,60,90,120,135,150,180,210,225,240,270,300,315,330].map(d=>[d*PI/180,d+'^\\circ',false]):SPEC.map(A=>[A[0]*PI/A[1],pt(...A),true]);
+  const term=()=>{for(;;){const f=pick(fns),a=pick(angs),v=tv(f,a[0]);if(v===null)continue;return{f,a,v}}};
+  const parts=[{k:pick([1,2,3]),fs:[term(),term()]},{k:pick([1,-1,2]),fs:[term()],sq:true}];if(lv>=5)parts.push({k:pick([2,-2,3,-1,4]),fs:[term()]});
+  const ft=(t,sq)=>`\\${t.f}${sq?'^2':''}${t.a[2]?`\\left(${t.a[1]}\\right)`:' '+t.a[1]}`;
+  const ptex=(p,i)=>{const s=p.k<0?'-':(i?'+':'');const k=Math.abs(p.k)===1?'':Math.abs(p.k);return s+k+p.fs.map(t=>ft(t,p.sq)).join('')};
+  const val=(P,mod)=>{let X=Xz();P.forEach((p,pi)=>{let Y=[[p.k,1],R0,R0,R0];p.fs.forEach((t,ti)=>{let v=t.v;if(mod&&mod.p===pi&&mod.t===ti)v=mod.fn(t);const Z=toX(v);Y=Xmul(Y,Z);if(p.sq&&!(mod&&mod.nosq===pi))Y=Xmul(Y,Z)});X=Xadd(X,Y)});return mod==='raw'?X:Xtex(X)};
+  const direct=parts.reduce((s,p)=>s+p.k*p.fs.reduce((m,t)=>m*t.v*(p.sq?t.v:1),1),0);
+  if(Math.abs(Xval(val(parts,'raw'))-direct)>1e-9)throw new Error('exact arithmetic mismatch');
+  const ans=val(parts);const c2=[];
+  parts.forEach((p,pi)=>p.fs.forEach((t,ti)=>{c2.push(val(parts,{p:pi,t:ti,fn:u=>-u.v}));const cv=tv(CO[t.f],t.a[0]);if(cv!==null)c2.push(val(parts,{p:pi,t:ti,fn:()=>cv}))}));
+  parts.forEach((p,pi)=>{if(p.sq)c2.push(val(parts,{nosq:pi}))});
+  const q=`Find the exact value of $${parts.map(ptex).join('')}$.`;
+  const vals=[];parts.forEach(p=>p.fs.forEach(t=>vals.push(`\\${t.f}${t.a[2]?`\\left(${t.a[1]}\\right)`:' '+t.a[1]}=${exT(t.v)}`)));
+  return Q(c,lv,q,mc(ans,shuffle(c2),()=>Xtex(Xadd(toX(pick([.5,1,2,S3,S2/2])*pick([1,-1])),parts.length?[[rnd(-2,2),1],R0,R0,R0]:Xz()))),`Replace each ratio with its exact value: $${[...new Set(vals)].join(',\\ ')}$. Square where it says $^2$, multiply, then combine like terms: $${ans}$.`)}
+// reduce n/d (units of pi) into [0, pn/pd)
+function normRat(n,d,pn,pd){const m=Math.floor((n/d)/(pn/pd)+1e-9);return rn(n*pd-m*pn*d,d*pd)}
+const ferrisIntro=(D,H,T)=>`A Ferris wheel has a diameter of ${D} m and its centre is ${H} m above the ground. One rotation takes ${T} s. A rider gets on at the lowest point at $t=0$.`;
+const ROOTS=[[1,1],[1,-1],[2,1],[2,-1],[1,0],[1,2]];
+const P2=(A)=>pt(A[0],A[1]);
+G.P[4]=[()=>exprQ('P',4,true)];
+G.P[5]=[()=>exprQ('P',5,true)];
+G.U[4]=[()=>exprQ('U',4,false),
+()=>{const A=pick(NONAX),k=pick([-3,-2,2,3]),fn=pick(['sin','cos','tan','csc','sec','cot']),x=A[0]*PI/A[1],shown=pt(A[0]+2*A[1]*k,A[1]);
+ return Q('U',4,`Find the exact value of $\\${fn}\\left(${shown}\\right)$.`,exactMC(fn,x),`Add or subtract $2\\pi$ until the angle is between $0$ and $2\\pi$: $${shown}$ is coterminal with $${pt(...A)}$. Then $\\${fn}${pt(...A)}=${exT(tv(fn,x))}$.`)}];
+G.U[5]=[()=>exprQ('U',5,false)];
+G.C[4]=[()=>{let x,y;do{x=rnd(-7,7);y=rnd(-7,7)}while(!x||!y||Math.abs(x)===Math.abs(y));const V=six(x,y);const q=x>0?(y>0?1:4):(y>0?2:3);
+ const F=['sin','cos','tan','csc','sec','cot'];const g1=pick(F);const qs=[1,2,3,4].filter(z=>SIGN[g1][z-1]===SIGN[g1][q-1]);const other=qs.find(z=>z!==q);
+ const f2=pick(F.filter(f=>SIGN[f][q-1]!==SIGN[f][other-1]));const g2=pick(F.filter(f=>f!==g1&&f!==f2));const[k,m]=sqrtS(x*x+y*y);
+ return Q('C',4,`If $\\${g1}\\theta=${V[g1]}$ and $\\${f2}\\theta${SIGN[f2][q-1]>0?'>':'<'}0$, find $\\${g2}\\theta$.`,mc(V[g2],[V.neg[g2],...shuffle(F.filter(f=>f!==g2).map(f=>V[f]))],null),`$\\${g1}$ has that sign in Quadrants ${qs.join(' and ')}; the condition on $\\${f2}$ picks Quadrant ${q}. So $x=${x}$, $y=${y}$, $r=${rT(k,m)}$, and $\\${g2}\\theta=${V[g2]}$.`)}];
+G.C[5]=[()=>{const f=pick(['sin','cos']);let r1,r2;do{r1=pick(ROOTS);r2=pick(ROOTS)}while(r1===r2);const A=r1[0]*r2[0],B=-(r1[0]*r2[1]+r2[0]*r1[1]),C=r1[1]*r2[1];
+ const sols=(fn,rs)=>{const out=[];for(const r of rs){const v=r[1]/r[0];if(Math.abs(v)>1)continue;for(const X of SPEC.concat([[2,1]]))if(Math.abs(tv(fn,X[0]*PI/X[1])-v)<1e-9&&!out.some(o=>o[0]*X[1]===X[0]*o[1]))out.push(X)}return out.sort((a,b)=>a[0]/a[1]-b[0]/b[1])};
+ const T=S=>S.length?'\\theta='+S.map(P2).join(',\\ '):'\\text{no solution}';const all=sols(f,[r1,r2]);if(!all.length)throw new Error('empty');
+ const other=f==='sin'?'cos':'sin';const cands=[T(sols(f,[r1])),T(sols(f,[r2])),T(sols(f,[[r1[0],-r1[1]],[r2[0],-r2[1]]])),T(sols(other,[r1,r2])),T(all.filter(X=>!(X[0]===2&&X[1]===1))),T(all.slice(1))];
+ const term=(c,s)=>c===0?'':(c>0?'+':'-')+(Math.abs(c)===1&&s?'':Math.abs(c))+s;
+ const eq=`${A===1?'':A}\\${f}^2\\theta${term(B,`\\${f}\\theta`)}${term(C,'')}=0`;const fac=r=>`(${r[0]===1?'':r[0]}\\${f}\\theta${r[1]===0?'':(r[1]>0?'-':'+')+Math.abs(r[1])})`;
+ return Q('C',5,`Solve $${eq}$ for $0\\le\\theta\\le2\\pi$.`,mc(T(all),shuffle(cands),()=>T(shuffle(SPEC).slice(0,rnd(2,3)).sort((a,b)=>a[0]/a[1]-b[0]/b[1]))),`Factor: $${fac(r1)}${fac(r2)}=0$, so $\\${f}\\theta=${fr(r1[1],r1[0])}$ or $\\${f}\\theta=${fr(r2[1],r2[0])}$. ${[r1,r2].some(r=>Math.abs(r[1]/r[0])>1)?'A value outside $[-1,1]$ has no solution. ':''}Collect every angle in $[0,2\\pi]$: $${T(all)}$.`)}];
+G.R[4]=[
+()=>{const r=rnd(25,45),rpm=rnd(5,16)*50,v=2*PI*rpm*(r/100)*60/1000,U=x=>dec(x,1)+'\\text{ km/h}';
+ return Q('R',4,`A car tire has a radius of ${r} cm and turns at ${rpm} revolutions per minute. How fast is the car going, in km/h (1 decimal)?`,mc(U(v),[U(rpm*(r/100)*60/1000),U(2*v),U(v*100),U(2*PI*rpm*(r/100)/60/1000*1000)],()=>U(v*(0.5+Math.random()))),`$\\omega=${rpm}\\times2\\pi$ rad/min. $v=r\\omega=${r/100}\\text{ m}\\times${rpm}\\times2\\pi\\approx${dec(2*PI*rpm*r/100,1)}$ m/min. Multiply by 60 and divide by 1000: $\\approx${dec(v,1)}$ km/h.`)},
+()=>{let h,m,deg;do{h=rnd(1,12);m=pick([0,10,15,20,25,30,35,40,45,50]);deg=Math.abs(30*(h%12)-5.5*m);if(deg>180)deg=360-deg}while(deg===0||deg===180);
+ let d2=Math.abs(30*(h%12)-6*m);if(d2>180)d2=360-d2;const R=v=>pt(Math.round(2*v),360);const ans=R(deg);
+ return Q('R',4,`What is the smaller angle, in radians, between the hour and minute hands of a clock at ${h}:${m<10?'0'+m:m}?`,mc(ans,[R(d2),R(360-deg),R(deg/2),R(Math.abs(180-deg))],()=>R(rnd(1,35)*5)),`Minute hand: $${6*m}^\\circ$ from 12. The hour hand moves too: $30^\\circ\\times${h%12}+0.5^\\circ\\times${m}=${30*(h%12)+0.5*m}^\\circ$. The smaller gap is $${deg}^\\circ=${ans}$.`)}];
+G.R[5]=[
+()=>{let r1,r2;do{r1=rnd(3,12);r2=rnd(3,12)}while(r1===r2);const rpm=rnd(2,12)*10,u=s=>s+'\\text{ rad/s}';const ans=u(pt(rpm*r1,30*r2));
+ return Q('R',5,`Gear A (radius ${r1} cm) turns at ${rpm} rpm and meshes with gear B (radius ${r2} cm). What is gear B's angular speed?`,mc(ans,[u(pt(rpm*r2,30*r1)),u(pt(rpm,30)),u(pt(2*rpm*r1,r2)),u(pt(rpm*r1,60*r2))],null),`Meshing gears share the same edge speed: $r_A\\omega_A=r_B\\omega_B$, so $\\omega_B=${rpm}\\times\\frac{${r1}}{${r2}}$ rpm. Convert with $\\times\\frac{2\\pi}{60}$: $${pt(rpm*r1,30*r2)}$ rad/s.`)},
+()=>{const r=rnd(10,40),L=rnd(3,20),rev=L/(2*PI*r/100),U=x=>dec(x,2)+'\\text{ turns}';
+ return Q('R',5,`A winch drum has a radius of ${r} cm. How many turns does it take to lift a load ${L} m (2 decimals)?`,mc(U(rev),[U(L/(PI*r/100)),U(L/(r/100)),U(rev*2*PI),U(L/(2*PI*r))],()=>U(rev*(0.5+Math.random()))),`Each turn winds one circumference: $2\\pi(${r/100})\\approx${dec(2*PI*r/100,3)}$ m. Turns $=\\frac{${L}}{${dec(2*PI*r/100,3)}}\\approx${dec(rev,2)}$.`)}];
+G.Gr[4]=[
+()=>{const f=pick(['sin','cos']),A=pick(SPEC.filter(X=>X[0]/X[1]<2)),a=A[0]*PI/A[1],h=0.001,est=(Math[f](a+h)-Math[f](a))/h,D=x=>dec(x,3);
+ return Q('Gr',4,`Estimate the instantaneous rate of change of $y=\\${f} x$ at $x=${P2(A)}$ using $h=0.001$ (3 decimals).`,mc(D(est),[D(-est),D(Math[f](a)),D((Math[f]((a+h)*PI/180)-Math[f](a*PI/180))/h),D(est*2)],()=>D(rnd(-1000,1000)/1000)),`$\\frac{f(a+0.001)-f(a)}{0.001}=\\frac{\\${f}(${P2(A)}+0.001)-\\${f}${P2(A)}}{0.001}\\approx${D(est)}$. Calculator in radian mode.`)},
+()=>{const f=pick(['sin','cos']),w=pick([[1,2],[1,3]]),hi=Math.random()<.5;let st;const rate=s=>(Math[f]((s[0]/s[1]+w[0]/w[1])*PI)-Math[f](s[0]*PI/s[1]))/(w[0]*PI/w[1]);
+ for(let g=0;g<200;g++){st=shuffle(SPEC.filter(X=>X[0]/X[1]+w[0]/w[1]<=2+1e-9)).slice(0,4);const r=st.map(rate).sort((a,b)=>hi?b-a:a-b);if(r[0]-r[1]>1e-4&&new Set(r.map(v=>v.toFixed(6))).size===4)break}
+ const I=s=>`\\left[${P2(s)},\\ ${pt(s[0]*w[1]+w[0]*s[1],s[1]*w[1])}\\right]`;const best=st.slice().sort((a,b)=>hi?rate(b)-rate(a):rate(a)-rate(b))[0];
+ return Q('Gr',4,`For $y=\\${f} x$, over which interval is the average rate of change ${hi?'greatest':'least (most negative)'}?`,mc(I(best),st.filter(s=>s!==best).map(I),null),`All intervals have the same width, so compare the rise $f(b)-f(a)$: ${st.map(s=>`$${I(s)}$: $${dec(rate(s),3)}$`).join(', ')}.`,piPlot(x=>Math[f](x),2*PI,1.5,[]))}];
+G.Gr[5]=[
+()=>{const P=pick([4,6,8,12,24]),A=rnd(2,9),c=rnd(A+1,A+15),f=pick(['sin','cos']),s=rnd(0,Math.floor(P/2));let t1,t2;do{t1=rnd(0,P-1);t2=rnd(t1+1,P)}while(t2-t1<1);
+ const k=2*PI/P,h=(t,dg)=>A*Math[f]((dg?PI/180:1)*k*(t-s))+c,avg=(h(t2)-h(t1))/(t2-t1),D=x=>dec(x,2)+'\\text{ m/s}';const arg=s?`${pt(2,P)}(t-${s})`:`${pt(2,P)}t`;
+ return Q('Gr',5,`A buoy's height is $h(t)=${A}\\${f}\\left[${arg}\\right]+${c}$, in metres, $t$ in seconds. Find the average rate of change from $t=${t1}$ to $t=${t2}$ (2 decimals).`,mc(D(avg),[D(-avg),D(h(t2)-h(t1)),D((h(t2,1)-h(t1,1))/(t2-t1)),D((h(t2)+h(t1))/2)],()=>D(avg+rnd(-30,30)/10)),`$h(${t2})\\approx${dec(h(t2),3)}$ and $h(${t1})\\approx${dec(h(t1),3)}$. Rate $=\\frac{h(${t2})-h(${t1})}{${t2}-${t1}}\\approx${dec(avg,2)}$ m/s.`)},
+()=>{const P=pick([4,6,8,12,24]),A=rnd(2,9),c=rnd(A+1,A+15),f=pick(['sin','cos']),s=rnd(0,Math.floor(P/2)),t0=rnd(0,P)+pick([0,.5]);const k=2*PI/P,h=(t,dg)=>A*Math[f]((dg?PI/180:1)*k*(t-s))+c,e=0.001;
+ const est=(h(t0+e)-h(t0))/e,D=x=>dec(x,2)+'\\text{ m/s}';const arg=s?`${pt(2,P)}(t-${s})`:`${pt(2,P)}t`;
+ return Q('Gr',5,`A buoy's height is $h(t)=${A}\\${f}\\left[${arg}\\right]+${c}$, in metres, $t$ in seconds. Estimate the instantaneous rate of change at $t=${t0}$ using $h=0.001$ (2 decimals).`,mc(D(est),[D(-est),D(h(t0+1)-h(t0)),D((h(t0+e,1)-h(t0,1))/e),D(est*2)],()=>D(est+rnd(-30,30)/10)),`$\\frac{h(${t0}+0.001)-h(${t0})}{0.001}\\approx${dec(est,2)}$ m/s. Radian mode.`)}];
+function recipParams(lv){const fn=pick(['csc','sec']),a=rnd(1,4),c=rnd(-3,3),k=lv>=5?rnd(2,3):1,D=pick([[1,6],[1,4],[1,3],[1,2]]),sg=pick([1,-1]);return{fn,a,c,k,dn:sg*D[0],dd:D[1]}}
+function recipEq(R){const inner=`x${R.dn>0?'-':'+'}${pt(Math.abs(R.dn),R.dd)}`;const arg=R.k===1?`\\left(${inner}\\right)`:`\\left[${R.k}\\left(${inner}\\right)\\right]`;return`y=${R.a===1?'':R.a}\\${R.fn}${arg}${R.c>0?'+'+R.c:R.c<0?R.c:''}`}
+function asyTex(fn,dn,dd,kb,kp){let b=fn==='csc'?rn(dn,dd):radd(rn(dn,dd),rn(1,2*kb));b=normRat(b[0],b[1],1,kp);const per=kp===1?'n\\pi':`\\frac{n\\pi}{${kp}}`;return`x=${b[0]===0?'':pt(b[0],b[1])+'+'}${per},\\ n\\in\\mathbb{I}`}
+function recipAsy(lv){const R=recipParams(lv),o=R.fn==='csc'?'sec':'csc';const ans=asyTex(R.fn,R.dn,R.dd,R.k,R.k);
+ return Q('X',lv,`What are the asymptotes of $${recipEq(R)}$?`,mc(ans,[asyTex(R.fn,-R.dn,R.dd,R.k,R.k),asyTex(o,R.dn,R.dd,R.k,R.k),asyTex(R.fn,R.dn,R.dd,R.k,1),asyTex(o,-R.dn,R.dd,R.k,R.k),asyTex(R.fn,R.dn,R.dd,1,R.k)],()=>asyTex(pick(['csc','sec']),pick([1,-1,2,-2,5]),pick([2,3,4,6,12]),R.k,pick([R.k,2*R.k,1]))),`Asymptotes are where $\\${R.fn==='csc'?'sin':'cos'}$ of the inside is 0: $${R.k===1?'':R.k}\\left(x${R.dn>0?'-':'+'}${pt(Math.abs(R.dn),R.dd)}\\right)=${R.fn==='csc'?'n\\pi':'\\frac{\\pi}{2}+n\\pi'}$. Solve for $x$: $${ans}$.`)}
+function recipMin(lv){const R=recipParams(lv);let x0=R.fn==='csc'?radd(rn(R.dn,R.dd),rn(1,2*R.k)):rn(R.dn,R.dd);x0=normRat(x0[0],x0[1],2,R.k);const x1=normRat(...radd(x0,rn(1,R.k)),2,R.k);
+ const Pt=(x,y)=>`\\left(${pt(x[0],x[1])},\\ ${y}\\right)`;const ans=Pt(x0,R.c+R.a);
+ return Q('X',lv,`Which point is a local minimum of $${recipEq(R)}$?`,mc(ans,[Pt(x0,R.c-R.a),Pt(x1,R.c+R.a),Pt(x1,R.c-R.a)],null),`The upper branch has its lowest point where $\\${R.fn==='csc'?'sin':'cos'}$ of the inside equals 1, at $x=${pt(x0[0],x0[1])}$. There $y=${R.a}(1)${R.c>=0?'+':''}${R.c}=${R.c+R.a}$. Half a period later is a local max of the lower branch, at $y=${R.c-R.a}$.`)}
+G.X[4]=[()=>recipAsy(4),()=>recipMin(4)];
+G.X[5]=[()=>recipAsy(5),()=>recipMin(5)];
+function mapQ(lv){const E=randE();if(lv<5){E.f='sin'}const m=rnd(0,3),y=(E.f==='sin'?[0,1,0,-1]:[1,0,-1,0])[m];
+ const X=(a,b)=>pt(a,b),Pt=(x,yy)=>`\\left(${x},\\ ${yy}\\right)`;const xr=X((m+E.j)*E.q,2*E.p),yr=E.a*y+E.c;const ans=Pt(xr,yr);
+ const c=[Pt(X(m*E.p*E.p+E.j*E.q*E.q,2*E.p*E.q),yr),Pt(X((m-E.j)*E.q,2*E.p),yr),Pt(xr,E.a*(y+E.c)),Pt(xr,-E.a*y+E.c),Pt(X(m*E.p*E.p-E.j*E.q*E.q,2*E.p*E.q),yr)];
+ return Q('T',lv,`The point $\\left(${pt(m,2)},\\ ${y}\\right)$ is on $y=\\${E.f} x$. Where does it end up on $${eqT(E)}$?`,mc(ans,c,()=>Pt(X(rnd(-6,8),pick([2,4,6])),yr+rnd(-2,2))),`Divide $x$ by $k$, then add the shift: $x'=\\frac{x}{k}+d$. Multiply $y$ by $a$, then add $c$: $y'=ay+c$. So the image is $${ans}$.`)}
+G.T[4]=[()=>mapQ(4)];
+G.T[5]=[()=>mapQ(5),
+()=>{const KK=pick([[1,1],[2,1],[3,1],[4,1],[1,2]]),k=KK[0]/KK[1],f=pick(['sin','cos']);let a;do{a=rnd(-4,4)}while(!a);const c=rnd(-3,3);let v,r;do{v=rnd(c-Math.abs(a)-1,c+Math.abs(a)+1);r=(v-c)/a}while(Math.abs(Math.abs(r)-1)<1e-9||Math.abs(r)<1e-9);
+ const g=x=>a*Math[f](k*x)+c-v;let n=0,prev=g(0);for(let i=1;i<=40000;i++){const cur=g(2*PI*i/40000);if(prev*cur<0)n++;prev=cur}
+ const kt=KK[1]===1?(KK[0]===1?'':KK[0]):'\\frac{1}{2}';
+ return Q('T',5,`How many solutions does $${aT(a)}\\${f}(${kt}x)${c>0?'+'+c:c<0?c:''}=${v}$ have for $0\\le x\\le2\\pi$?`,mc(''+n,[''+(n+1),''+Math.max(0,n-1),''+(2*n||1),''+(n+2)],()=>''+rnd(0,9)),`Isolate it: $\\${f}(${kt}x)=${fr(v-c,a)}$. ${Math.abs(r)>1?'That is outside $[-1,1]$, so there are no solutions.':`On $[0,2\\pi]$ the graph runs through $${kt||1}$ cycle(s) (period $${pt(2*KK[1],KK[0])}$). A line strictly between $-1$ and $1$ crosses each full cycle twice. Sketching gives ${n}.`}`)}];
+G.M[4]=[
+()=>{const hi=rnd(24,32),lo=rnd(-15,-2),pk=rnd(190,210),A=(hi-lo)/2,c=(hi+lo)/2,t=rnd(1,365);const T=(f,sh,dg)=>A*Math[f]((dg?PI/180:1)*2*PI/365*(t-sh))+c,U=x=>dec(x,1)+'^\\circ\\text{C}';
+ return Q('M',4,`A city's daily high peaks at ${hi}°C on day ${pk} and bottoms out at ${lo}°C half a year later. Using a cosine model with a period of 365 days, what is the predicted high on day ${t} (1 decimal)?`,mc(U(T('cos',pk)),[U(T('sin',pk)),U(T('cos',-pk)),U(T('cos',pk,1)),U(T('cos',0))],()=>U(lo+Math.random()*(hi-lo))),`$a=\\frac{${hi}-(${lo})}{2}=${A}$, $c=${c}$, $k=\\frac{2\\pi}{365}$, max at day ${pk}: $T(t)=${A}\\cos\\left[\\frac{2\\pi}{365}(t-${pk})\\right]+${c}$, so $T(${t})\\approx${dec(T('cos',pk),1)}$.`)},
+()=>{const D=pick([20,30,40,50,60]),b=pick([1,2,3]),T=pick([30,40,60,80,90,120]),A=D/2,H=A+b,k=2*PI/T;let y;do{y=rnd(b+1,D+b-1)}while(y===H);
+ const t1=Math.acos((H-y)/A)/k,U=x=>dec(x,1)+'\\text{ s}';
+ return Q('M',4,ferrisIntro(D,H,T)+` When does the rider first reach a height of ${y} m (1 decimal)?`,mc(U(t1),[U(T-t1),U(Math.acos((y-H)/A)/k),U(Math.acos((H-y)/A)*180/PI/k),U((y-b)/D*T/2)],()=>U(Math.random()*T/2)),`Solve $-${A}\\cos\\left(${pt(2,T)}t\\right)+${H}=${y}$: $\\cos\\left(${pt(2,T)}t\\right)=${fr(H-y,A)}$, so $${pt(2,T)}t=\\cos^{-1}\\left(${fr(H-y,A)}\\right)\\approx${dec(Math.acos((H-y)/A),4)}$ and $t\\approx${dec(t1,1)}$ s.`)}];
+G.M[5]=[
+()=>{const D=pick([20,30,40,50,60]),b=pick([1,2,3]),T=pick([30,40,60,80,90,120]),A=D/2,H=A+b,k=2*PI/T;let y;do{y=rnd(b+2,D+b-2)}while(y===H);
+ const t1=Math.acos((H-y)/A)/k,ab=T-2*t1,U=x=>dec(x,1)+'\\text{ s}';
+ return Q('M',5,ferrisIntro(D,H,T)+` During one rotation, how long is the rider higher than ${y} m (1 decimal)?`,mc(U(ab),[U(2*t1),U(T-t1),U(T/2),U(t1)],()=>U(Math.random()*T)),`First time at ${y} m: $t_1\\approx${dec(t1,2)}$ s. By symmetry the rider comes back down to ${y} m at $${T}-t_1$. Time above $=${T}-2t_1\\approx${dec(ab,1)}$ s.`)},
+()=>{const hi=rnd(8,14),lo=rnd(1,5),half=pick([5,6,7]),P=2*half,A=(hi-lo)/2,c=(hi+lo)/2;let y;do{y=rnd(lo+1,hi-1)}while(Math.abs(y-c)<1e-9);
+ const dur=2*Math.acos((y-c)/A)/(PI/half),U=x=>dec(x,2)+'\\text{ h}';
+ return Q('M',5,`Tide depth goes between ${hi} m at high tide and ${lo} m at low tide, ${half} hours apart. A boat needs at least ${y} m of water. For how many hours per tide cycle can it get through (2 decimals)?`,mc(U(dur),[U(P-dur),U(dur/2),U(2*Math.acos((y-c)/A)*180/PI/(PI/half)),U(P*(hi-y)/(hi-lo))],()=>U(Math.random()*P)),`Model from high tide: $d(t)=${A}\\cos\\left(${pt(1,half)}t\\right)+${c}$. Solve $d=${y}$: $t=\\pm\\frac{\\cos^{-1}\\left(${fr(2*y-hi-lo,hi-lo)}\\right)}{\\pi/${half}}$. The water is deeper than ${y} m between those times: $\\approx${dec(dur,2)}$ h per ${P}-hour cycle.`)}];
+
+// Einstein: two demanding level-five tasks must both be solved for one answer.
+// Each part is freshly generated; incorrect choices reflect an error in A, B, or both.
+for(const c of ['P','R','U','C','Gr','X','T','M'])G[c][6]=[()=>{
+  const a=pick(G[c][5])(),b=pick(G[c][5])();
+  const wrongA=(a.answer+1)%4,wrongB=(b.answer+1)%4;
+  const pairs=[[a.answer,b.answer],[wrongA,b.answer],[a.answer,wrongB],[wrongA,wrongB]];
+  const choices=pairs.map(([i,j])=>`A: ${a.choices[i]} &nbsp;·&nbsp; B: ${b.choices[j]}`);
+  const order=shuffle([0,1,2,3]);
+  return Q(c,6,`<strong>Einstein inquiry:</strong> Solve both parts and choose the only fully correct pair.<br><strong>A.</strong> ${a.q}<br><strong>B.</strong> ${b.q}`,{choices:order.map(i=>choices[i]),answer:order.indexOf(0)},`A: ${a.why}<br>B: ${b.why}`,a.svg+b.svg)
+}];
+
+// ================= adaptive engine =================
+const CON=[['P','4.1','Trig prereq skills','Special triangles, related angles, CAST in degrees'],['R','4.2','Radian measure','Converting, arc length, angular speed'],['U','4.3','Unit circle & exact values','Exact values in radians, reciprocal ratios'],['C','4.4','Trig on the Cartesian plane','Point on terminal arm, solving for θ'],['Gr','4.5','Graphs of trig functions','sin, cos, tan graphs, rates of change'],['X','4.6','Graphs of reciprocal functions','csc, sec, cot: asymptotes and range'],['T','4.7','Transformations','Amplitude, period, phase shift, matching graphs'],['M','4.8','Modelling','Writing equations, Ferris wheels, tides']];
+const NAME=Object.fromEntries(CON.map(c=>[c[0],c[1]+' '+c[2]]));
+const UP=3,MASTER=4,DROP=2,FINAL_N=15,KEY='unit4-trig-drill-modelling-preview-v1';
+function fresh(){const o={lv:{},st:{},ms:{},m:{},g:{},ready:false,masteryPass:false,acc:{},hist:[],len:15,off:[],beyond:false};CON.forEach(([c])=>{o.lv[c]=1;o.st[c]=0;o.m[c]=false});return o}
+let S=(()=>{try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.lv)return Object.assign(fresh(),s)}catch(e){}return fresh()})();
+if(S.ready)S.masteryPass=true;
+// Earlier versions let learners select Challenge and Genius directly. Keep their
+// section mastery, but require the new full-test gate before those levels reopen.
+if(!S.masteryPass){
+  let migrated=false;
+  CON.forEach(([c])=>{if(S.lv[c]>3){S.lv[c]=3;S.m[c]=true;S.st[c]=0;S.ms[c]=0;S.g[c]=false;migrated=true}});
+  if(migrated)try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function gen(c,lv){for(let t=0;t<20;t++){try{const q=pick(G[c][lv])();if(q.choices.length===4&&q.answer>=0)return q}catch(e){}}throw new Error('generator failed '+c+lv)}
+function buildTest(){const on=CON.map(c=>c[0]).filter(c=>!S.off.includes(c));const N=S.len;const cnt={};on.forEach(c=>cnt[c]=0);let left=N;
+  const masteryFinal=!S.masteryPass&&CON.every(([c])=>S.m[c]&&S.lv[c]===3);
+  if(N>=on.length){on.forEach(c=>cnt[c]=1);left-=on.length}
+  const w=on.map(c=>S.m[c]&&!S.beyond&&S.lv[c]<4?0.4:1+(S.acc[c]!=null?(1-S.acc[c])*2:0.5));const tot=w.reduce((a,b)=>a+b,0);
+  while(left>0){let r=Math.random()*tot,i=0;while(r>w[i]&&i<on.length-1){r-=w[i];i++}cnt[on[i]]++;left--}
+  const qs=[],seen=new Set();for(const c of on)for(let i=0;i<cnt[c];i++){let q;for(let t=0;t<10;t++){let lv=S.lv[c];if(!masteryFinal&&lv>1&&Math.random()<.25)lv=lv>3?rnd(3,lv-1):rnd(1,lv-1);q=gen(c,lv);if(!seen.has(q.q+q.choices.join()))break}seen.add(q.q+q.choices.join());qs.push(q)}
+  return qs}
+let TEST=null,ANS=[],DONE=false,CONFIRM=false,RESULT=null;
+let PLOTS={};
+function modelSpec(q){if(q.c!=='M'||q.lv===6)return null;const t=q.q;let m;
+  if((m=t.match(/diameter of (\d+) m and its centre is (\d+) m[\s\S]*?rotation takes (\d+) s/))){const D=+m[1],H=+m[2],T=+m[3];return{x0:0,x1:T,y0:0,y1:H+D/2+3,unit:'seconds',value:'height (m)',f:x=>H-D/2*Math.cos(2*Math.PI*x/T),amp:D/2}}
+  if((m=t.match(/High tide is (\d+) m at (\d+):00 a\.m\. Low tide is (\d+) m (\d+) hours later/))){const hi=+m[1],start=+m[2],lo=+m[3],half=+m[4],A=(hi-lo)/2;return{x0:start,x1:start+2*half,y0:0,y1:hi+2,unit:'hours after midnight',value:'depth (m)',f:x=>(hi+lo)/2+A*Math.cos(Math.PI*(x-start)/half),amp:A}}
+  if((m=t.match(/Tide depth goes between (\d+) m at high tide and (\d+) m at low tide, (\d+) hours apart/))){const hi=+m[1],lo=+m[2],half=+m[3],A=(hi-lo)/2;return{x0:0,x1:2*half,y0:0,y1:hi+2,unit:'hours',value:'depth (m)',f:x=>(hi+lo)/2+A*Math.cos(Math.PI*x/half),amp:A}}
+  if((m=t.match(/daily high peaks at (-?\d+)°C on day (\d+) and bottoms out at (-?\d+)°C/))){const hi=+m[1],peak=+m[2],lo=+m[3],A=(hi-lo)/2;return{x0:0,x1:365,y0:lo-5,y1:hi+5,unit:'day of year',value:'temperature (°C)',f:x=>(hi+lo)/2+A*Math.cos(2*Math.PI*(x-peak)/365),amp:A}}
+  return null}
+function plotMarkup(q,i){if(!modelSpec(q))return'';return `<div class="plot-work" data-plot="${i}"><h3>Plot the model</h3><p>Add at least four approximate points across most of one cycle. Drag points to adjust them; the curve connects your points. Check the plot for separate feedback.</p><canvas aria-label="Cartesian plane for question ${i+1}"></canvas><div class="plot-tools"><button type="button" data-action="undo">Undo point</button><button type="button" data-action="clear">Clear</button><button type="button" data-action="check">Check plot</button><span class="plot-feedback" role="status"></span></div></div>`}
+function bindPlot(q,i){const box=el('q'+i).querySelector('.plot-work');if(!box)return;const spec=modelSpec(q),canvas=box.querySelector('canvas');const state=PLOTS[i]||(PLOTS[i]={points:[]});let drag=-1;
+  const geom=()=>{const w=canvas.clientWidth,h=canvas.clientHeight;return{w,h,l:52,r:12,t:14,b:38}};
+  const xy=(p,g)=>({x:g.l+(p.x-spec.x0)/(spec.x1-spec.x0)*(g.w-g.l-g.r),y:g.h-g.b-(p.y-spec.y0)/(spec.y1-spec.y0)*(g.h-g.t-g.b)});
+  const point=(e,g)=>{const r=canvas.getBoundingClientRect();return{x:spec.x0+Math.max(0,Math.min(1,(e.clientX-r.left-g.l)/(g.w-g.l-g.r)))*(spec.x1-spec.x0),y:spec.y0+Math.max(0,Math.min(1,(g.h-g.b-(e.clientY-r.top))/(g.h-g.t-g.b)))*(spec.y1-spec.y0)}};
+  const draw=()=>{const g=geom(),dpr=window.devicePixelRatio||1;canvas.width=Math.round(g.w*dpr);canvas.height=Math.round(g.h*dpr);const c=canvas.getContext('2d');c.scale(dpr,dpr);const css=getComputedStyle(document.documentElement);const ink=css.getPropertyValue('--ink2').trim(),grid=css.getPropertyValue('--grid').trim(),accent=css.getPropertyValue('--accent').trim();c.fillStyle=css.getPropertyValue('--paper').trim();c.fillRect(0,0,g.w,g.h);c.font='11px system-ui';c.textBaseline='middle';
+    for(let k=0;k<=5;k++){const x=g.l+k*(g.w-g.l-g.r)/5,y=g.t+k*(g.h-g.t-g.b)/5;c.strokeStyle=grid;c.lineWidth=1;c.beginPath();c.moveTo(x,g.t);c.lineTo(x,g.h-g.b);c.moveTo(g.l,y);c.lineTo(g.w-g.r,y);c.stroke();c.fillStyle=ink;c.textAlign='center';c.fillText((spec.x0+k*(spec.x1-spec.x0)/5).toFixed(spec.x1>100?0:1),x,g.h-g.b+13);c.textAlign='right';c.fillText((spec.y1-k*(spec.y1-spec.y0)/5).toFixed(0),g.l-6,y)}
+    c.fillStyle=ink;c.textAlign='center';c.fillText(spec.unit,g.l+(g.w-g.l-g.r)/2,g.h-8);c.save();c.translate(10,g.t+(g.h-g.t-g.b)/2);c.rotate(-Math.PI/2);c.fillText(spec.value,0,0);c.restore();
+    const pts=[...state.points].sort((a,b)=>a.x-b.x).map(p=>xy(p,g));if(pts.length>1){c.strokeStyle=accent;c.lineWidth=2.5;c.beginPath();c.moveTo(pts[0].x,pts[0].y);for(let j=1;j<pts.length;j++)c.lineTo(pts[j].x,pts[j].y);c.stroke()}for(const p of pts){c.fillStyle=accent;c.beginPath();c.arc(p.x,p.y,5,0,2*Math.PI);c.fill()}};
+  canvas.onpointerdown=e=>{const g=geom(),p=point(e,g);drag=state.points.findIndex(v=>{const a=xy(v,g),b=xy(p,g);return Math.hypot(a.x-b.x,a.y-b.y)<14});if(drag<0){state.points.push(p);drag=state.points.length-1}canvas.setPointerCapture(e.pointerId);box.querySelector('.plot-feedback').textContent='';draw()};
+  canvas.onpointermove=e=>{if(drag>=0&&e.buttons){state.points[drag]=point(e,geom());draw()}};canvas.onpointerup=()=>drag=-1;canvas.onpointercancel=()=>drag=-1;
+  box.querySelector('[data-action=undo]').onclick=()=>{state.points.pop();box.querySelector('.plot-feedback').textContent='';draw()};box.querySelector('[data-action=clear]').onclick=()=>{state.points=[];box.querySelector('.plot-feedback').textContent='';draw()};
+  box.querySelector('[data-action=check]').onclick=()=>{const pts=state.points,feedback=box.querySelector('.plot-feedback');if(pts.length<4){feedback.textContent='Add at least 4 points.';return}const spread=(Math.max(...pts.map(p=>p.x))-Math.min(...pts.map(p=>p.x)))/(spec.x1-spec.x0);if(spread<.6){feedback.textContent='Spread points across more of the cycle.';return}const tolerance=Math.max(1.5,spec.amp*.18),errors=pts.map(p=>Math.abs(p.y-spec.f(p.x)));feedback.textContent=errors.every(e=>e<=tolerance)?'Good model: points and overall shape are close.':`Adjust the points that miss the model. Allowance is about ${tolerance.toFixed(1)} ${spec.value.includes('°C')?'°C':'m'}.`};
+  new ResizeObserver(draw).observe(canvas);draw()}
+
+// ================= rendering =================
+const el=id=>document.getElementById(id);
+function typeset(node){if(window.MathJax&&MathJax.startup&&MathJax.startup.promise){MathJax.startup.promise.then(()=>MathJax.typesetPromise([node])).catch(e=>console.error('Math rendering failed',e))}}
+function masteryUnlocked(){return S.masteryPass}
+function setTheme(theme){
+  if(theme==='mastery'&&!masteryUnlocked())theme='dark';
+  document.documentElement.dataset.theme=theme;
+  el('theme-label').textContent='Theme: '+({dark:'Dark',light:'Light',mastery:'Mastery'}[theme]||'Dark');
+  const unlocked=masteryUnlocked();
+  el('mastery-locked').hidden=unlocked;
+  document.querySelector('[data-set-theme="mastery"]').hidden=!unlocked;
+  document.querySelectorAll('[data-set-theme]').forEach(button=>button.setAttribute('aria-current',button.dataset.setTheme===theme));
+  try{localStorage.setItem('trig-drill-theme',theme)}catch(_){}}
+document.querySelectorAll('[data-set-theme]').forEach(button=>button.onclick=()=>{setTheme(button.dataset.setTheme);el('theme-picker').open=false});
+setTheme(document.documentElement.dataset.theme);
+function renderDash(){const mastered=CON.filter(c=>S.m[c[0]]).length;const ready=S.ready;
+  setTheme(document.documentElement.dataset.theme);
+  const levelOptions=[['1','Lv 1'],['2','Lv 2'],['3','Lv 3'],['m','Mastered'],...(S.masteryPass?[['4','Lv 4 · Challenge'],['5','Lv 5 · Genius'],['6','Lv 6 · Einstein']]:[])];
+  let h=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h2>Your levels</h2><span class="muted" style="font-size:.85rem">${mastered} of ${CON.length} sections mastered</span></div><div class="ledger" style="margin-top:8px">`;
+  for(const [c,code,name,desc] of CON){const lv=S.lv[c],m=S.m[c],off=S.off.includes(c);
+    const need=lv<3?`${S.st[c]}/${UP} in a row to reach Level ${lv+1}`:lv===3&&!m?`${S.st[c]}/${MASTER} in a row to master`:lv===3?(S.masteryPass&&S.beyond?`Mastered · ${S.st[c]}/${MASTER} in a row to unlock Challenge`:'Mastered'):lv===4?`Challenge · ${S.st[c]}/${MASTER} in a row to reach Genius`:lv===5?`Genius · ${S.st[c]}/5 in a row to reach Einstein`:'Einstein · advanced inquiry';
+    const sel=lv>=4?''+lv:m?'m':''+lv;
+    h+=`<div class="row${m?' mastered':''}" style="${off?'opacity:.45':''}"><input type="checkbox" id="on-${c}" ${off?'':'checked'} aria-label="Include ${code} in tests"><span class="code">${code}</span><div class="cname">${name}<small>${off?'Not included in tests':need}</small></div>
+    <div class="pips" title="Level ${lv}">${[1,2,3,4,5,6].map(i=>`<span class="pip${i>3?' x':''}${i<=lv?' on':''}"></span>`).join('')}<select class="lvsel${lv>=4?' gold':m?' ok':''}" id="lv-${c}" aria-label="Level for ${code}">${levelOptions.map(([v,t])=>`<option value="${v}" ${sel===v?'selected':''}>${t}</option>`).join('')}</select></div></div>`}
+  const allM=mastered===CON.length;
+  h+=`</div><div class="goal">${ready?'<span class="tag ok">Test-ready</span> All 8 sections are mastered, and you scored 100% on a full test.':allM?`<span class="tag gold">Final step</span> Everything is mastered. Now score 100% on a full test: at least ${FINAL_N} questions with all 8 sections ticked.`:`<span class="tag gold">Goal</span> Keep taking mixed tests. Every section levels up from the questions it gets on each test, so they all climb together. Once all 8 are mastered, score 100% on a full test (at least ${FINAL_N} questions, all sections ticked) to be test-ready.`}</div>`;
+  if(S.hist.length)h+=`<div class="hist">${S.hist.slice(-12).map((t,i)=>`<span>#${S.hist.length-Math.min(12,S.hist.length)+i+1} ${t.s}/${t.n}</span>`).join('')}</div>`;
+  h+=`<div class="controls"><label for="len" class="muted">Questions</label><select id="len">${[10,15,20,25].map(n=>`<option ${n===S.len?'selected':''}>${n}</option>`).join('')}</select><button class="primary" id="newtest">New test</button><label for="lvall" class="muted">Set all sections</label><select id="lvall"><option value="" selected>Choose…</option>${levelOptions.map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}</select><button class="link" id="reset">Reset progress</button><span id="resetc"></span></div><label class="goal" for="beyond" style="cursor:pointer"><input type="checkbox" id="beyond" ${S.beyond?'checked':''}><span><strong style="color:var(--ink)">Go beyond Mastered.</strong> After the perfect full Mastered test, mastered sections can advance through Challenge, Genius, and Einstein with harder inquiry questions. Leave it off to stick to test prep.</span></label><div class="muted" style="font-size:.85rem;margin-top:6px">Switching devices? Set each section's level with its dropdown to match your other device. <span id="lvnote" style="color:var(--accent)"></span></div>`;
+  el('dash').innerHTML=h;
+  CON.forEach(([c])=>el('on-'+c).onchange=e=>{if(e.target.checked)S.off=S.off.filter(x=>x!==c);else if(S.off.length<CON.length-1)S.off.push(c);else e.target.checked=true;save();renderDash()});
+  CON.forEach(([c])=>el('lv-'+c).onchange=e=>{const v=e.target.value;if(+v>=4&&!S.masteryPass)return;if(v==='m'){S.lv[c]=3;S.m[c]=true}else{S.lv[c]=+v;S.m[c]=+v>=4}S.g[c]=false;S.st[c]=0;S.ms[c]=0;S.ready=false;save();renderDash();el('lvnote').textContent='Level changed. Press New test to use it.'});
+  el('lvall').onchange=e=>{const v=e.target.value;if(!v||(+v>=4&&!S.masteryPass))return;CON.forEach(([c])=>{if(v==='m'){S.lv[c]=3;S.m[c]=true}else{S.lv[c]=+v;S.m[c]=+v>=4}S.g[c]=false;S.st[c]=0;S.ms[c]=0});S.ready=false;save();renderDash();el('lvnote').textContent='All sections changed. Press New test to use it.'};
+  el('beyond').onchange=e=>{S.beyond=e.target.checked;save();renderDash()};
+  el('len').onchange=e=>{S.len=+e.target.value;save()};
+  el('newtest').onclick=()=>{newTest();el('test').scrollIntoView({behavior:'smooth'})};
+  el('reset').onclick=()=>{el('resetc').innerHTML='<span class="warn">Erase all levels and history?</span> <button id="resety">Erase</button> <button id="resetn">Keep</button>';el('resety').onclick=()=>{S=fresh();save();renderDash();newTest()};el('resetn').onclick=()=>el('resetc').innerHTML=''}}
+function newTest(){TEST=buildTest();PLOTS={};ANS=TEST.map(()=>null);DONE=false;CONFIRM=false;RESULT=null;renderTest()}
+function renderTest(){let h='';
+  if(DONE&&RESULT)h+=resultCard();
+  TEST.forEach((q,i)=>{h+=`<article class="card q${DONE?' done':''}" id="q${i}"><div class="qhead"><span class="qnum">Q${i+1}</span><span>${NAME[q.c]}</span><span class="tag">Lv ${q.lv}</span>${DONE?(ANS[i]===q.answer?'<span class="tag ok">Correct</span>':'<span class="tag bad">'+(ANS[i]==null?'Blank':'Wrong')+'</span>'):''}</div>
+  <div class="stem">${q.q}</div>${plotMarkup(q,i)}${q.svg?`<div class="fig-wrap">${q.svg}</div>`:''}<div class="choices">${q.choices.map((c,j)=>{let cls='ch';if(DONE){if(j===q.answer)cls+=' right';else if(ANS[i]===j)cls+=' wrong'}
+   return `<label class="${cls}"><input type="radio" name="q${i}" value="${j}" ${ANS[i]===j?'checked':''} ${DONE?'disabled':''}><span class="lt">${'ABCD'[j]}</span><span class="ct">${c}</span></label>`}).join('')}</div>
+  ${DONE?(ANS[i]===q.answer?`<details><summary>How to do it</summary><div class="why">${q.why}</div></details>`:`<div class="why">${q.why}</div>`):''}</article>`});
+  if(DONE)h+=`<div style="display:flex;justify-content:center"><button class="primary" id="next2">Next test</button></div>`;
+  el('test').innerHTML=h;TEST.forEach((q,i)=>bindPlot(q,i));
+  if(!DONE)TEST.forEach((q,i)=>document.querySelectorAll(`input[name=q${i}]`).forEach(r=>r.onchange=()=>{ANS[i]=+r.value;CONFIRM=false;updBar()}));
+  else{el('next').onclick=el('next2').onclick=()=>{newTest();el('test').scrollIntoView({behavior:'smooth'})}}
+  updBar();typeset(el('test'))}
+function resultCard(){const R=RESULT;return `<section class="card" id="result"><div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap"><div class="score">${R.s}/${R.n}</div><div><div style="font-weight:600">${R.s===R.n?'Perfect score.':R.s/R.n>=.8?'Strong. Fix the red ones and go again.':'Read every explanation below, then take the next test.'}</div><div class="muted" style="font-size:.9rem">${Math.round(100*R.s/R.n)}% · test #${S.hist.length}</div></div><button class="primary" id="next" style="margin-left:auto">Next test</button></div>
+  ${R.ch.length?`<div class="changes">${R.ch.map(x=>x[0]==='ALL'?`<div><span class="tag ok">Test-ready</span>All 8 sections mastered and a perfect full test.</div>`:`<div><span class="tag ${x[1]==='up'?(x[2]>=4?'gold':''):x[1]==='mastered'?'ok':x[1]==='genius'?'gold':'bad'}">${x[1]==='up'?(x[2]===4?'Challenge unlocked':x[2]===5?'Genius unlocked':'Level up'):x[1]==='mastered'?'Mastered':x[1]==='genius'?'Genius cleared':x[1]==='down'?'Level down':'Mastery lost'}</span>${NAME[x[0]]}${x[2]?' → Level '+x[2]:''}</div>`).join('')}</div>`:''}</section>`}
+function updBar(){if(!TEST)return;const a=ANS.filter(v=>v!=null).length;el('count').textContent=DONE?`${RESULT.s} / ${RESULT.n} correct`:`${a} / ${TEST.length} answered`;el('meterfill').style.width=(100*(DONE?RESULT.s/RESULT.n:a/TEST.length))+'%';
+  el('submit').textContent=DONE?'Next test':CONFIRM?'Submit anyway':'Submit test';el('barmsg').textContent=(!DONE&&CONFIRM)?`${TEST.length-a} blank`:''}
+el('submit').onclick=()=>{if(DONE){newTest();el('test').scrollIntoView({behavior:'smooth'});return}const blank=ANS.filter(v=>v==null).length;if(blank&&!CONFIRM){CONFIRM=true;updBar();return}grade()};
+function grade(){const per={};TEST.forEach((q,i)=>{const ok=ANS[i]===q.answer;(per[q.c]=per[q.c]||{n:0,s:0,qs:[]}).n++;if(ok)per[q.c].s++;per[q.c].qs.push([q.lv,ok])});
+  const ch=[];for(const c in per){const P=per[c];S.acc[c]=P.s/P.n;
+    for(const[lv,ok]of P.qs){if(ok){if(lv===S.lv[c]){S.st[c]++;S.ms[c]=0}}else{S.st[c]=0;if(lv===S.lv[c])S.ms[c]=(S.ms[c]||0)+1}}
+    const L=S.lv[c];
+    if((S.ms[c]||0)>=DROP&&L>1){S.lv[c]--;S.st[c]=0;S.ms[c]=0;if(S.lv[c]<3)S.m[c]=false;S.g[c]=false;ch.push([c,'down',S.lv[c]])}
+    else if(L===3&&S.m[c]&&P.s<P.n){S.m[c]=false;S.st[c]=0;ch.push([c,'lost'])}
+    else if(L<3&&S.st[c]>=UP){S.lv[c]++;S.st[c]=0;ch.push([c,'up',S.lv[c]])}
+    else if(L===3&&!S.m[c]&&S.st[c]>=MASTER){S.m[c]=true;S.st[c]=0;ch.push([c,'mastered'])}
+    else if(S.masteryPass&&S.beyond&&L===3&&S.m[c]&&S.st[c]>=MASTER){S.lv[c]=4;S.st[c]=0;ch.push([c,'up',4])}
+    else if(S.beyond&&L===4&&S.st[c]>=MASTER){S.lv[c]=5;S.st[c]=0;ch.push([c,'up',5])}
+    else if(S.beyond&&L===5&&S.st[c]>=5){S.lv[c]=6;S.g[c]=true;S.st[c]=0;ch.push([c,'up',6])}}
+  const s=TEST.filter((q,i)=>ANS[i]===q.answer).length;const full=S.off.length===0&&TEST.length>=FINAL_N;
+  S.hist.push({s,n:TEST.length,d:Date.now(),full});
+  S.ready=full&&s===TEST.length&&CON.every(([c])=>S.m[c])&&(S.masteryPass||TEST.every(q=>q.lv===3));if(S.ready){S.masteryPass=true;ch.push(['ALL','ready'])}save();
+  RESULT={s,n:TEST.length,ch};DONE=true;renderDash();renderTest();el('result').scrollIntoView({behavior:'smooth'})}
+
+// ================= self-test (open with #selftest) =================
+window.__selftest=(n=150)=>{const bad=[];let count=0;for(const c in G)for(const lv in G[c])G[c][lv].forEach((g,gi)=>{for(let i=0;i<n;i++){count++;let q;try{q=g()}catch(e){bad.push(`${c}${lv}.${gi} threw: ${e.message}`);continue}
+  const txt=q.q+q.choices.join('|')+q.why;if(q.choices.length!==4)bad.push(`${c}${lv}.${gi} has ${q.choices.length} choices: ${q.q}`);else if(new Set(q.choices).size!==4)bad.push(`${c}${lv}.${gi} duplicate choices`);
+  if(!(q.answer>=0&&q.answer<4))bad.push(`${c}${lv}.${gi} bad answer index`);if(/NaN|Infinity|(^|[^a-z ])undefined/.test(txt.replace(/\\text\{undefined\}/g,'')))bad.push(`${c}${lv}.${gi} bad text: ${txt.slice(0,160)}`)}});
+  const samples=[];for(const c in G)for(const lv of[4,5])G[c][lv].forEach(g=>{try{const q=g();samples.push(`[${c}${lv}] ${q.q} => ${q.choices[q.answer]}`)}catch(e){samples.push(`[${c}${lv}] THREW ${e.message}`)}});
+  // rule scenarios: fake tests through the real grade()
+  const keep=JSON.stringify(S),rules=[];const run=(qs,ok)=>{TEST=qs.map(([c,lv])=>({c,lv,q:'x',choices:['a','b','c','d'],answer:0,why:'',svg:''}));ANS=TEST.map((_,i)=>ok[i]?0:1);grade()};
+  const chk=(name,cond)=>{if(!cond)rules.push('RULE FAIL: '+name)};
+  S=fresh();run([['P',1],['P',1],['P',1]],[1,1,1]);chk('3 right levels up',S.lv.P===2);
+  run([['P',2]],[0]);run([['P',2]],[0]);chk('2 wrong in a row (across tests) drops',S.lv.P===1);
+  S=fresh();run([['R',1],['R',1]],[1,1]);run([['R',1]],[1]);chk('streak carries across short tests',S.lv.R===2);
+  S=fresh();S.lv.U=3;S.m.U=true;run([['U',3],['U',3]],[1,0]);chk('miss at mastered loses mastery',!S.m.U&&S.lv.U===3);
+  S=fresh();CON.forEach(([c])=>{S.lv[c]=3;S.m[c]=true});run(Array.from({length:15},(_,i)=>[CON[i%8][0],3]),Array(15).fill(1));chk('full perfect test = ready',S.ready);
+  S=fresh();CON.forEach(([c])=>{S.lv[c]=3;S.m[c]=true});run(Array.from({length:10},(_,i)=>[CON[i%8][0],3]),Array(10).fill(1));chk('10-question test is not enough',!S.ready);
+  S=fresh();CON.forEach(([c])=>{S.lv[c]=3;S.m[c]=true});S.off=['M'];run(Array.from({length:15},(_,i)=>[CON[i%7][0],3]),Array(15).fill(1));chk('unticked section blocks ready',!S.ready);
+  S=JSON.parse(keep);save();renderDash();newTest();
+  return{count,failures:bad.length+rules.length,examples:[...rules,...new Set(bad)].slice(0,15),samples}};
+
+renderDash();newTest();
+if(location.hash==='#selftest'){const r=window.__selftest(150);const d=document.createElement('pre');d.className='card';d.id='selftest';d.style.whiteSpace='pre-wrap';d.textContent='SELFTEST '+JSON.stringify(r,null,1);document.querySelector('.wrap').prepend(d)}
+</script>
+
+</body>
+</html>
+
