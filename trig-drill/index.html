@@ -109,9 +109,9 @@ details summary{cursor:pointer;color:var(--muted);font-size:.85rem}
   --accent:#1d5cc4;--accent-soft:#e2ebfa;--ok:#18794a;--ok-soft:#e0f2e8;--bad:#b3302b;--bad-soft:#f9e3e1;--gold:#a26a00;--gold-soft:#fbf0d9;color-scheme:light}
 :root[data-theme="mastery"]{
   --bg:#0b0d10;--paper:#16191c;--ink:#f4eee1;--ink2:#c7bca9;--muted:#a99b83;--line:#48402f;--grid:#2b2b29;
-  --accent:#d8b867;--accent-soft:#342b1c;--ok:#89c9b1;--ok-soft:#19372f;--bad:#ee9285;--bad-soft:#3e2422;--gold:#e4c77e;--gold-soft:#382e1b;color-scheme:dark}
+  --accent:#f2cc72;--accent-soft:#45351b;--ok:#89c9b1;--ok-soft:#19372f;--bad:#ee9285;--bad-soft:#3e2422;--gold:#f7d98d;--gold-soft:#45351b;color-scheme:dark}
 :root[data-theme="mastery"] .card{border-color:#51452e;box-shadow:0 6px 24px rgba(0,0,0,.12)}
-:root[data-theme="mastery"] h1{color:#e4c77e}
+:root[data-theme="mastery"] h1{color:#f7d98d;text-shadow:0 0 20px rgba(242,204,114,.2)}
 :root[data-theme="mastery"] button.primary{color:#17140d}
 .topline{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
 #theme-picker{position:relative;flex:none;font-size:.85rem}
@@ -137,8 +137,8 @@ details summary{cursor:pointer;color:var(--muted);font-size:.85rem}
 <body>
 <div class="wrap">
   <header>
-    <div class="topline"><h1>Unit 4 Trig Drill</h1><details id="theme-picker"><summary id="theme-label" aria-label="Choose colour theme">Theme: Dark</summary><div class="theme-menu" role="group" aria-label="Colour themes"><button type="button" data-set-theme="dark">Dark</button><button type="button" data-set-theme="light">Light</button><span id="mastery-locked" class="theme-locked" tabindex="0" data-tip="Master all 8 Unit 4 sections to unlock this theme." title="Master all 8 Unit 4 sections to unlock this theme.">🔒 Mastery</span><button type="button" data-set-theme="mastery" hidden>Mastery</button></div></details></div>
-    <p class="sub">MHF4U · Trigonometric Functions. Every test is freshly generated and mixes all sections. Each answer counts on its own, so test length doesn't change the rules: 3 right in a row at a section's level moves it up, and 2 wrong in a row drops it back.</p>
+    <div class="topline"><h1>Unit 4 Trig Drill</h1><details id="theme-picker"><summary id="theme-label" aria-label="Choose colour theme">Theme: Dark</summary><div class="theme-menu" role="group" aria-label="Colour themes"><button type="button" data-set-theme="dark">Dark</button><button type="button" data-set-theme="light">Light</button><span id="mastery-locked" class="theme-locked" tabindex="0" data-tip="Master all 8 sections, then score 100% on a full test to unlock." title="Master all 8 sections, then score 100% on a full test to unlock.">🔒 Mastery</span><button type="button" data-set-theme="mastery" hidden>Mastery</button></div></details></div>
+    <p class="sub">MHF4U · Trigonometric Functions. Fresh mixed tests cover all sections. Streaks count individual questions at your current section level, across tests: 3 correct moves up, while 2 incorrect moves down. You do not need three perfect tests. Master all sections and score 100% on a full test to unlock Mastery, Challenge, Genius, and Einstein.</p>
   </header>
   <section class="card" id="dash"></section>
   <section id="test" style="display:flex;flex-direction:column;gap:14px"></section>
@@ -562,12 +562,24 @@ G.M[5]=[
  const dur=2*Math.acos((y-c)/A)/(PI/half),U=x=>dec(x,2)+'\\text{ h}';
  return Q('M',5,`Tide depth goes between ${hi} m at high tide and ${lo} m at low tide, ${half} hours apart. A boat needs at least ${y} m of water. For how many hours per tide cycle can it get through (2 decimals)?`,mc(U(dur),[U(P-dur),U(dur/2),U(2*Math.acos((y-c)/A)*180/PI/(PI/half)),U(P*(hi-y)/(hi-lo))],()=>U(Math.random()*P)),`Model from high tide: $d(t)=${A}\\cos\\left(${pt(1,half)}t\\right)+${c}$. Solve $d=${y}$: $t=\\pm\\frac{\\cos^{-1}\\left(${fr(2*y-hi-lo,hi-lo)}\\right)}{\\pi/${half}}$. The water is deeper than ${y} m between those times: $\\approx${dec(dur,2)}$ h per ${P}-hour cycle.`)}];
 
+// Einstein: two demanding level-five tasks must both be solved for one answer.
+// Each part is freshly generated; incorrect choices reflect an error in A, B, or both.
+for(const c of ['P','R','U','C','Gr','X','T','M'])G[c][6]=[()=>{
+  const a=pick(G[c][5])(),b=pick(G[c][5])();
+  const wrongA=(a.answer+1)%4,wrongB=(b.answer+1)%4;
+  const pairs=[[a.answer,b.answer],[wrongA,b.answer],[a.answer,wrongB],[wrongA,wrongB]];
+  const choices=pairs.map(([i,j])=>`A: ${a.choices[i]} &nbsp;·&nbsp; B: ${b.choices[j]}`);
+  const order=shuffle([0,1,2,3]);
+  return Q(c,6,`<strong>Einstein inquiry:</strong> Solve both parts and choose the only fully correct pair.<br><strong>A.</strong> ${a.q}<br><strong>B.</strong> ${b.q}`,{choices:order.map(i=>choices[i]),answer:order.indexOf(0)},`A: ${a.why}<br>B: ${b.why}`,a.svg+b.svg)
+}];
+
 // ================= adaptive engine =================
 const CON=[['P','4.1','Trig prereq skills','Special triangles, related angles, CAST in degrees'],['R','4.2','Radian measure','Converting, arc length, angular speed'],['U','4.3','Unit circle & exact values','Exact values in radians, reciprocal ratios'],['C','4.4','Trig on the Cartesian plane','Point on terminal arm, solving for θ'],['Gr','4.5','Graphs of trig functions','sin, cos, tan graphs, rates of change'],['X','4.6','Graphs of reciprocal functions','csc, sec, cot: asymptotes and range'],['T','4.7','Transformations','Amplitude, period, phase shift, matching graphs'],['M','4.8','Modelling','Writing equations, Ferris wheels, tides']];
 const NAME=Object.fromEntries(CON.map(c=>[c[0],c[1]+' '+c[2]]));
 const UP=3,MASTER=4,DROP=2,FINAL_N=15,KEY='unit4-trig-drill-v1';
-function fresh(){const o={lv:{},st:{},ms:{},m:{},g:{},ready:false,acc:{},hist:[],len:15,off:[],beyond:false};CON.forEach(([c])=>{o.lv[c]=1;o.st[c]=0;o.m[c]=false});return o}
+function fresh(){const o={lv:{},st:{},ms:{},m:{},g:{},ready:false,masteryPass:false,acc:{},hist:[],len:15,off:[],beyond:false};CON.forEach(([c])=>{o.lv[c]=1;o.st[c]=0;o.m[c]=false});return o}
 let S=(()=>{try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.lv)return Object.assign(fresh(),s)}catch(e){}return fresh()})();
+if(S.ready)S.masteryPass=true;
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function gen(c,lv){for(let t=0;t<20;t++){try{const q=pick(G[c][lv])();if(q.choices.length===4&&q.answer>=0)return q}catch(e){}}throw new Error('generator failed '+c+lv)}
 function buildTest(){const on=CON.map(c=>c[0]).filter(c=>!S.off.includes(c));const N=S.len;const cnt={};on.forEach(c=>cnt[c]=0);let left=N;
@@ -581,7 +593,7 @@ let TEST=null,ANS=[],DONE=false,CONFIRM=false,RESULT=null;
 // ================= rendering =================
 const el=id=>document.getElementById(id);
 function typeset(node){if(window.MathJax&&MathJax.startup&&MathJax.startup.promise){MathJax.startup.promise.then(()=>MathJax.typesetPromise([node])).catch(e=>console.error('Math rendering failed',e))}}
-function masteryUnlocked(){return CON.every(([c])=>S.m[c])}
+function masteryUnlocked(){return S.masteryPass}
 function setTheme(theme){
   if(theme==='mastery'&&!masteryUnlocked())theme='dark';
   document.documentElement.dataset.theme=theme;
@@ -595,20 +607,21 @@ document.querySelectorAll('[data-set-theme]').forEach(button=>button.onclick=()=
 setTheme(document.documentElement.dataset.theme);
 function renderDash(){const mastered=CON.filter(c=>S.m[c[0]]).length;const ready=S.ready;
   setTheme(document.documentElement.dataset.theme);
+  const levelOptions=[['1','Lv 1'],['2','Lv 2'],['3','Lv 3'],['m','Mastered'],...(S.masteryPass?[['4','Lv 4 · Challenge'],['5','Lv 5 · Genius'],['6','Lv 6 · Einstein']]:[])];
   let h=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h2>Your levels</h2><span class="muted" style="font-size:.85rem">${mastered} of ${CON.length} sections mastered</span></div><div class="ledger" style="margin-top:8px">`;
   for(const [c,code,name,desc] of CON){const lv=S.lv[c],m=S.m[c],off=S.off.includes(c);
-    const need=lv<3?`${S.st[c]}/${UP} in a row to reach Level ${lv+1}`:lv===3&&!m?`${S.st[c]}/${MASTER} in a row to master`:lv===3?(S.beyond?`Mastered · ${S.st[c]}/${MASTER} in a row to unlock Challenge`:'Mastered'):lv===4?`Challenge · ${S.st[c]}/${MASTER} in a row to reach Genius`:S.g[c]?'Genius cleared':`Genius · ${S.st[c]}/5 in a row to clear Genius`;
+    const need=lv<3?`${S.st[c]}/${UP} in a row to reach Level ${lv+1}`:lv===3&&!m?`${S.st[c]}/${MASTER} in a row to master`:lv===3?(S.masteryPass&&S.beyond?`Mastered · ${S.st[c]}/${MASTER} in a row to unlock Challenge`:'Mastered'):lv===4?`Challenge · ${S.st[c]}/${MASTER} in a row to reach Genius`:lv===5?`Genius · ${S.st[c]}/5 in a row to reach Einstein`:'Einstein · advanced inquiry';
     const sel=lv>=4?''+lv:m?'m':''+lv;
     h+=`<div class="row${m?' mastered':''}" style="${off?'opacity:.45':''}"><input type="checkbox" id="on-${c}" ${off?'':'checked'} aria-label="Include ${code} in tests"><span class="code">${code}</span><div class="cname">${name}<small>${off?'Not included in tests':need}</small></div>
-    <div class="pips" title="Level ${lv}">${[1,2,3,4,5].map(i=>`<span class="pip${i>3?' x':''}${i<=lv?' on':''}"></span>`).join('')}<select class="lvsel${lv>=4?' gold':m?' ok':''}" id="lv-${c}" aria-label="Level for ${code}">${[['1','Lv 1'],['2','Lv 2'],['3','Lv 3'],['m','Mastered'],['4','Lv 4 · Challenge'],['5','Lv 5 · Genius']].map(([v,t])=>`<option value="${v}" ${sel===v?'selected':''}>${t}</option>`).join('')}</select></div></div>`}
+    <div class="pips" title="Level ${lv}">${[1,2,3,4,5,6].map(i=>`<span class="pip${i>3?' x':''}${i<=lv?' on':''}"></span>`).join('')}<select class="lvsel${lv>=4?' gold':m?' ok':''}" id="lv-${c}" aria-label="Level for ${code}">${levelOptions.map(([v,t])=>`<option value="${v}" ${sel===v?'selected':''}>${t}</option>`).join('')}</select></div></div>`}
   const allM=mastered===CON.length;
   h+=`</div><div class="goal">${ready?'<span class="tag ok">Test-ready</span> All 8 sections are mastered, and you scored 100% on a full test.':allM?`<span class="tag gold">Final step</span> Everything is mastered. Now score 100% on a full test: at least ${FINAL_N} questions with all 8 sections ticked.`:`<span class="tag gold">Goal</span> Keep taking mixed tests. Every section levels up from the questions it gets on each test, so they all climb together. Once all 8 are mastered, score 100% on a full test (at least ${FINAL_N} questions, all sections ticked) to be test-ready.`}</div>`;
   if(S.hist.length)h+=`<div class="hist">${S.hist.slice(-12).map((t,i)=>`<span>#${S.hist.length-Math.min(12,S.hist.length)+i+1} ${t.s}/${t.n}</span>`).join('')}</div>`;
-  h+=`<div class="controls"><label for="len" class="muted">Questions</label><select id="len">${[10,15,20,25].map(n=>`<option ${n===S.len?'selected':''}>${n}</option>`).join('')}</select><button class="primary" id="newtest">New test</button><label for="lvall" class="muted">Set all sections</label><select id="lvall"><option value="" selected>Choose…</option>${[['1','Lv 1'],['2','Lv 2'],['3','Lv 3'],['m','Mastered'],['4','Lv 4 · Challenge'],['5','Lv 5 · Genius']].map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}</select><button class="link" id="reset">Reset progress</button><span id="resetc"></span></div><label class="goal" for="beyond" style="cursor:pointer"><input type="checkbox" id="beyond" ${S.beyond?'checked':''}><span><strong style="color:var(--ink)">Go beyond Mastered.</strong> Mastered sections keep climbing to Level 4 · Challenge and Level 5 · Genius, with harder question types than the test. Leave it off to stick to test prep.</span></label><div class="muted" style="font-size:.85rem;margin-top:6px">Switching devices? Set each section's level with its dropdown to match your other device. <span id="lvnote" style="color:var(--accent)"></span></div>`;
+  h+=`<div class="controls"><label for="len" class="muted">Questions</label><select id="len">${[10,15,20,25].map(n=>`<option ${n===S.len?'selected':''}>${n}</option>`).join('')}</select><button class="primary" id="newtest">New test</button><label for="lvall" class="muted">Set all sections</label><select id="lvall"><option value="" selected>Choose…</option>${levelOptions.map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}</select><button class="link" id="reset">Reset progress</button><span id="resetc"></span></div><label class="goal" for="beyond" style="cursor:pointer"><input type="checkbox" id="beyond" ${S.beyond?'checked':''}><span><strong style="color:var(--ink)">Go beyond Mastered.</strong> After the perfect full Mastered test, mastered sections can advance through Challenge, Genius, and Einstein with harder inquiry questions. Leave it off to stick to test prep.</span></label><div class="muted" style="font-size:.85rem;margin-top:6px">Switching devices? Set each section's level with its dropdown to match your other device. <span id="lvnote" style="color:var(--accent)"></span></div>`;
   el('dash').innerHTML=h;
   CON.forEach(([c])=>el('on-'+c).onchange=e=>{if(e.target.checked)S.off=S.off.filter(x=>x!==c);else if(S.off.length<CON.length-1)S.off.push(c);else e.target.checked=true;save();renderDash()});
-  CON.forEach(([c])=>el('lv-'+c).onchange=e=>{const v=e.target.value;if(v==='m'){S.lv[c]=3;S.m[c]=true}else{S.lv[c]=+v;S.m[c]=+v>=4}S.g[c]=false;S.st[c]=0;S.ms[c]=0;S.ready=false;save();renderDash();el('lvnote').textContent='Level changed. Press New test to use it.'});
-  el('lvall').onchange=e=>{const v=e.target.value;if(!v)return;CON.forEach(([c])=>{if(v==='m'){S.lv[c]=3;S.m[c]=true}else{S.lv[c]=+v;S.m[c]=+v>=4}S.g[c]=false;S.st[c]=0;S.ms[c]=0});S.ready=false;save();renderDash();el('lvnote').textContent='All sections changed. Press New test to use it.'};
+  CON.forEach(([c])=>el('lv-'+c).onchange=e=>{const v=e.target.value;if(+v>=4&&!S.masteryPass)return;if(v==='m'){S.lv[c]=3;S.m[c]=true}else{S.lv[c]=+v;S.m[c]=+v>=4}S.g[c]=false;S.st[c]=0;S.ms[c]=0;S.ready=false;save();renderDash();el('lvnote').textContent='Level changed. Press New test to use it.'});
+  el('lvall').onchange=e=>{const v=e.target.value;if(!v||(+v>=4&&!S.masteryPass))return;CON.forEach(([c])=>{if(v==='m'){S.lv[c]=3;S.m[c]=true}else{S.lv[c]=+v;S.m[c]=+v>=4}S.g[c]=false;S.st[c]=0;S.ms[c]=0});S.ready=false;save();renderDash();el('lvnote').textContent='All sections changed. Press New test to use it.'};
   el('beyond').onchange=e=>{S.beyond=e.target.checked;save();renderDash()};
   el('len').onchange=e=>{S.len=+e.target.value;save()};
   el('newtest').onclick=()=>{newTest();el('test').scrollIntoView({behavior:'smooth'})};
@@ -638,12 +651,12 @@ function grade(){const per={};TEST.forEach((q,i)=>{const ok=ANS[i]===q.answer;(p
     else if(L===3&&S.m[c]&&P.s<P.n){S.m[c]=false;S.st[c]=0;ch.push([c,'lost'])}
     else if(L<3&&S.st[c]>=UP){S.lv[c]++;S.st[c]=0;ch.push([c,'up',S.lv[c]])}
     else if(L===3&&!S.m[c]&&S.st[c]>=MASTER){S.m[c]=true;S.st[c]=0;ch.push([c,'mastered'])}
-    else if(S.beyond&&L===3&&S.m[c]&&S.st[c]>=MASTER){S.lv[c]=4;S.st[c]=0;ch.push([c,'up',4])}
+    else if(S.masteryPass&&S.beyond&&L===3&&S.m[c]&&S.st[c]>=MASTER){S.lv[c]=4;S.st[c]=0;ch.push([c,'up',4])}
     else if(S.beyond&&L===4&&S.st[c]>=MASTER){S.lv[c]=5;S.st[c]=0;ch.push([c,'up',5])}
-    else if(L===5&&!S.g[c]&&S.st[c]>=5){S.g[c]=true;ch.push([c,'genius'])}}
+    else if(S.beyond&&L===5&&S.st[c]>=5){S.lv[c]=6;S.g[c]=true;S.st[c]=0;ch.push([c,'up',6])}}
   const s=TEST.filter((q,i)=>ANS[i]===q.answer).length;const full=S.off.length===0&&TEST.length>=FINAL_N;
   S.hist.push({s,n:TEST.length,d:Date.now(),full});
-  S.ready=full&&s===TEST.length&&CON.every(([c])=>S.m[c]);if(S.ready)ch.push(['ALL','ready']);save();
+  S.ready=full&&s===TEST.length&&CON.every(([c])=>S.m[c]);if(S.ready){S.masteryPass=true;ch.push(['ALL','ready'])}save();
   RESULT={s,n:TEST.length,ch};DONE=true;renderDash();renderTest();el('result').scrollIntoView({behavior:'smooth'})}
 
 // ================= self-test (open with #selftest) =================
