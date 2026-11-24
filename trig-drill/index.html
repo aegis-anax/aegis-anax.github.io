@@ -293,6 +293,14 @@ G.R[3]=[
  return Q('R',3,`Someone walks around a circular path ${L} times. The radius is ${r} m. How far did they walk?`,mc(U(ans),[U(PI*r*L),U(PI*r*r*L),U(2*PI*L),U(2*PI*r)],()=>U(ans*(0.6+Math.random()*0.8))),`One lap is $2\\pi r=2\\pi(${r})$, so distance $=2\\pi(${r})(${L})\\approx${dec(ans,2)}$ m.`)},
 ()=>{const deg=rnd(4,60)*5,r=rnd(3,15),a=r*deg*PI/180,U=v=>dec(v,1)+'\\text{ cm}';
  return Q('R',3,`A central angle of $${deg}^\\circ$ is in a circle of radius ${r} cm. Find the arc length (1 decimal).`,mc(U(a),[U(r*deg),U(r*deg/180),U(a*2),U(a/2)],()=>U(a*(0.5+Math.random()))),`Convert first: $${deg}^\\circ=${pt(deg,180)}$. Then $a=r\\theta=${r}\\times${pt(deg,180)}\\approx${dec(a,1)}$ cm.`)}];
+// 4.2 worksheet types: rotation time, linear velocity v = r(θ/t), sector area A = ½r²θ
+G.R[2].push(()=>{const per=pick([[24,'The earth rotates once on its axis every 24 hours','hours'],[12,'A clock\'s hour hand turns once every 12 hours','hours'],[60,'A clock\'s minute hand turns once every 60 minutes','minutes']]);
+ const P=per[0],unit=per[2];let deg;do{deg=rnd(1,23)*15}while((deg*P)%360!==0);const t=deg*P/360,useRad=Math.random()<.5,angT=useRad?pt(deg,180):deg+'^\\circ';const U=v=>num(v)+'\\text{ '+unit+'}';
+ return Q('R',2,`${per[1]}. How long does it take to rotate through an angle of $${angT}$?`,mc(U(t),[U(P-t),U(t*2),U(t/2),U(deg*P/180)],()=>U(rnd(1,P-1))),`A full turn is $2\\pi=360^\\circ$ in ${P} ${unit}. ${useRad?`$${angT}=${deg}^\\circ$. `:''}Fraction of a turn: $\\frac{${deg}^\\circ}{360^\\circ}$, so time $=\\frac{${deg}}{360}\\times${P}=${num(t)}$ ${unit}.`)});
+G.R[3].push(()=>{const r=rnd(2,15),n=rnd(2,9),what=pick(['pulley','wheel','fan blade tip']),u=s=>s+'\\text{ cm/s}';const ans=u(pt(2*n*r));
+ return Q('R',3,`A ${what} of radius ${r} cm turns at ${n} revolutions per second. Find its linear velocity using $v=r\\frac{\\theta}{t}$ (exact).`,mc(ans,[u(pt(n*r)),u(pt(2*n)),u(pt(2*n*r*r)),u(''+360*n*r)],()=>u(pt(rnd(2,60)))),`Angular velocity: $${n}\\text{ rev/s}\\times2\\pi=${pt(2*n)}$ rad/s (use radians, not degrees). Then $v=r\\frac{\\theta}{t}=${r}\\times${pt(2*n)}=${pt(2*n*r)}$ cm/s.`)},
+()=>{const D=rnd(2,15)*2,r=D/2;let deg;do{deg=rnd(1,23)*15}while(deg===180);const A=pt(r*r*deg,360),u=s=>s+'\\text{ cm}^2';const ang=pt(deg,180);
+ return Q('R',3,`Find the area of a sector with central angle $${deg}^\\circ$ in a circle with diameter ${D} cm, using $A=\\frac{1}{2}r^2\\theta$ (exact).`,mc(u(A),[u(pt(D*D*deg,360)),u(pt(r*r*deg,180)),u(pt(r*deg,180)),u(''+num(r*r*deg/2))],()=>u(pt(rnd(5,400),pick([2,3,4,6,8])))),`Radius is half the diameter: $r=${r}$. Convert: $${deg}^\\circ=${ang}$. $A=\\frac{1}{2}(${r})^2\\left(${ang}\\right)=${A}$ cm².`)});
 // ---- 4.3 unit circle & exact values
 const PT=(x)=>`\\left(${exT(tv('cos',x))},\\ ${exT(tv('sin',x))}\\right)`;
 G.U[1]=[
