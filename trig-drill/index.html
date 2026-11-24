@@ -580,6 +580,13 @@ const UP=3,MASTER=4,DROP=2,FINAL_N=15,KEY='unit4-trig-drill-v1';
 function fresh(){const o={lv:{},st:{},ms:{},m:{},g:{},ready:false,masteryPass:false,acc:{},hist:[],len:15,off:[],beyond:false};CON.forEach(([c])=>{o.lv[c]=1;o.st[c]=0;o.m[c]=false});return o}
 let S=(()=>{try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.lv)return Object.assign(fresh(),s)}catch(e){}return fresh()})();
 if(S.ready)S.masteryPass=true;
+// Earlier versions let learners select Challenge and Genius directly. Keep their
+// section mastery, but require the new full-test gate before those levels reopen.
+if(!S.masteryPass){
+  let migrated=false;
+  CON.forEach(([c])=>{if(S.lv[c]>3){S.lv[c]=3;S.m[c]=true;S.st[c]=0;S.ms[c]=0;S.g[c]=false;migrated=true}});
+  if(migrated)try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function gen(c,lv){for(let t=0;t<20;t++){try{const q=pick(G[c][lv])();if(q.choices.length===4&&q.answer>=0)return q}catch(e){}}throw new Error('generator failed '+c+lv)}
 function buildTest(){const on=CON.map(c=>c[0]).filter(c=>!S.off.includes(c));const N=S.len;const cnt={};on.forEach(c=>cnt[c]=0);let left=N;
