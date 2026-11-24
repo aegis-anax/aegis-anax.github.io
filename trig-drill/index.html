@@ -3,6 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+try { document.documentElement.dataset.theme = localStorage.getItem('trig-drill-theme') === 'light' ? 'light' : 'dark'; }
+catch (_) { document.documentElement.dataset.theme = 'dark'; }
+</script>
 <style>body{margin:0;font-family:system-ui,sans-serif}[hidden]{display:none!important}*,*::before,*::after{box-sizing:border-box}</style>
 <title>Unit 4 Trig Drill</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
@@ -100,17 +104,22 @@ details summary{cursor:pointer;color:var(--muted);font-size:.85rem}
 .dot{fill:var(--accent)}
 .side{stroke:var(--ink);stroke-width:2;fill:none}
 .dash{stroke:var(--muted);stroke-width:1.2;stroke-dasharray:4 4}
+:root[data-theme="light"]{
+  --bg:#eef2f6;--paper:#ffffff;--ink:#15202b;--ink2:#46556a;--muted:#75849a;--line:#d9e0e8;--grid:#e6ebf1;
+  --accent:#1d5cc4;--accent-soft:#e2ebfa;--ok:#18794a;--ok-soft:#e0f2e8;--bad:#b3302b;--bad-soft:#f9e3e1;--gold:#a26a00;--gold-soft:#fbf0d9;color-scheme:light}
+.topline{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+#theme-toggle{flex:none;font-size:.85rem;padding:6px 10px}
 @media (prefers-reduced-motion:no-preference){.meter i{transition:width .2s}}
 </style>
 
 <script>window.MathJax={tex:{inlineMath:[['$','$']]},svg:{fontCache:'global'},startup:{typeset:false}};</script>
-<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+<script src="./tex-svg.js"></script>
 
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>Unit 4 Trig Drill</h1>
+    <div class="topline"><h1>Unit 4 Trig Drill</h1><button type="button" id="theme-toggle" aria-label="Switch colour theme"></button></div>
     <p class="sub">MHF4U · Trigonometric Functions. Every test is freshly generated and mixes all sections. Each answer counts on its own, so test length doesn't change the rules: 3 right in a row at a section's level moves it up, and 2 wrong in a row drops it back.</p>
   </header>
   <section class="card" id="dash"></section>
@@ -553,7 +562,10 @@ let TEST=null,ANS=[],DONE=false,CONFIRM=false,RESULT=null;
 
 // ================= rendering =================
 const el=id=>document.getElementById(id);
-function typeset(node){if(window.MathJax&&MathJax.startup&&MathJax.startup.promise){MathJax.startup.promise.then(()=>MathJax.typesetPromise([node])).catch(()=>{})}else setTimeout(()=>typeset(node),300)}
+function typeset(node){if(window.MathJax&&MathJax.startup&&MathJax.startup.promise){MathJax.startup.promise.then(()=>MathJax.typesetPromise([node])).catch(e=>console.error('Math rendering failed',e))}}
+function setTheme(theme){document.documentElement.dataset.theme=theme;el('theme-toggle').textContent=theme==='dark'?'Light mode':'Dark mode';try{localStorage.setItem('trig-drill-theme',theme)}catch(_){}}
+el('theme-toggle').onclick=()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');
+el('theme-toggle').textContent=document.documentElement.dataset.theme==='dark'?'Light mode':'Dark mode';
 function renderDash(){const mastered=CON.filter(c=>S.m[c[0]]).length;const ready=S.ready;
   let h=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h2>Your levels</h2><span class="muted" style="font-size:.85rem">${mastered} of ${CON.length} sections mastered</span></div><div class="ledger" style="margin-top:8px">`;
   for(const [c,code,name,desc] of CON){const lv=S.lv[c],m=S.m[c],off=S.off.includes(c);
@@ -630,3 +642,4 @@ if(location.hash==='#selftest'){const r=window.__selftest(150);const d=document.
 
 </body>
 </html>
+
