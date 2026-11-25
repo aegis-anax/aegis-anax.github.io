@@ -88,7 +88,8 @@ svg.fig{width:280px}
 .ch{position:relative;display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer;min-width:0}
 .ch input{position:absolute;opacity:0;pointer-events:none}
 .lt{flex:none;width:24px;height:24px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-family:var(--f-mono);font-size:.75rem;color:var(--ink2)}
-.ct{min-width:0;overflow-x:auto;overflow-y:hidden;padding:4px 0}
+.ct{min-width:0;overflow-x:auto;overflow-y:hidden;padding:4px 0;scrollbar-width:none}
+.ct::-webkit-scrollbar{display:none}
 .ct mjx-container[jax="SVG"]{margin:0!important}
 .ct mjx-container[jax="SVG"]>svg{max-width:100%;height:auto}
 .ch:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
