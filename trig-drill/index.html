@@ -61,6 +61,7 @@ select{font:inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--lin
 .q{display:flex;flex-direction:column;gap:10px}
 .qhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.8rem;color:var(--muted)}
 .qnum{font-family:var(--f-mono);color:var(--ink);font-weight:500}
+.timer{font-family:var(--f-mono);font-weight:600;white-space:nowrap;color:var(--ink)}.timer.low{color:var(--bad)}
 .helpbtn{margin-left:auto;font-size:.78rem;padding:3px 10px;border-radius:999px;color:var(--accent);border-color:var(--accent);background:transparent}
 .helpbtn[disabled]{opacity:.6;cursor:default}
 .hint{border-left:3px solid var(--gold);background:var(--gold-soft);padding:8px 12px;border-radius:0 6px 6px 0;font-size:.9rem}
@@ -166,7 +167,7 @@ a.qreport{margin-left:auto;font-size:.78rem;color:var(--muted);text-decoration:u
 </div>
 <div class="bar" id="bar"><div class="bar-in">
   <span class="count" id="count"></span><div class="meter"><i id="meterfill"></i></div>
-  <span id="barmsg" class="warn"></span>
+  <span id="barmsg" class="warn"></span><span id="timer" class="timer"></span>
   <button class="primary" id="submit">Submit test</button>
 </div></div>
 
@@ -797,7 +798,7 @@ function renderDash(){const mastered=CON.filter(c=>S.m[c[0]]).length;const ready
   const allM=mastered===CON.length;
   h+=`</div><div class="goal">${ready?'<span class="tag ok">Test-ready</span> All 8 sections are mastered, and you scored 100% on a full test.':allM?`<span class="tag gold">Final step</span> Everything is mastered. Now score 100% on a full test: at least ${FINAL_N} questions with all 8 sections ticked.`:`<span class="tag gold">Goal</span> Keep taking mixed tests. Every section levels up from the questions it gets on each test, so they all climb together. Once all 8 are mastered, score 100% on a full test (at least ${FINAL_N} questions, all sections ticked) to be test-ready.`}</div>`;
   if(S.hist.length)h+=`<div class="hist">${S.hist.slice(-12).map((t,i)=>`<span>#${S.hist.length-Math.min(12,S.hist.length)+i+1} ${t.s}/${t.n}</span>`).join('')}</div>`;
-  h+=`<div class="controls"><label for="len" class="muted">Questions</label><select id="len" autocomplete="off">${[10,15,20,25].map(n=>`<option ${n===S.len?'selected':''}>${n}</option>`).join('')}</select><button class="primary" id="newtest">New test</button><label for="lvall" class="muted">Set all sections</label><select id="lvall" autocomplete="off"><option value="" selected>Choose…</option>${lvOpts('')}</select><button class="link" id="reset">Reset progress</button><span id="resetc"></span></div><label class="goal" for="beyond" style="cursor:pointer"><input type="checkbox" id="beyond" ${S.beyond?'checked':''}><span><strong style="color:var(--ink)">Go beyond Mastered.</strong> After the perfect full Mastered test, mastered sections can advance through Challenge, Genius, and Einstein with harder inquiry questions. Leave it off to stick to test prep.</span></label><div class="muted" style="font-size:.85rem;margin-top:6px">${lockedB?'🔒 ':''}<b>Mastered is the goal for the test.</b> The bonus levels after it (Challenge, Genius, Einstein) go above and beyond, just for extra challenge. You don't need them${lockedB?'; they unlock after a perfect full Mastered test':''}.</div><div class="muted" style="font-size:.85rem;margin-top:6px">Found a problem or a wrong answer? <a href="mailto:aegis.anax@gmail.com?subject=Trig%20Drill%20problem&amp;body=What%20went%20wrong%3A%0A%0A">Email Aegis</a> at aegis.anax@gmail.com. After a test, each question also has a "Report this question" link that fills in the details for you.</div><div class="muted" style="font-size:.85rem;margin-top:6px">Switching devices? Set each section's level with its dropdown to match your other device. <span id="lvnote" style="color:var(--accent)"></span></div>`;
+  h+=`<div class="controls"><label for="len" class="muted">Questions</label><select id="len" autocomplete="off">${[10,15,20,25].map(n=>`<option ${n===S.len?'selected':''}>${n}</option>`).join('')}</select><label for="timed" class="muted" style="display:inline-flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="timed" ${S.timed?'checked':''}>Timed (test pace)</label><button class="primary" id="newtest">New test</button><label for="lvall" class="muted">Set all sections</label><select id="lvall" autocomplete="off"><option value="" selected>Choose…</option>${lvOpts('')}</select><button class="link" id="reset">Reset progress</button><span id="resetc"></span></div><label class="goal" for="beyond" style="cursor:pointer"><input type="checkbox" id="beyond" ${S.beyond?'checked':''}><span><strong style="color:var(--ink)">Go beyond Mastered.</strong> After the perfect full Mastered test, mastered sections can advance through Challenge, Genius, and Einstein with harder inquiry questions. Leave it off to stick to test prep.</span></label><div class="muted" style="font-size:.85rem;margin-top:6px">${lockedB?'🔒 ':''}<b>Mastered is the goal for the test.</b> The bonus levels after it (Challenge, Genius, Einstein) go above and beyond, just for extra challenge. You don't need them${lockedB?'; they unlock after a perfect full Mastered test':''}.</div><div class="muted" style="font-size:.85rem;margin-top:6px">Found a problem or a wrong answer? <a href="mailto:aegis.anax@gmail.com?subject=Trig%20Drill%20problem&amp;body=What%20went%20wrong%3A%0A%0A">Email Aegis</a> at aegis.anax@gmail.com. After a test, each question also has a "Report this question" link that fills in the details for you.</div><div class="muted" style="font-size:.85rem;margin-top:6px">Switching devices? Set each section's level with its dropdown to match your other device. <span id="lvnote" style="color:var(--accent)"></span></div>`;
   el('dash').innerHTML=h;
   // the dropdowns must always show the saved level (never a value the browser restored from before a refresh)
   CON.forEach(([c])=>{const sel=el('lv-'+c),want=S.lv[c]>=4?''+S.lv[c]:S.m[c]?'m':''+S.lv[c];if(sel&&sel.value!==want)sel.value=want});
@@ -812,9 +813,20 @@ function renderDash(){const mastered=CON.filter(c=>S.m[c[0]]).length;const ready
   el('beyond').onchange=e=>{S.beyond=e.target.checked;save();renderDash()};
   document.querySelectorAll('.backbest').forEach(b=>b.onclick=()=>{const c=b.dataset.c;setRank(c,bestOf(c));save();renderDash();el('lvnote').textContent=`${NAME[c]} is back at ${RANKNAME(rankOf(c))}. Press New test to use it.`});
   el('len').onchange=e=>{S.len=+e.target.value;save()};
+  el('timed').onchange=e=>{S.timed=e.target.checked;save();if(!S.timed){stopTimer();TLIM=0;el('timer').textContent='';el('lvnote').textContent='Timed mode off.'}
+    else el('lvnote').textContent=`Timed mode on: about 1 min 37 s per question, the real test's pace (17 questions in 25–30 minutes). A ${S.len}-question test gets ${fmtT(S.len*PACE)}. It starts with your next New test.`};
   el('newtest').onclick=()=>{newTest();el('test').scrollIntoView({behavior:'smooth'})};
   el('reset').onclick=()=>{el('resetc').innerHTML='<span class="warn">Erase all levels and history?</span> <button id="resety">Erase</button> <button id="resetn">Keep</button>';el('resety').onclick=()=>{S=fresh();save();renderDash();newTest()};el('resetn').onclick=()=>el('resetc').innerHTML=''}}
-function newTest(){TEST=buildTest();ANS=TEST.map(()=>null);HELP=TEST.map(()=>false);HS=TEST.map(()=>0);EXQ=TEST.map(()=>null);DONE=false;CONFIRM=false;RESULT=null;renderTest()}
+// ---- Timed mode: real-test pace is 17 multiple-choice questions in 25-30 minutes, so 27.5 min / 17 per question
+const PACE=27.5*60/17; // seconds per question (~1 min 37 s)
+let TSTART=0,TLIM=0,TTICK=null,TIMEOUT=false;
+const fmtT=x=>{x=Math.max(0,Math.round(x));return Math.floor(x/60)+':'+String(x%60).padStart(2,'0')};
+function stopTimer(){if(TTICK)clearInterval(TTICK);TTICK=null}
+function tickTimer(){const left=TLIM-(Date.now()-TSTART)/1000;const t=el('timer');t.textContent='⏱ '+fmtT(left)+' left';t.classList.toggle('low',left<=60);
+ if(left<=0&&!DONE&&TEST){TIMEOUT=true;stopTimer();grade()}}
+function startTimer(){stopTimer();TIMEOUT=false;TLIM=0;el('timer').textContent='';el('timer').classList.remove('low');if(!S.timed||!TEST)return;
+ TLIM=Math.round(TEST.length*PACE);TSTART=Date.now();tickTimer();TTICK=setInterval(tickTimer,1000)}
+function newTest(){TEST=buildTest();ANS=TEST.map(()=>null);HELP=TEST.map(()=>false);HS=TEST.map(()=>0);EXQ=TEST.map(()=>null);DONE=false;CONFIRM=false;RESULT=null;renderTest();startTimer()}
 function renderTest(){let h='';
   if(DONE&&RESULT)h+=resultCard();
   TEST.forEach((q,i)=>{h+=`<article class="card q${DONE?' done':''}" id="q${i}"><div class="qhead"><span class="qnum">Q${i+1}</span><span>${NAME[q.c]}</span><span class="tag"${q.lv<(q.base||q.lv)?` title="Review question from a lower level. Your section is at Level ${q.base}."`:''}>${q.lv<(q.base||q.lv)?'Review · ':''}Lv ${q.lv}</span>${DONE?(ANS[i]===q.answer?'<span class="tag ok">Correct</span>':'<span class="tag bad">'+(ANS[i]==null?'Blank':'Wrong')+'</span>'):''}${HELP[i]&&DONE?'<span class="tag gold">Helped</span>':''}${DONE?`<a class="qreport" href="${reportHref(q,i)}" title="Email Aegis about this question">Report this question</a>`:''}${DONE?'':`<button type="button" class="helpbtn" data-help="${i}" ${HS[i]?'disabled':''}>${HS[i]===1?'Help…':HS[i]?'Help shown':'Help'}</button>`}</div>
@@ -827,15 +839,16 @@ function renderTest(){let h='';
   if(!DONE){document.querySelectorAll('.helpbtn').forEach(b=>b.onclick=()=>{const i=+b.dataset.help;if(!HS[i])setHelp(i,S.lv[TEST[i].c]>=3?1:2)});TEST.forEach((q,i)=>wireHelp(i))}
   else{el('next').onclick=el('next2').onclick=()=>{newTest();el('test').scrollIntoView({behavior:'smooth'})}}
   updBar();typeset(el('test'))}
-function resultCard(){const R=RESULT;return `<section class="card" id="result"><div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap"><div class="score">${R.s}/${R.n}</div><div><div style="font-weight:600">${R.s===R.n?'Perfect score.':R.s/R.n>=.8?'Strong. Fix the red ones and go again.':'Read every explanation below, then take the next test.'}</div><div class="muted" style="font-size:.9rem">${Math.round(100*R.s/R.n)}% · test #${S.hist.length}</div></div><button class="primary" id="next" style="margin-left:auto">Next test</button></div>
+function resultCard(){const R=RESULT;return `<section class="card" id="result"><div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap"><div class="score">${R.s}/${R.n}</div><div><div style="font-weight:600">${R.s===R.n?'Perfect score.':R.s/R.n>=.8?'Strong. Fix the red ones and go again.':'Read every explanation below, then take the next test.'}</div><div class="muted" style="font-size:.9rem">${Math.round(100*R.s/R.n)}% · test #${S.hist.length}${R.time?` · ⏱ ${fmtT(R.time.used)} of ${fmtT(R.time.lim)}${R.time.out?' (time ran out)':R.time.used<=R.time.lim*0.75?' (ahead of test pace)':' (on test pace)'}`:''}</div>${R.time&&R.time.out?`<div class="muted" style="font-size:.85rem">Time ran out, so the test was handed in. Questions you didn't get to are marked Blank but didn't affect your levels.</div>`:''}</div><button class="primary" id="next" style="margin-left:auto">Next test</button></div>
   ${R.ch.length?`<div class="changes">${R.ch.map(x=>x[0]==='ALL'?`<div><span class="tag ok">Test-ready</span>All 8 sections mastered and a perfect full test.</div>`:`<div><span class="tag ${x[1]==='up'?(x[2]>=4?'gold':''):x[1]==='mastered'?'ok':x[1]==='genius'?'gold':'bad'}">${x[1]==='up'?(x[2]===4?'Challenge unlocked':x[2]===5?'Genius unlocked':'Level up'):x[1]==='mastered'?'Mastered':x[1]==='genius'?'Genius cleared':x[1]==='down'?'Level down':'Mastery lost'}</span>${NAME[x[0]]}${x[2]?' → Level '+x[2]:''}</div>`).join('')}</div>`:''}</section>`}
 function updBar(){if(!TEST)return;const a=ANS.filter(v=>v!=null).length;el('count').textContent=DONE?`${RESULT.s} / ${RESULT.n} correct`:`${a} / ${TEST.length} answered`;el('meterfill').style.width=(100*(DONE?RESULT.s/RESULT.n:a/TEST.length))+'%';
   el('submit').textContent=DONE?'Next test':CONFIRM?'Submit anyway':'Submit test';el('barmsg').textContent=(!DONE&&CONFIRM)?`${TEST.length-a} blank`:''}
 el('submit').onclick=()=>{if(DONE){newTest();el('test').scrollIntoView({behavior:'smooth'});return}const blank=ANS.filter(v=>v==null).length;if(blank&&!CONFIRM){CONFIRM=true;updBar();return}grade()};
-function grade(){const per={};TEST.forEach((q,i)=>{const ok=ANS[i]===q.answer;const P=(per[q.c]=per[q.c]||{n:0,s:0,qs:[],cn:0,cs:0});P.n++;if(ok)P.s++;
+function grade(){const used=TLIM?Math.min(TLIM,(Date.now()-TSTART)/1000):0;stopTimer();const per={};TEST.forEach((q,i)=>{const ok=ANS[i]===q.answer;const P=(per[q.c]=per[q.c]||{n:0,s:0,qs:[],cn:0,cs:0});P.n++;if(ok)P.s++;
     // At Level 3 (mastery attempts), Mastered, or higher: a helped RIGHT answer doesn't count toward going up,
     // but a helped WRONG answer still counts as a miss (so the level stays honest)
-    const skip=!!HELP[i]&&S.lv[q.c]>=3&&ok;if(!skip){P.cn++;if(ok)P.cs++}P.qs.push([q.lv,ok,skip])});
+    // questions left blank because time ran out don't affect levels
+    const skip=(!!HELP[i]&&S.lv[q.c]>=3&&ok)||(TIMEOUT&&ANS[i]==null);if(!skip){P.cn++;if(ok)P.cs++}P.qs.push([q.lv,ok,skip])});
   const ch=[];for(const c in per){const P=per[c];S.acc[c]=P.s/P.n;
     for(const[lv,ok,skip]of P.qs){if(skip)continue;if(ok){if(lv===S.lv[c]){S.st[c]++;S.ms[c]=0}}else{S.st[c]=0;if(lv===S.lv[c])S.ms[c]=(S.ms[c]||0)+1}}
     const L=S.lv[c];
@@ -850,7 +863,7 @@ function grade(){const per={};TEST.forEach((q,i)=>{const ok=ANS[i]===q.answer;co
   const s=TEST.filter((q,i)=>ANS[i]===q.answer).length;const full=S.off.length===0&&TEST.length>=FINAL_N;
   S.hist.push({s,n:TEST.length,d:Date.now(),full});
   S.ready=full&&s===TEST.length&&!HELP.some(Boolean)&&CON.every(([c])=>S.m[c])&&(S.masteryPass||TEST.every(q=>q.lv===3));if(S.ready){S.masteryPass=true;ch.push(['ALL','ready'])}save();
-  RESULT={s,n:TEST.length,ch};DONE=true;renderDash();renderTest();el('result').scrollIntoView({behavior:'smooth'})}
+  RESULT={s,n:TEST.length,ch,time:TLIM?{used,lim:TLIM,out:TIMEOUT}:null};DONE=true;if(TLIM){el('timer').textContent='⏱ '+fmtT(used)+' of '+fmtT(TLIM);el('timer').classList.remove('low')}renderDash();renderTest();el('result').scrollIntoView({behavior:'smooth'})}
 
 // ---- from the class quizzes/notes: evaluating a ratio, property locations, reciprocal rules, zeros of transformed sinusoids
 G.C[2].push(()=>{const fn=pick(['sin','cos','tan','sin','cos','tan','csc','sec','cot']);let n,d,v;
@@ -989,6 +1002,11 @@ window.__selftest=(n=150)=>{const bad=[];let count=0;for(const c in G)for(const 
    const want=c=>S.lv[c]>=4?''+S.lv[c]:S.m[c]?'m':''+S.lv[c];chk('dropdowns show the saved levels',CON.every(([c])=>el('lv-'+c).value===want(c)));
    let okLbl=true;for(let k=0;k<10;k++){S.len=25;newTest();TEST.forEach((q,i)=>{const tag=document.querySelector('#q'+i+' .qhead .tag').textContent;if(q.lv>S.lv[q.c]||((q.lv<S.lv[q.c])!==tag.startsWith('Review')))okLbl=false})}
    chk('test questions match the section level (review ones labelled)',okLbl)}
+  // timed mode: blanks left when time runs out don't cost levels; answered questions still count
+  S=fresh();S.lv.U=3;S.m.U=true;TEST=[['U',3],['U',3],['U',3]].map(([c,lv])=>({c,lv,q:'x',choices:['a','b','c','d'],answer:0,why:'',svg:''}));ANS=[null,null,1];HELP=[false,false,false];TIMEOUT=true;TLIM=0;grade();TIMEOUT=false;
+  chk('time-out blanks are ignored, answered wrong still counts',S.m.U===false&&(S.ms.U||0)===1);
+  S=fresh();S.lv.U=3;S.m.U=true;TEST=[['U',3],['U',3]].map(([c,lv])=>({c,lv,q:'x',choices:['a','b','c','d'],answer:0,why:'',svg:''}));ANS=[null,null];HELP=[false,false];TIMEOUT=true;TLIM=0;grade();TIMEOUT=false;
+  chk('time-out with nothing answered keeps Mastered',S.m.U===true&&S.lv.U===3);
   S=fresh();CON.forEach(([c])=>{S.lv[c]=3;S.m[c]=true});run(Array.from({length:15},(_,i)=>[CON[i%8][0],3]),Array(15).fill(1),[1]);chk('help used blocks test-ready',!S.ready);
   S=JSON.parse(keep);save();renderDash();newTest();
   return{count,failures:bad.length+rules.length,examples:[...rules,...new Set(bad)].slice(0,15),samples}};
