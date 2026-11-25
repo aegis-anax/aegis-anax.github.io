@@ -132,7 +132,7 @@ a{color:var(--accent)}
       <div>
         <div class="qsec">TDJ3M1 · Design Technology</div>
         <h1>House Design Test Drill</h1>
-        <p class="muted" style="margin:.4rem 0 0;max-width:62ch">Test #2 question by question, checked against the class notes. Typed answers accept small typos and your own wording. Full marks twice in a row turns a question green.</p>
+        <p class="muted" style="margin:.4rem 0 0;max-width:62ch">Test #2 question by question, checked against the class notes. Typed answers accept small typos and your own wording. Full marks on two separate visits in a row turns a question green.</p>
         <div class="spec" id="spec"></div>
       </div>
       <div class="tabs" role="group" aria-label="Mode">
@@ -142,7 +142,7 @@ a{color:var(--accent)}
       </div>
     </div>
     <div class="qmap" id="qmap" aria-label="Questions"></div>
-    <div class="legend"><span><i></i>not tried</span><span><i style="background:var(--accent-soft);border-color:var(--accent)"></i>got it once / partly</span><span><i style="background:var(--ok-soft);border-color:var(--ok)"></i>solid (full marks on two separate visits in a row)</span></div>
+    <div class="legend"><span><i></i>not tried</span><span><i style="background:var(--accent-soft);border-color:var(--accent)"></i>got it once / partly</span><span><i style="background:var(--ok-soft);border-color:var(--ok)"></i>solid (full marks on two separate visits in a row)</span><button type="button" id="reset" style="margin-left:auto;padding:3px 10px;font-size:.8rem">Reset progress</button></div>
   </header>
   <main id="main"></main>
   <p class="tip">Found a mistake? Email Aegis: <span class="mono">aegis.anax@gmail.com</span></p>
@@ -410,6 +410,7 @@ function renderBar(){const b=el('bar');if(MODE==='test'){const answered=Q.filter
 function setMode(m){MODE=m;['study','test','missed'].forEach(x=>el('m-'+x).setAttribute('aria-pressed',x===m));stopTimer();
  if(m==='test'){ANS={};DONE=false;startTimer();renderTest()}else{LIST=m==='missed'?Q.map((q,i)=>level(q.id)<2?i:-1).filter(i=>i>=0):Q.map((_,i)=>i);CUR=0;renderStudy()}}
 ['study','test','missed'].forEach(m=>el('m-'+m).onclick=()=>setMode(m));
+el('reset').onclick=()=>{if(!confirm('Reset all progress? Every question goes back to not tried and your best score is cleared.'))return;S.st={};S.best=null;save();if(MODE==='test')renderBar();else setMode(MODE)};
 
 // ================= self-test: the marked test must score exactly what the teacher gave (44.5/48) =================
 const FRIEND={ // answers written on the marked copy, with the teacher's marks
@@ -440,8 +441,8 @@ function selftest(){const out=[];let tot=0,bad=0;
  // typo / wording checks
  const T=[['21',['folow me'],1],['16',['gabel roof'],1],['17',['hipp roof'],1],['19',['municiple','building permitt','inspecton'],3],['4',['split levle','noise travels'],2],['14',['4 by 8'],1],['14',['8ft x 4ft'],1],['14',['48" x 96"'],1],['14',['4x10'],0],['27',['layers'],1],['26',['grups'],1],['3',['work traingle'],1],['17',['gable'],0],['16',['hip'],0],['2',['garage near kitchen','garage near kitchen','bedrooms near bathroom','','' ],2],['15',['less cutting so less labour','less waste material'],2],['15',['less waste','less scrap'],1],['18','to keep people safe',1],['20','a load that changes, like people walking around the house',1],['20','people walking around the house',0],['25','use move tool hold ctrl and type 10x',3]];
  for(const [id,a,exp] of T){const q=Q.find(x=>x.id===id);const r=score(q,a);if(r.got!==exp){bad++;out.push(`WORDING Q${id} ${JSON.stringify(a)}: got ${r.got}, expected ${exp}`)}}
- {const saved=JSON.stringify(S.st),m0=MODE;S.st={};setMode('study');const id=Q[LIST[0]].id;el('chk').click();el('chk').click();el('show').click();el('chk').click();if(st(id).tries!==1){bad++;out.push('RECHECK counted '+st(id).tries+' tries on one visit')}S.st=JSON.parse(saved);save();setMode(m0)}
- return{friendTotal:tot,expected:44.5,checks:Q.length*3+T.length+2,failures:bad,details:out}}
+ {const saved=JSON.stringify(S.st),b0=S.best,m0=MODE;S.st={};setMode('study');const id=Q[LIST[0]].id;el('chk').click();el('chk').click();el('show').click();el('chk').click();if(st(id).tries!==1){bad++;out.push('RECHECK counted '+st(id).tries+' tries on one visit')}S.best=1;const oc=window.confirm;window.confirm=()=>true;el('reset').click();window.confirm=oc;if(Object.keys(S.st).length||S.best!==null||level(id)!==0){bad++;out.push('RESET did not clear progress')}S.st=JSON.parse(saved);S.best=b0;save();setMode(m0)}
+ return{friendTotal:tot,expected:44.5,checks:Q.length*3+T.length+3,failures:bad,details:out}}
 function modelAnswer(q){if(q.type==='mc')return q.answer;if(q.type==='label')return LBL_KEY.slice();if(q.type==='essay')return q.model;
  const M={'1':['feels bigger and more pleasant','less privacy'],'2':GUIDE.slice(0,5).map(g=>g[0]),'3':['work triangle'],'4':['split level','noise and heat travel'],'10':['carries the weight of the structure above the opening','holds up the header beside the opening'],'11':['metal (steel) frame','stronger, does not rot, fire resistant'],'14':["4' x 8'"],'15':['less labour, less cutting','less waste material'],'16':['gable'],'17':['hip'],'19':['municipality','building permit','inspections'],'21':['Follow Me'],'23':['scales an object (changes its size)'],'26':['groups'],'27':['tags']};return M[q.id]}
 window.__selftest=selftest;
