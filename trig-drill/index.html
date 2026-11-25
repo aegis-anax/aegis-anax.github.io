@@ -637,9 +637,16 @@ for(const c of ['P','R','U','C','Gr','X','T','M'])G[c][6]=[()=>{
 const CON=[['P','4.1','Trig prereq skills','Special triangles, related angles, CAST in degrees'],['R','4.2','Radian measure','Converting, arc length, angular speed'],['U','4.3','Unit circle & exact values','Exact values, coterminal & reference angles, equivalent ratios'],['C','4.4','Trig on the Cartesian plane','Point on terminal arm, solving for θ'],['Gr','4.5','Graphs of trig functions','Properties: domain, range, zeros, symmetry, period, rates of change'],['X','4.6','Graphs of reciprocal functions','csc, sec, cot: domain, range, asymptotes, turning points'],['T','4.7','Transformations','Amplitude, period, phase shift, matching graphs'],['M','4.8','Modelling','Writing equations, Ferris wheels, tides']];
 const NAME=Object.fromEntries(CON.map(c=>[c[0],c[1]+' '+c[2]]));
 const UP=3,MASTER=4,DROP=2,FINAL_N=15,KEY='unit4-trig-drill-v1';
-function fresh(){const o={lv:{},st:{},ms:{},m:{},g:{},ready:false,masteryPass:false,acc:{},hist:[],len:15,off:[],beyond:false};CON.forEach(([c])=>{o.lv[c]=1;o.st[c]=0;o.m[c]=false});return o}
+function fresh(){const o={lv:{},st:{},ms:{},m:{},g:{},best:{},ready:false,masteryPass:false,acc:{},hist:[],len:15,off:[],beyond:false};CON.forEach(([c])=>{o.lv[c]=1;o.st[c]=0;o.m[c]=false;o.best[c]=1});return o}
+// best level ever earned per section, as a rank: 1,2,3, 3.5 = Mastered, 4 Challenge, 5 Genius, 6 Einstein
+function rankOf(c){return S.lv[c]+(S.lv[c]===3&&S.m[c]?0.5:0)}
+// bonus levels only count as a "best" once the Mastered full test is passed
+function bestOf(c){const b=S.best[c]||1;return S.masteryPass?b:Math.min(b,3.5)}
+function setRank(c,r){if(r===3.5){S.lv[c]=3;S.m[c]=true}else{S.lv[c]=r;S.m[c]=r>=4}S.g[c]=false;S.st[c]=0;S.ms[c]=0;S.ready=false}
+const RANKNAME=r=>r===3.5?'Mastered':r===4?'Challenge':r===5?'Genius':r===6?'Einstein':'Level '+r;
 let S=(()=>{try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.lv)return Object.assign(fresh(),s)}catch(e){}return fresh()})();
 if(S.ready)S.masteryPass=true;
+if(!S.best)S.best={};CON.forEach(([c])=>{S.best[c]=Math.max(S.best[c]||0,rankOf(c))});
 // Earlier versions let learners select Challenge and Genius directly. Keep their
 // section mastery, but require the new full-test gate before those levels reopen.
 if(!S.masteryPass){
@@ -723,7 +730,7 @@ function helpHTML(i){const q=TEST[i],c=q.c,g=guideFor(q.q);
  const forms=`<ul>${HELPTXT[c].map(t=>`<li>${t}</li>`).join('')}</ul>`;
  return `<div class="hint"><div class="hinthead"><strong>${g?'How to do this type: '+g[1]:'Help: '+NAME[c]}</strong><span class="hintbtns2"><button type="button" class="solbtn" data-act="ex" ${EXQ[i]?'disabled':''}>Worked example</button><button type="button" class="solbtn" data-act="sol" ${HS[i]===3?'disabled':''}>Step-by-step solution</button></span></div>
  ${g?`<ol class="steps">${g[2].map(t=>`<li>${t}</li>`).join('')}</ol>${g[3]?`<div class="eg"><b>Example:</b> ${g[3]}</div>`:''}<details class="forms"><summary>All formulas for ${NAME[c]}</summary>${forms}</details>`:forms}
- ${S.lv[c]>=3?`<div class="note">Using help is fine for learning, but this question won't count toward Mastered or higher levels.</div>`:''}</div>`}
+ ${S.lv[c]>=3?`<div class="note">Using help is fine for learning. A right answer won't count toward Mastered or higher levels, but a wrong answer still counts as a miss.</div>`:''}</div>`}
 let EXQ=[];
 // "Report this question": opens an email to Aegis with the question details filled in (no personal data)
 function reportHref(q,i){const strip=t=>(''+t).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,300);
@@ -732,7 +739,7 @@ function reportHref(q,i){const strip=t=>(''+t).replace(/<[^>]+>/g,' ').replace(/
 // help states per question: 0 none, 1 warning shown, 2 help open, 3 solution shown
 let HS=[];
 function helpArea(i){const q=TEST[i],s=HS[i]||0;if(s===0)return '';
- if(s===1){const hi=S.lv[q.c]>=3;return `<div class="hint warn"><strong>Before you open help</strong><div>${hi?`If you use help, this question <b>won't count</b> toward Mastered or any higher level. It also stops this test from counting as your final test-ready test.`:`You're below Level 3 in ${NAME[q.c]}, so this question still counts normally. From Level 3 up, helped questions don't count toward Mastered or higher levels.`}</div><div class="hintbtns"><button type="button" class="primary" data-act="yes">Show help</button><button type="button" data-act="no">Cancel</button></div></div>`}
+ if(s===1){const hi=S.lv[q.c]>=3;return `<div class="hint warn"><strong>Before you open help</strong><div>${hi?`If you use help and get this question <b>right</b>, it <b>won't count</b> toward Mastered or any higher level. If you get it <b>wrong</b>, it still counts as a miss. Using help also stops this test from counting as your final test-ready test.`:`You're below Level 3 in ${NAME[q.c]}, so this question still counts normally. From Level 3 up, helped questions don't count toward Mastered or higher levels.`}</div><div class="hintbtns"><button type="button" class="primary" data-act="yes">Show help</button><button type="button" data-act="no">Cancel</button></div></div>`}
  let h=helpHTML(i);const e=EXQ[i];
  if(e)h+=`<div class="why sol"><strong>Worked example (a similar question)</strong><div class="stem">${e.q}</div>${e.svg?`<div class="fig-wrap">${e.svg}</div>`:''}<div class="ans">Answer: ${e.choices[e.answer]}</div><div style="margin-top:6px">${e.why}</div></div>`;
  if(s===3)h+=`<div class="why sol"><strong>Step-by-step solution</strong><div>${q.why}</div><div class="ans">Answer: <b>${'ABCD'[q.answer]}</b>&nbsp; ${q.choices[q.answer]}</div></div>`;
@@ -767,7 +774,7 @@ function renderDash(){const mastered=CON.filter(c=>S.m[c[0]]).length;const ready
   for(const [c,code,name,desc] of CON){const lv=S.lv[c],m=S.m[c],off=S.off.includes(c);
     const need=lv<3?`${S.st[c]}/${UP} in a row to reach Level ${lv+1}`:lv===3&&!m?`${S.st[c]}/${MASTER} in a row to master`:lv===3?(S.masteryPass&&S.beyond?`Mastered · ${S.st[c]}/${MASTER} in a row to unlock Challenge`:'Mastered'):lv===4?`Challenge · ${S.st[c]}/${MASTER} in a row to reach Genius`:lv===5?`Genius · ${S.st[c]}/5 in a row to reach Einstein`:'Einstein · advanced inquiry';
     const sel=lv>=4?''+lv:m?'m':''+lv;
-    h+=`<div class="row${m?' mastered':''}" style="${off?'opacity:.45':''}"><input type="checkbox" id="on-${c}" ${off?'':'checked'} aria-label="Include ${code} in tests"><span class="code">${code}</span><div class="cname">${name}<small>${off?'Not included in tests':need}</small></div>
+    h+=`<div class="row${m?' mastered':''}" style="${off?'opacity:.45':''}"><input type="checkbox" id="on-${c}" ${off?'':'checked'} aria-label="Include ${code} in tests"><span class="code">${code}</span><div class="cname">${name}<small>${off?'Not included in tests':need}${bestOf(c)>rankOf(c)?` · <button type="button" class="link backbest" data-c="${c}">Back to your best (${RANKNAME(bestOf(c))})</button>`:''}</small></div>
     <div class="pips" title="Level ${lv}">${[1,2,3,4,5,6].map(i=>`<span class="pip${i>3?' x':''}${i<=lv?' on':''}"></span>`).join('')}<select class="lvsel${lv>=4?' gold':m?' ok':''}" id="lv-${c}" aria-label="Level for ${code}">${lvOpts(sel)}</select></div></div>`}
   const allM=mastered===CON.length;
   h+=`</div><div class="goal">${ready?'<span class="tag ok">Test-ready</span> All 8 sections are mastered, and you scored 100% on a full test.':allM?`<span class="tag gold">Final step</span> Everything is mastered. Now score 100% on a full test: at least ${FINAL_N} questions with all 8 sections ticked.`:`<span class="tag gold">Goal</span> Keep taking mixed tests. Every section levels up from the questions it gets on each test, so they all climb together. Once all 8 are mastered, score 100% on a full test (at least ${FINAL_N} questions, all sections ticked) to be test-ready.`}</div>`;
@@ -778,6 +785,7 @@ function renderDash(){const mastered=CON.filter(c=>S.m[c[0]]).length;const ready
   CON.forEach(([c])=>el('lv-'+c).onchange=e=>{const v=e.target.value;if(+v>=4&&!S.masteryPass)return;if(v==='m'){S.lv[c]=3;S.m[c]=true}else{S.lv[c]=+v;S.m[c]=+v>=4}S.g[c]=false;S.st[c]=0;S.ms[c]=0;S.ready=false;save();renderDash();el('lvnote').textContent='Level changed. Press New test to use it.'});
   el('lvall').onchange=e=>{const v=e.target.value;if(!v||(+v>=4&&!S.masteryPass))return;CON.forEach(([c])=>{if(v==='m'){S.lv[c]=3;S.m[c]=true}else{S.lv[c]=+v;S.m[c]=+v>=4}S.g[c]=false;S.st[c]=0;S.ms[c]=0});S.ready=false;save();renderDash();el('lvnote').textContent='All sections changed. Press New test to use it.'};
   el('beyond').onchange=e=>{S.beyond=e.target.checked;save();renderDash()};
+  document.querySelectorAll('.backbest').forEach(b=>b.onclick=()=>{const c=b.dataset.c;setRank(c,bestOf(c));save();renderDash();el('lvnote').textContent=`${NAME[c]} is back at ${RANKNAME(rankOf(c))}. Press New test to use it.`});
   el('len').onchange=e=>{S.len=+e.target.value;save()};
   el('newtest').onclick=()=>{newTest();el('test').scrollIntoView({behavior:'smooth'})};
   el('reset').onclick=()=>{el('resetc').innerHTML='<span class="warn">Erase all levels and history?</span> <button id="resety">Erase</button> <button id="resetn">Keep</button>';el('resety').onclick=()=>{S=fresh();save();renderDash();newTest()};el('resetn').onclick=()=>el('resetc').innerHTML=''}}
@@ -800,8 +808,9 @@ function updBar(){if(!TEST)return;const a=ANS.filter(v=>v!=null).length;el('coun
   el('submit').textContent=DONE?'Next test':CONFIRM?'Submit anyway':'Submit test';el('barmsg').textContent=(!DONE&&CONFIRM)?`${TEST.length-a} blank`:''}
 el('submit').onclick=()=>{if(DONE){newTest();el('test').scrollIntoView({behavior:'smooth'});return}const blank=ANS.filter(v=>v==null).length;if(blank&&!CONFIRM){CONFIRM=true;updBar();return}grade()};
 function grade(){const per={};TEST.forEach((q,i)=>{const ok=ANS[i]===q.answer;const P=(per[q.c]=per[q.c]||{n:0,s:0,qs:[],cn:0,cs:0});P.n++;if(ok)P.s++;
-    // helped questions are ignored for progress once the section is at Level 3 (mastery attempts), Mastered, or higher
-    const skip=!!HELP[i]&&S.lv[q.c]>=3;if(!skip){P.cn++;if(ok)P.cs++}P.qs.push([q.lv,ok,skip])});
+    // At Level 3 (mastery attempts), Mastered, or higher: a helped RIGHT answer doesn't count toward going up,
+    // but a helped WRONG answer still counts as a miss (so the level stays honest)
+    const skip=!!HELP[i]&&S.lv[q.c]>=3&&ok;if(!skip){P.cn++;if(ok)P.cs++}P.qs.push([q.lv,ok,skip])});
   const ch=[];for(const c in per){const P=per[c];S.acc[c]=P.s/P.n;
     for(const[lv,ok,skip]of P.qs){if(skip)continue;if(ok){if(lv===S.lv[c]){S.st[c]++;S.ms[c]=0}}else{S.st[c]=0;if(lv===S.lv[c])S.ms[c]=(S.ms[c]||0)+1}}
     const L=S.lv[c];
@@ -811,7 +820,8 @@ function grade(){const per={};TEST.forEach((q,i)=>{const ok=ANS[i]===q.answer;co
     else if(L===3&&!S.m[c]&&S.st[c]>=MASTER){S.m[c]=true;S.st[c]=0;ch.push([c,'mastered'])}
     else if(S.masteryPass&&S.beyond&&L===3&&S.m[c]&&S.st[c]>=MASTER){S.lv[c]=4;S.st[c]=0;ch.push([c,'up',4])}
     else if(S.beyond&&L===4&&S.st[c]>=MASTER){S.lv[c]=5;S.st[c]=0;ch.push([c,'up',5])}
-    else if(S.beyond&&L===5&&S.st[c]>=5){S.lv[c]=6;S.g[c]=true;S.st[c]=0;ch.push([c,'up',6])}}
+    else if(S.beyond&&L===5&&S.st[c]>=5){S.lv[c]=6;S.g[c]=true;S.st[c]=0;ch.push([c,'up',6])}
+    S.best[c]=Math.max(S.best[c]||0,rankOf(c))}
   const s=TEST.filter((q,i)=>ANS[i]===q.answer).length;const full=S.off.length===0&&TEST.length>=FINAL_N;
   S.hist.push({s,n:TEST.length,d:Date.now(),full});
   S.ready=full&&s===TEST.length&&!HELP.some(Boolean)&&CON.every(([c])=>S.m[c])&&(S.masteryPass||TEST.every(q=>q.lv===3));if(S.ready){S.masteryPass=true;ch.push(['ALL','ready'])}save();
@@ -896,7 +906,11 @@ window.__selftest=(n=150)=>{const bad=[];let count=0;for(const c in G)for(const 
   S=fresh();CON.forEach(([c])=>{S.lv[c]=3;S.m[c]=true});S.off=['M'];run(Array.from({length:15},(_,i)=>[CON[i%7][0],3]),Array(15).fill(1));chk('unticked section blocks ready',!S.ready);
   S=fresh();run([['P',1],['P',1],['P',1]],[1,1,1],[1,1,1]);chk('helped answers still count below Level 3',S.lv.P===2);
   S=fresh();S.lv.U=3;run([['U',3],['U',3],['U',3],['U',3]],[1,1,1,1],[1,1,1,1]);chk('helped answers do not count toward mastering',!S.m.U&&S.st.U===0);
-  S=fresh();S.lv.U=3;S.m.U=true;run([['U',3],['U',3]],[0,0],[1,1]);chk('helped misses at Mastered are ignored',S.m.U&&S.lv.U===3);
+  S=fresh();S.lv.U=3;S.m.U=true;run([['U',3],['U',3]],[0,0],[1,1]);chk('helped misses at Mastered still count (mastery lost, then dropped)',!S.m.U);
+  S=fresh();S.lv.U=3;S.m.U=true;run([['U',3]],[1],[1]);chk('helped right answer at Mastered changes nothing',S.m.U&&S.lv.U===3&&S.st.U===0);
+  S=fresh();S.lv.R=3;S.m.R=true;S.best.R=3.5;run([['R',3],['R',3]],[0,0]);chk('dropping keeps your best level',S.best.R===3.5&&rankOf('R')<3.5);
+  setRank('R',bestOf('R'));chk('back to best restores Mastered',S.lv.R===3&&S.m.R);
+  S=fresh();S.lv.T=5;S.m.T=true;S.best.T=5;chk('bonus best hidden until the Mastered test is passed',bestOf('T')===3.5);S.masteryPass=true;chk('bonus best shown after it',bestOf('T')===5);
   S=fresh();CON.forEach(([c])=>{S.lv[c]=3;S.m[c]=true});run(Array.from({length:15},(_,i)=>[CON[i%8][0],3]),Array(15).fill(1),[1]);chk('help used blocks test-ready',!S.ready);
   S=JSON.parse(keep);save();renderDash();newTest();
   return{count,failures:bad.length+rules.length,examples:[...rules,...new Set(bad)].slice(0,15),samples}};
