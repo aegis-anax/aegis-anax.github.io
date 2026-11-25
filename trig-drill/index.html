@@ -657,7 +657,7 @@ const HELPTXT={
  X:['$\\csc x=\\frac{1}{\\sin x}$, $\\sec x=\\frac{1}{\\cos x}$, $\\cot x=\\frac{1}{\\tan x}$.','Zeros of the original become vertical asymptotes of the reciprocal. They meet where $y=\\pm1$.','A local max becomes a local min (and the other way around). Positive/negative stays the same; increasing/decreasing switches.','csc and sec: range $y\\le-1$ or $y\\ge1$, no zeros, period $2\\pi$. cot: period $\\pi$. No horizontal asymptotes.'],
  T:['$y=a\\sin[k(x-d)]+c$: $|a|$ is the amplitude ($a<0$ reflects), period $=\\frac{2\\pi}{|k|}$, $d$ is the phase shift, $c$ is the vertical shift (axis $y=c$).','Mapping a point: $(x,y)\\to\\left(\\frac{x}{k}+d,\\ ay+c\\right)$.','Max $=c+|a|$, min $=c-|a|$. Zeros exist only if 0 is in that range.','Factor $k$ out first: $\\sin(2x-\\pi)=\\sin[2(x-\\frac{\\pi}{2})]$.'],
  M:['Amplitude $=\\frac{\\max-\\min}{2}$. Axis $c=\\frac{\\max+\\min}{2}$. $k=\\frac{2\\pi}{\\text{period}}$.','Cosine starts at a max; $-\\cos$ starts at a min (like getting on a Ferris wheel at the bottom). Sine starts on the axis going up.','To find a height at time $t$, substitute into the equation (radian mode).','To find when it reaches a height, set the equation equal to that height and solve for $t$.']};
-function helpHTML(c){return `<div class="hint"><div class="hinthead"><strong>Help: ${NAME[c]}</strong><button type="button" class="solbtn" data-act="sol">Step-by-step solution</button></div><ul>${HELPTXT[c].map(t=>`<li>${t}</li>`).join('')}</ul><div class="note">Using help is fine for learning, but this question won't count toward Mastered or higher levels.</div></div>`}
+function helpHTML(c){return `<div class="hint"><div class="hinthead"><strong>Help: ${NAME[c]}</strong><button type="button" class="solbtn" data-act="sol">Step-by-step solution</button></div><ul>${HELPTXT[c].map(t=>`<li>${t}</li>`).join('')}</ul>${S.lv[c]>=3?`<div class="note">Using help is fine for learning, but this question won't count toward Mastered or higher levels.</div>`:''}</div>`}
 // help states per question: 0 none, 1 warning shown, 2 help open, 3 solution shown
 let HS=[];
 function helpArea(i){const q=TEST[i],s=HS[i]||0;if(s===0)return '';
@@ -715,7 +715,7 @@ function renderTest(){let h='';
   if(DONE)h+=`<div style="display:flex;justify-content:center"><button class="primary" id="next2">Next test</button></div>`;
   el('test').innerHTML=h;
   if(!DONE)TEST.forEach((q,i)=>document.querySelectorAll(`input[name=q${i}]`).forEach(r=>r.onchange=()=>{ANS[i]=+r.value;CONFIRM=false;updBar()}));
-  if(!DONE){document.querySelectorAll('.helpbtn').forEach(b=>b.onclick=()=>{const i=+b.dataset.help;if(!HS[i])setHelp(i,1)});TEST.forEach((q,i)=>wireHelp(i))}
+  if(!DONE){document.querySelectorAll('.helpbtn').forEach(b=>b.onclick=()=>{const i=+b.dataset.help;if(!HS[i])setHelp(i,S.lv[TEST[i].c]>=3?1:2)});TEST.forEach((q,i)=>wireHelp(i))}
   else{el('next').onclick=el('next2').onclick=()=>{newTest();el('test').scrollIntoView({behavior:'smooth'})}}
   updBar();typeset(el('test'))}
 function resultCard(){const R=RESULT;return `<section class="card" id="result"><div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap"><div class="score">${R.s}/${R.n}</div><div><div style="font-weight:600">${R.s===R.n?'Perfect score.':R.s/R.n>=.8?'Strong. Fix the red ones and go again.':'Read every explanation below, then take the next test.'}</div><div class="muted" style="font-size:.9rem">${Math.round(100*R.s/R.n)}% · test #${S.hist.length}</div></div><button class="primary" id="next" style="margin-left:auto">Next test</button></div>
