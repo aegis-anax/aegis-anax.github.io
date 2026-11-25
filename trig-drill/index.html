@@ -73,6 +73,7 @@ select{font:inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--lin
 .hintbtns{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
 .why.sol{margin-top:8px}.why.sol .ans{margin-top:6px}
 .hintbtns2{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}.hintbtns2 .solbtn{margin-left:0}
+.sptab{border-collapse:collapse;margin-top:6px;font-size:.88rem}.sptab td,.sptab th{border:1px solid var(--line);padding:4px 8px;text-align:center}
 .hint ol.steps{margin:6px 0 0;padding-left:20px}.hint ol.steps li{margin:4px 0}
 .hint .eg{margin-top:6px;padding:6px 8px;border-radius:6px;background:var(--paper)}
 .hint details.forms{margin-top:6px}.hint details.forms summary{cursor:pointer;color:var(--muted);font-size:.85rem}
@@ -264,6 +265,20 @@ function variants(E){const v=[{...E,a:-E.a},{...E,f:E.f==='sin'?'cos':'sin'},{..
 function pickVar(E,base,n=3){const out=[];for(const v of variants(base)){if(isEq(x=>Ev(v,x),x=>Ev(E,x)))continue;if(out.some(o=>isEq(x=>Ev(o,x),x=>Ev(v,x))))continue;out.push(v);if(out.length===n)break}return out}
 function readWhy(E){const A=Math.abs(E.a);return `Max $${E.c+A}$, min $${E.c-A}$ → amplitude $${A}$, axis $y=${E.c}$. Period $${perT(E)}$ → $k=\\frac{2\\pi}{\\text{period}}=${kT(E)||1}$. ${E.j===0?'No horizontal shift':'Phase shift $'+dT(E)+'$ '+(E.j>0?'right':'left')}${E.a<0?', reflected in the axis':''}. ${E.f==='sin'?'Sine starts on the axis':'Cosine starts at a max'}${E.a<0?' (flipped)':''}.`}
 
+// ---- where the related acute angle comes from: the special triangles (30-60-90: 1, √3, 2; 45-45-90: 1, 1, √2)
+const TRIRAT={sin:'\\frac{\\text{opp}}{\\text{hyp}}',cos:'\\frac{\\text{adj}}{\\text{hyp}}',tan:'\\frac{\\text{opp}}{\\text{adj}}'};
+const TRIRAW={30:{sin:['1','2'],cos:['\\sqrt{3}','2'],tan:['1','\\sqrt{3}']},45:{sin:['1','\\sqrt{2}'],cos:['1','\\sqrt{2}'],tan:['1','1']},60:{sin:['\\sqrt{3}','2'],cos:['1','2'],tan:['\\sqrt{3}','1']}};
+const DEGRAD={30:'\\frac{\\pi}{6}',45:'\\frac{\\pi}{4}',60:'\\frac{\\pi}{3}'};
+// fn: sin/cos/tan (flip csc/sec/cot before calling); deg: 30/45/60
+function raaWhy(fn,deg,rad){const[o,h]=TRIRAW[deg][fn];const raw=h==='1'?o:`\\frac{${o}}{${h}}`;const val=exT(tv(fn,deg*PI/180));
+ const tri=deg===45?'45°-45°-90° triangle (sides $1,1,\\sqrt{2}$)':'30°-60°-90° triangle (sides $1,\\sqrt{3},2$; the side $1$ is opposite $30^\\circ$)';
+ return `Related acute angle (ignore the sign): which special angle has $\\${fn}=${val}$? In the ${tri}, $\\${fn}${deg}^\\circ=${TRIRAT[fn]}=${raw}${raw!==val?'='+val:''}$, so $\\beta=${rad?DEGRAD[deg]:deg+'^\\circ'}$${rad?` $(=${deg}^\\circ)$`:''}.`}
+function specialFig(){return `<svg viewBox="0 0 340 150" class="fig" role="img" aria-label="special triangles: 30-60-90 with sides 1, root 3, 2 and 45-45-90 with sides 1, 1, root 2">
+ <path class="side" d="M20 120L150 120L150 45Z"/><text class="fl" x="85" y="138" text-anchor="middle">√3</text><text class="fl" x="158" y="88">1</text><text class="fl" x="78" y="74" text-anchor="end">2</text><text class="fl" x="38" y="116">30°</text><text class="fl" x="128" y="62">60°</text>
+ <path class="side" d="M200 120L300 120L300 20Z"/><text class="fl" x="250" y="138" text-anchor="middle">1</text><text class="fl" x="308" y="74">1</text><text class="fl" x="243" y="62" text-anchor="end">√2</text><text class="fl" x="218" y="116">45°</text><text class="fl" x="280" y="40">45°</text></svg>`}
+function specialTable(){const r=f=>[30,45,60].map(d=>`<td>$${exT(tv(f,d*PI/180))}$</td>`).join('');
+ return `<div style="overflow-x:auto"><table class="sptab"><tr><th></th><th>$30^\\circ$<br>$\\frac{\\pi}{6}$</th><th>$45^\\circ$<br>$\\frac{\\pi}{4}$</th><th>$60^\\circ$<br>$\\frac{\\pi}{3}$</th></tr><tr><th>sin</th>${r('sin')}</tr><tr><th>cos</th>${r('cos')}</tr><tr><th>tan</th>${r('tan')}</tr></table></div>`}
+const SPECIAL_RX=/Solve|Find all angles|acute angle|is in Quadrant \d and|x\$-intercepts|exact value|equivalent to|unit circle/;
 // ================= generators =================
 const G={P:{},R:{},U:{},C:{},Gr:{},X:{},T:{},M:{}};
 const TRI=[[3,4,5],[5,12,13],[8,15,17],[7,24,25],[20,21,29]];
@@ -286,7 +301,7 @@ G.P[3]=[
 ()=>{const b=pick([30,45,60]),fn=pick(['sin','cos','tan']);const sg=pick([1,-1]);const v=sg*tv(fn,b*PI/180);const qs=[1,2,3,4].filter(q=>SIGN[fn][q-1]===sg);
  const ang=q=>q===1?b:q===2?180-b:q===3?180+b:360-b;const P=(q1,q2)=>`${ang(q1)}^\\circ,\\ ${ang(q2)}^\\circ`;const ans=P(...qs);
  const wrong=[[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]].filter(p=>p[0]!==qs[0]||p[1]!==qs[1]).map(p=>P(...p));
- return Q('P',3,`Solve $\\${fn}\\theta=${exT(v)}$ for $0^\\circ\\le\\theta\\le360^\\circ$.`,mc(ans,shuffle(wrong),null),`Related angle $${b}^\\circ$. $\\${fn}$ is ${sg>0?'positive':'negative'} in Quadrants ${qs.join(' and ')}, giving $${ans}$.`)}];
+ return Q('P',3,`Solve $\\${fn}\\theta=${exT(v)}$ for $0^\\circ\\le\\theta\\le360^\\circ$.`,mc(ans,shuffle(wrong),null),`${raaWhy(fn,b,false)} $\\${fn}$ is ${sg>0?'positive':'negative'} in Quadrants ${qs.join(' and ')}, giving $${ans}$.`)}];
 // ---- 4.2 radians
 G.R[1]=[
 ()=>{const deg=pick([15,20,30,36,40,45,60,72,75,90,100,105,120,135,140,150,165,210,225,240,270,300,315,330]);const ans=pt(deg,180);
@@ -364,7 +379,7 @@ G.C[3]=[
 ()=>{const fn=pick(['sin','cos','tan','csc','sec']),b=pick([6,4,3]);if((fn==='sin'||fn==='cos'||fn==='csc'||fn==='sec')&&false);const sg=pick([1,-1]);const v=sg*tv(fn,PI/b);
  const qs=[1,2,3,4].filter(q=>SIGN[fn][q-1]===sg);const P=(q1,q2)=>`\\theta=${pt(...inQuad(b,q1))},\\ ${pt(...inQuad(b,q2))}`;const ans=P(...qs);
  const wrong=[[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]].filter(p=>p[0]!==qs[0]||p[1]!==qs[1]).map(p=>P(...p));wrong.push(`\\theta=${pt(...inQuad(b,qs[0]))}`);
- return Q('C',3,`Solve $\\${fn}\\theta=${exT(v)}$ for $0\\le\\theta\\le2\\pi$.`,mc(ans,shuffle(wrong),null),`${['csc','sec'].includes(fn)?`Flip it first: $\\${fn==='csc'?'sin':'cos'}\\theta=${exT(1/v)}$. `:''}Related angle $\\beta=\\frac{\\pi}{${b}}$. $\\${fn}$ is ${sg>0?'positive':'negative'} in Quadrants ${qs.join(' and ')}, giving $${ans}$.`)},
+ return Q('C',3,`Solve $\\${fn}\\theta=${exT(v)}$ for $0\\le\\theta\\le2\\pi$.`,mc(ans,shuffle(wrong),null),`${['csc','sec'].includes(fn)?`Flip it first: $\\${fn==='csc'?'sin':'cos'}\\theta=${exT(1/v)}$. `:''}${raaWhy(['csc','sec'].includes(fn)?(fn==='csc'?'sin':'cos'):fn,180/b,true)} $\\${fn}$ is ${sg>0?'positive':'negative'} in Quadrants ${qs.join(' and ')}, giving $${ans}$.`)},
 ()=>{const fn=pick(['sin','cos','tan']),sg=pick([1,-1]);let v;do{v=fn==='tan'?rnd(2,40)/10:rnd(5,95)/100}while(Math.abs(v-.5)<.01||Math.abs(v-1)<.01);const b=fn==='sin'?Math.asin(v):fn==='cos'?Math.acos(v):Math.atan(v);
  const qa=q=>q===1?b:q===2?PI-b:q===3?PI+b:2*PI-b;const qs=[1,2,3,4].filter(q=>SIGN[fn][q-1]===sg);const P=(q1,q2)=>`\\theta\\approx${dec(qa(q1),4)},\\ ${dec(qa(q2),4)}`;
  const ans=P(...qs);const wrong=[[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]].filter(p=>p[0]!==qs[0]||p[1]!==qs[1]).map(p=>P(...p));const degv=q=>dec(qa(q)*180/PI,4);
@@ -730,6 +745,7 @@ function helpHTML(i){const q=TEST[i],c=q.c,g=guideFor(q.q);
  const forms=`<ul>${HELPTXT[c].map(t=>`<li>${t}</li>`).join('')}</ul>`;
  return `<div class="hint"><div class="hinthead"><strong>${g?'How to do this type: '+g[1]:'Help: '+NAME[c]}</strong><span class="hintbtns2"><button type="button" class="solbtn" data-act="ex" ${EXQ[i]?'disabled':''}>Worked example</button><button type="button" class="solbtn" data-act="sol" ${HS[i]===3?'disabled':''}>Step-by-step solution</button></span></div>
  ${g?`<ol class="steps">${g[2].map(t=>`<li>${t}</li>`).join('')}</ol>${g[3]?`<div class="eg"><b>Example:</b> ${g[3]}</div>`:''}<details class="forms"><summary>All formulas for ${NAME[c]}</summary>${forms}</details>`:forms}
+ ${SPECIAL_RX.test(q.q)?`<details class="forms" open><summary>Special triangles (where the angles come from)</summary>${specialFig()}${specialTable()}</details>`:''}
  ${S.lv[c]>=3?`<div class="note">Using help is fine for learning. A right answer won't count toward Mastered or higher levels, but a wrong answer still counts as a miss.</div>`:''}</div>`}
 let EXQ=[];
 // "Report this question": opens an email to Aegis with the question details filled in (no personal data)
@@ -890,10 +906,10 @@ G.P[1].push(()=>{let fn,b;do{fn=pick(['sin','cos','tan']);b=pick([30,45,60])}whi
  return Q('P',1,`Which acute angle $\\theta$ has $\\${fn}\\theta=${exT(v)}$?`,mc(D(b),[30,45,60,90,0].filter(x=>x!==b).map(D),null),`Use the special triangles. 30-60-90 has sides $1,\\sqrt{3},2$ and 45-45-90 has $1,1,\\sqrt{2}$. $\\${fn}${b}^\\circ=${exT(v)}$, so $\\theta=${b}^\\circ$.`)});
 G.P[2].push(()=>{const b=pick([30,45,60]),fn=pick(['sin','cos','tan']),sg=pick([1,-1]);const qs=[1,2,3,4].filter(q=>SIGN[fn][q-1]===sg);const q=pick(qs);
  const ang=k=>k===1?b:k===2?180-b:k===3?180+b:360-b;const v=sg*tv(fn,b*PI/180);const D=x=>x+'^\\circ';
- return Q('P',2,`$\\theta$ is in Quadrant ${q} and $\\${fn}\\theta=${exT(v)}$. Find $\\theta$ ($0^\\circ\\le\\theta\\le360^\\circ$).`,mc(D(ang(q)),[1,2,3,4].filter(k=>k!==q).map(k=>D(ang(k))),null),`Ignore the sign: $\\${fn}\\beta=${exT(Math.abs(v))}$ gives the related angle $\\beta=${b}^\\circ$. Quadrant ${q}: $\\theta=${q===1?'\\beta':q===2?'180^\\circ-\\beta':q===3?'180^\\circ+\\beta':'360^\\circ-\\beta'}=${ang(q)}^\\circ$.`)});
+ return Q('P',2,`$\\theta$ is in Quadrant ${q} and $\\${fn}\\theta=${exT(v)}$. Find $\\theta$ ($0^\\circ\\le\\theta\\le360^\\circ$).`,mc(D(ang(q)),[1,2,3,4].filter(k=>k!==q).map(k=>D(ang(k))),null),`${raaWhy(fn,b,false)} Quadrant ${q}: $\\theta=${q===1?'\\beta':q===2?'180^\\circ-\\beta':q===3?'180^\\circ+\\beta':'360^\\circ-\\beta'}=${ang(q)}^\\circ$.`)});
 G.P[2].push(()=>{const b=pick([30,45,60]),fn=pick(['sin','cos','tan']),sg=pick([1,-1]);const v=sg*tv(fn,b*PI/180);const qs=[1,2,3,4].filter(q=>SIGN[fn][q-1]===sg);
  const ang=k=>k===1?b:k===2?180-b:k===3?180+b:360-b;const P=(a,c)=>`${ang(a)}^\\circ,\\ ${ang(c)}^\\circ`;const ans=P(...qs);
- return Q('P',2,`Find all angles $\\theta$ with $\\${fn}\\theta=${exT(v)}$, $0^\\circ\\le\\theta\\le360^\\circ$.`,mc(ans,shuffle([[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]].filter(p=>p[0]!==qs[0]||p[1]!==qs[1]).map(p=>P(...p))),null),`1) Related angle from the positive value: $\\${fn}\\beta=${exT(Math.abs(v))}$ → $\\beta=${b}^\\circ$. 2) CAST: $\\${fn}$ is ${sg>0?'positive':'negative'} in Quadrants ${qs.join(' and ')}. 3) Place $\\beta$ in each: $${ans}$.`)});
+ return Q('P',2,`Find all angles $\\theta$ with $\\${fn}\\theta=${exT(v)}$, $0^\\circ\\le\\theta\\le360^\\circ$.`,mc(ans,shuffle([[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]].filter(p=>p[0]!==qs[0]||p[1]!==qs[1]).map(p=>P(...p))),null),`1) ${raaWhy(fn,b,false)} 2) CAST: $\\${fn}$ is ${sg>0?'positive':'negative'} in Quadrants ${qs.join(' and ')}. 3) Place $\\beta$ in each: $${ans}$.`)});
 GUIDES.unshift(
  [/Which acute angle/,'Angle from a special value',['Remember the special values: $\\sin30^\\circ=\\frac12$, $\\sin45^\\circ=\\frac{\\sqrt2}{2}$, $\\sin60^\\circ=\\frac{\\sqrt3}{2}$ (cos is the reverse order).','$\\tan30^\\circ=\\frac{\\sqrt3}{3}$, $\\tan45^\\circ=1$, $\\tan60^\\circ=\\sqrt3$.','Match the value to the angle.'],'$\\cos\\theta=\\frac{\\sqrt3}{2}$ → $\\theta=30^\\circ$.'],
  [/is in Quadrant \d and/,'Angle from a value and a quadrant',['Ignore the minus sign and find the related angle $\\beta$ from the special values.','Place it in the quadrant: Q1 $\\beta$, Q2 $180^\\circ-\\beta$, Q3 $180^\\circ+\\beta$, Q4 $360^\\circ-\\beta$.'],'$\\cos\\theta=-\\frac{\\sqrt2}{2}$ in Q2: $\\beta=45^\\circ$, $\\theta=180^\\circ-45^\\circ=135^\\circ$.'],
@@ -934,7 +950,7 @@ function xIntQ(lv){const f=pick(['sin','cos']),m=pick([1,2,3]),sg=pick([1,-1]);c
  const qs=[1,2,3,4].filter(q=>SIGN[f][q-1]===sg);const ang=q=>q===1?pt(1,d):q===2?pt(d-1,d):q===3?pt(d+1,d):pt(2*d-1,d);const P=(q1,q2)=>`x=${ang(q1)},\\ ${ang(q2)}`;const ans=P(...qs);
  const eq=`y=2\\${f} x${sg>0?'-':'+'}${cT}`;
  return Q('Gr',lv,`Solve for the $x$-intercepts of $${eq}$, $0\\le x<2\\pi$.`,mc(ans,shuffle([[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]].filter(p=>p[0]!==qs[0]||p[1]!==qs[1]).map(p=>P(...p))),null),
-  `$x$-intercepts are where $y=0$: $2\\${f} x${sg>0?'-':'+'}${cT}=0$, so $\\${f} x=${sg<0?'-':''}${vT}$. Reference angle $${pt(1,d)}$. $\\${f}$ is ${sg>0?'positive':'negative'} in Quadrants ${qs.join(' and ')}: $${ans}$.`)}
+  `$x$-intercepts are where $y=0$: $2\\${f} x${sg>0?'-':'+'}${cT}=0$, so $\\${f} x=${sg<0?'-':''}${vT}$. ${raaWhy(f,180/d,true)} $\\${f}$ is ${sg>0?'positive':'negative'} in Quadrants ${qs.join(' and ')}: $${ans}$.`)}
 G.Gr[3]=[()=>maxMinQ(3,[[1,1],[2,1]]),()=>yIntQ(3,KF),()=>zerosKQ(3)];
 G.Gr[4]=[()=>maxMinQ(4,KF.slice(1)),()=>tanKQ(4),()=>zerosKQ(4)];
 G.Gr[5]=[()=>xIntQ(5),()=>maxMinQ(5,[[3,1],[4,1],[1,2]])];
