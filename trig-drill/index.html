@@ -61,6 +61,11 @@ select{font:inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--lin
 .q{display:flex;flex-direction:column;gap:10px}
 .qhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.8rem;color:var(--muted)}
 .qnum{font-family:var(--f-mono);color:var(--ink);font-weight:500}
+.helpbtn{margin-left:auto;font-size:.78rem;padding:3px 10px;border-radius:999px;color:var(--accent);border-color:var(--accent);background:transparent}
+.helpbtn[disabled]{opacity:.6;cursor:default}
+.hint{border-left:3px solid var(--gold);background:var(--gold-soft);padding:8px 12px;border-radius:0 6px 6px 0;font-size:.9rem}
+.hint ul{margin:4px 0 0;padding-left:18px}.hint li{margin:2px 0}
+.hint .note{color:var(--muted);font-size:.8rem;margin-top:6px}
 .stem{font-size:1rem}
 .fig-wrap{overflow-x:auto}
 svg.plot,svg.fig{display:block;max-width:100%;height:auto}
@@ -635,7 +640,18 @@ function buildTest(){const on=CON.map(c=>c[0]).filter(c=>!S.off.includes(c));con
   while(left>0){let r=Math.random()*tot,i=0;while(r>w[i]&&i<on.length-1){r-=w[i];i++}cnt[on[i]]++;left--}
   const qs=[],seen=new Set();for(const c of on)for(let i=0;i<cnt[c];i++){let q;for(let t=0;t<10;t++){let lv=S.lv[c];if(!masteryFinal&&lv>1&&Math.random()<.25)lv=lv>3?rnd(3,lv-1):rnd(1,lv-1);q=gen(c,lv);if(!seen.has(q.q+q.choices.join()))break}seen.add(q.q+q.choices.join());qs.push(q)}
   return qs}
-let TEST=null,ANS=[],DONE=false,CONFIRM=false,RESULT=null;
+let TEST=null,ANS=[],DONE=false,CONFIRM=false,RESULT=null,HELP=[];
+// Help: a method/formula card per section (no answers, no AI). Helped questions don't count toward Mastered or higher.
+const HELPTXT={
+ P:['SOH CAH TOA: $\\sin\\theta=\\frac{\\text{opp}}{\\text{hyp}}$, $\\cos\\theta=\\frac{\\text{adj}}{\\text{hyp}}$, $\\tan\\theta=\\frac{\\text{opp}}{\\text{adj}}$.','Special triangles: $30^\\circ$-$60^\\circ$-$90^\\circ$ has sides $1,\\sqrt3,2$. $45^\\circ$-$45^\\circ$-$90^\\circ$ has sides $1,1,\\sqrt2$.','Related angle $\\beta$ is measured to the $x$-axis. CAST: All positive in Q1, Sin in Q2, Tan in Q3, Cos in Q4.','Reciprocals: $\\csc=\\frac{1}{\\sin}$, $\\sec=\\frac{1}{\\cos}$, $\\cot=\\frac{1}{\\tan}$.'],
+ R:['Degrees to radians: multiply by $\\frac{\\pi}{180}$. Radians to degrees: multiply by $\\frac{180}{\\pi}$. Leave answers exact (in terms of $\\pi$) unless told to round.','Arc length: $a=r\\theta$, so $\\theta=\\frac{a}{r}$ and $r=\\frac{a}{\\theta}$ ($\\theta$ in radians).','Angular speed $\\omega=\\frac{\\theta}{t}$. One revolution $=2\\pi$ rad. Linear speed $v=r\\frac{\\theta}{t}$.','Sector area: $A=\\frac{1}{2}r^2\\theta$ ($\\theta$ in radians, $r$ is half the diameter).','Fraction of a turn: $\\frac{\\text{angle}}{2\\pi}=\\frac{\\text{degrees}}{360^\\circ}$, then multiply by the time for one full turn.'],
+ U:['A point on the unit circle at angle $\\theta$ is $(\\cos\\theta,\\ \\sin\\theta)$.','Key values: $\\frac{\\pi}{6}\\to\\left(\\frac{\\sqrt3}{2},\\frac12\\right)$, $\\frac{\\pi}{4}\\to\\left(\\frac{\\sqrt2}{2},\\frac{\\sqrt2}{2}\\right)$, $\\frac{\\pi}{3}\\to\\left(\\frac12,\\frac{\\sqrt3}{2}\\right)$.','Other quadrants: find the related angle $\\beta$, use its value, then fix the sign with CAST.','$\\tan\\theta=\\frac{\\sin\\theta}{\\cos\\theta}$. Dividing by 0 means undefined.'],
+ C:['Point $(x,y)$ on the terminal arm: $r=\\sqrt{x^2+y^2}$, $\\sin\\theta=\\frac{y}{r}$, $\\cos\\theta=\\frac{x}{r}$, $\\tan\\theta=\\frac{y}{x}$.','Principal angle: find $\\beta$ from $\\tan\\beta=\\left|\\frac{y}{x}\\right|$, then place it. Q2: $\\pi-\\beta$, Q3: $\\pi+\\beta$, Q4: $2\\pi-\\beta$.','"Solve the ratio" means find the number (calculator in RADIAN mode). "Solve for $\\theta$" means find the angles.','Solving for $\\theta$ in $0\\le\\theta\\le2\\pi$: get $\\beta$ (use the positive value), then use CAST to find the two quadrants. Give radians.'],
+ Gr:['$y=\\sin x$: zeros at $x=n\\pi$, max $(\\frac{\\pi}{2},1)$, period $2\\pi$, range $-1\\le y\\le1$, odd.','$y=\\cos x$: zeros at $x=\\frac{(2n-1)\\pi}{2}$, max $(0,1)$, period $2\\pi$, range $-1\\le y\\le1$, even.','$y=\\tan x$: zeros at $x=n\\pi$, asymptotes at $x=\\frac{(2n-1)\\pi}{2}$, period $\\pi$, no amplitude.','Average rate of change $=\\frac{f(b)-f(a)}{b-a}$. Instantaneous: use a tiny interval like $h=0.001$.','$n\\in\\mathbb{I}$ means $n$ is any integer.'],
+ X:['$\\csc x=\\frac{1}{\\sin x}$, $\\sec x=\\frac{1}{\\cos x}$, $\\cot x=\\frac{1}{\\tan x}$.','Zeros of the original become vertical asymptotes of the reciprocal. They meet where $y=\\pm1$.','A local max becomes a local min (and the other way around). Positive/negative stays the same; increasing/decreasing switches.','csc and sec: range $y\\le-1$ or $y\\ge1$, no zeros, period $2\\pi$. cot: period $\\pi$. No horizontal asymptotes.'],
+ T:['$y=a\\sin[k(x-d)]+c$: $|a|$ is the amplitude ($a<0$ reflects), period $=\\frac{2\\pi}{|k|}$, $d$ is the phase shift, $c$ is the vertical shift (axis $y=c$).','Mapping a point: $(x,y)\\to\\left(\\frac{x}{k}+d,\\ ay+c\\right)$.','Max $=c+|a|$, min $=c-|a|$. Zeros exist only if 0 is in that range.','Factor $k$ out first: $\\sin(2x-\\pi)=\\sin[2(x-\\frac{\\pi}{2})]$.'],
+ M:['Amplitude $=\\frac{\\max-\\min}{2}$. Axis $c=\\frac{\\max+\\min}{2}$. $k=\\frac{2\\pi}{\\text{period}}$.','Cosine starts at a max; $-\\cos$ starts at a min (like getting on a Ferris wheel at the bottom). Sine starts on the axis going up.','To find a height at time $t$, substitute into the equation (radian mode).','To find when it reaches a height, set the equation equal to that height and solve for $t$.']};
+function helpHTML(c){return `<div class="hint"><strong>Help: ${NAME[c]}</strong><ul>${HELPTXT[c].map(t=>`<li>${t}</li>`).join('')}</ul><div class="note">Using help is fine for learning, but this question won't count toward Mastered or higher levels.</div></div>`}
 
 // ================= rendering =================
 const el=id=>document.getElementById(id);
@@ -673,16 +689,18 @@ function renderDash(){const mastered=CON.filter(c=>S.m[c[0]]).length;const ready
   el('len').onchange=e=>{S.len=+e.target.value;save()};
   el('newtest').onclick=()=>{newTest();el('test').scrollIntoView({behavior:'smooth'})};
   el('reset').onclick=()=>{el('resetc').innerHTML='<span class="warn">Erase all levels and history?</span> <button id="resety">Erase</button> <button id="resetn">Keep</button>';el('resety').onclick=()=>{S=fresh();save();renderDash();newTest()};el('resetn').onclick=()=>el('resetc').innerHTML=''}}
-function newTest(){TEST=buildTest();ANS=TEST.map(()=>null);DONE=false;CONFIRM=false;RESULT=null;renderTest()}
+function newTest(){TEST=buildTest();ANS=TEST.map(()=>null);HELP=TEST.map(()=>false);DONE=false;CONFIRM=false;RESULT=null;renderTest()}
 function renderTest(){let h='';
   if(DONE&&RESULT)h+=resultCard();
-  TEST.forEach((q,i)=>{h+=`<article class="card q${DONE?' done':''}" id="q${i}"><div class="qhead"><span class="qnum">Q${i+1}</span><span>${NAME[q.c]}</span><span class="tag">Lv ${q.lv}</span>${DONE?(ANS[i]===q.answer?'<span class="tag ok">Correct</span>':'<span class="tag bad">'+(ANS[i]==null?'Blank':'Wrong')+'</span>'):''}</div>
-  <div class="stem">${q.q}</div>${q.svg?`<div class="fig-wrap">${q.svg}</div>`:''}<div class="choices">${q.choices.map((c,j)=>{let cls='ch';if(DONE){if(j===q.answer)cls+=' right';else if(ANS[i]===j)cls+=' wrong'}
+  TEST.forEach((q,i)=>{h+=`<article class="card q${DONE?' done':''}" id="q${i}"><div class="qhead"><span class="qnum">Q${i+1}</span><span>${NAME[q.c]}</span><span class="tag">Lv ${q.lv}</span>${DONE?(ANS[i]===q.answer?'<span class="tag ok">Correct</span>':'<span class="tag bad">'+(ANS[i]==null?'Blank':'Wrong')+'</span>'):''}${HELP[i]&&DONE?'<span class="tag gold">Helped</span>':''}${DONE?'':`<button type="button" class="helpbtn" data-help="${i}" ${HELP[i]?'disabled':''}>${HELP[i]?'Help shown':'Help'}</button>`}</div>
+  <div class="stem">${q.q}</div>${HELP[i]&&!DONE?helpHTML(q.c):''}${q.svg?`<div class="fig-wrap">${q.svg}</div>`:''}<div class="choices">${q.choices.map((c,j)=>{let cls='ch';if(DONE){if(j===q.answer)cls+=' right';else if(ANS[i]===j)cls+=' wrong'}
    return `<label class="${cls}"><input type="radio" name="q${i}" value="${j}" ${ANS[i]===j?'checked':''} ${DONE?'disabled':''}><span class="lt">${'ABCD'[j]}</span><span class="ct">${c}</span></label>`}).join('')}</div>
   ${DONE?(ANS[i]===q.answer?`<details><summary>How to do it</summary><div class="why">${q.why}</div></details>`:`<div class="why">${q.why}</div>`):''}</article>`});
   if(DONE)h+=`<div style="display:flex;justify-content:center"><button class="primary" id="next2">Next test</button></div>`;
   el('test').innerHTML=h;
   if(!DONE)TEST.forEach((q,i)=>document.querySelectorAll(`input[name=q${i}]`).forEach(r=>r.onchange=()=>{ANS[i]=+r.value;CONFIRM=false;updBar()}));
+  if(!DONE)document.querySelectorAll('.helpbtn').forEach(b=>b.onclick=()=>{const i=+b.dataset.help;if(HELP[i])return;HELP[i]=true;b.disabled=true;b.textContent='Help shown';
+    const box=document.createElement('div');box.innerHTML=helpHTML(TEST[i].c);const h=box.firstChild;el('q'+i).querySelector('.stem').after(h);typeset(h)});
   else{el('next').onclick=el('next2').onclick=()=>{newTest();el('test').scrollIntoView({behavior:'smooth'})}}
   updBar();typeset(el('test'))}
 function resultCard(){const R=RESULT;return `<section class="card" id="result"><div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap"><div class="score">${R.s}/${R.n}</div><div><div style="font-weight:600">${R.s===R.n?'Perfect score.':R.s/R.n>=.8?'Strong. Fix the red ones and go again.':'Read every explanation below, then take the next test.'}</div><div class="muted" style="font-size:.9rem">${Math.round(100*R.s/R.n)}% · test #${S.hist.length}</div></div><button class="primary" id="next" style="margin-left:auto">Next test</button></div>
@@ -690,12 +708,14 @@ function resultCard(){const R=RESULT;return `<section class="card" id="result"><
 function updBar(){if(!TEST)return;const a=ANS.filter(v=>v!=null).length;el('count').textContent=DONE?`${RESULT.s} / ${RESULT.n} correct`:`${a} / ${TEST.length} answered`;el('meterfill').style.width=(100*(DONE?RESULT.s/RESULT.n:a/TEST.length))+'%';
   el('submit').textContent=DONE?'Next test':CONFIRM?'Submit anyway':'Submit test';el('barmsg').textContent=(!DONE&&CONFIRM)?`${TEST.length-a} blank`:''}
 el('submit').onclick=()=>{if(DONE){newTest();el('test').scrollIntoView({behavior:'smooth'});return}const blank=ANS.filter(v=>v==null).length;if(blank&&!CONFIRM){CONFIRM=true;updBar();return}grade()};
-function grade(){const per={};TEST.forEach((q,i)=>{const ok=ANS[i]===q.answer;(per[q.c]=per[q.c]||{n:0,s:0,qs:[]}).n++;if(ok)per[q.c].s++;per[q.c].qs.push([q.lv,ok])});
+function grade(){const per={};TEST.forEach((q,i)=>{const ok=ANS[i]===q.answer;const P=(per[q.c]=per[q.c]||{n:0,s:0,qs:[],cn:0,cs:0});P.n++;if(ok)P.s++;
+    // helped questions are ignored for progress once the section is at Level 3 (mastery attempts), Mastered, or higher
+    const skip=!!HELP[i]&&S.lv[q.c]>=3;if(!skip){P.cn++;if(ok)P.cs++}P.qs.push([q.lv,ok,skip])});
   const ch=[];for(const c in per){const P=per[c];S.acc[c]=P.s/P.n;
-    for(const[lv,ok]of P.qs){if(ok){if(lv===S.lv[c]){S.st[c]++;S.ms[c]=0}}else{S.st[c]=0;if(lv===S.lv[c])S.ms[c]=(S.ms[c]||0)+1}}
+    for(const[lv,ok,skip]of P.qs){if(skip)continue;if(ok){if(lv===S.lv[c]){S.st[c]++;S.ms[c]=0}}else{S.st[c]=0;if(lv===S.lv[c])S.ms[c]=(S.ms[c]||0)+1}}
     const L=S.lv[c];
     if((S.ms[c]||0)>=DROP&&L>1){S.lv[c]--;S.st[c]=0;S.ms[c]=0;if(S.lv[c]<3)S.m[c]=false;S.g[c]=false;ch.push([c,'down',S.lv[c]])}
-    else if(L===3&&S.m[c]&&P.s<P.n){S.m[c]=false;S.st[c]=0;ch.push([c,'lost'])}
+    else if(L===3&&S.m[c]&&P.cs<P.cn){S.m[c]=false;S.st[c]=0;ch.push([c,'lost'])}
     else if(L<3&&S.st[c]>=UP){S.lv[c]++;S.st[c]=0;ch.push([c,'up',S.lv[c]])}
     else if(L===3&&!S.m[c]&&S.st[c]>=MASTER){S.m[c]=true;S.st[c]=0;ch.push([c,'mastered'])}
     else if(S.masteryPass&&S.beyond&&L===3&&S.m[c]&&S.st[c]>=MASTER){S.lv[c]=4;S.st[c]=0;ch.push([c,'up',4])}
@@ -703,7 +723,7 @@ function grade(){const per={};TEST.forEach((q,i)=>{const ok=ANS[i]===q.answer;(p
     else if(S.beyond&&L===5&&S.st[c]>=5){S.lv[c]=6;S.g[c]=true;S.st[c]=0;ch.push([c,'up',6])}}
   const s=TEST.filter((q,i)=>ANS[i]===q.answer).length;const full=S.off.length===0&&TEST.length>=FINAL_N;
   S.hist.push({s,n:TEST.length,d:Date.now(),full});
-  S.ready=full&&s===TEST.length&&CON.every(([c])=>S.m[c])&&(S.masteryPass||TEST.every(q=>q.lv===3));if(S.ready){S.masteryPass=true;ch.push(['ALL','ready'])}save();
+  S.ready=full&&s===TEST.length&&!HELP.some(Boolean)&&CON.every(([c])=>S.m[c])&&(S.masteryPass||TEST.every(q=>q.lv===3));if(S.ready){S.masteryPass=true;ch.push(['ALL','ready'])}save();
   RESULT={s,n:TEST.length,ch};DONE=true;renderDash();renderTest();el('result').scrollIntoView({behavior:'smooth'})}
 
 // ---- from the class quizzes/notes: evaluating a ratio, property locations, reciprocal rules, zeros of transformed sinusoids
@@ -733,7 +753,7 @@ window.__selftest=(n=150)=>{const bad=[];let count=0;for(const c in G)for(const 
   if(!(q.answer>=0&&q.answer<4))bad.push(`${c}${lv}.${gi} bad answer index`);if(/NaN|Infinity|(^|[^a-z ])undefined/.test(txt.replace(/\\text\{undefined\}/g,'')))bad.push(`${c}${lv}.${gi} bad text: ${txt.slice(0,160)}`)}});
   const samples=[];for(const c in G)for(const lv of[4,5])G[c][lv].forEach(g=>{try{const q=g();samples.push(`[${c}${lv}] ${q.q} => ${q.choices[q.answer]}`)}catch(e){samples.push(`[${c}${lv}] THREW ${e.message}`)}});
   // rule scenarios: fake tests through the real grade()
-  const keep=JSON.stringify(S),rules=[];const run=(qs,ok)=>{TEST=qs.map(([c,lv])=>({c,lv,q:'x',choices:['a','b','c','d'],answer:0,why:'',svg:''}));ANS=TEST.map((_,i)=>ok[i]?0:1);grade()};
+  const keep=JSON.stringify(S),rules=[];const run=(qs,ok,hp)=>{TEST=qs.map(([c,lv])=>({c,lv,q:'x',choices:['a','b','c','d'],answer:0,why:'',svg:''}));ANS=TEST.map((_,i)=>ok[i]?0:1);HELP=TEST.map((_,i)=>!!(hp&&hp[i]));grade()};
   const chk=(name,cond)=>{if(!cond)rules.push('RULE FAIL: '+name)};
   S=fresh();run([['P',1],['P',1],['P',1]],[1,1,1]);chk('3 right levels up',S.lv.P===2);
   run([['P',2]],[0]);run([['P',2]],[0]);chk('2 wrong in a row (across tests) drops',S.lv.P===1);
@@ -742,6 +762,10 @@ window.__selftest=(n=150)=>{const bad=[];let count=0;for(const c in G)for(const 
   S=fresh();CON.forEach(([c])=>{S.lv[c]=3;S.m[c]=true});run(Array.from({length:15},(_,i)=>[CON[i%8][0],3]),Array(15).fill(1));chk('full perfect test = ready',S.ready);
   S=fresh();CON.forEach(([c])=>{S.lv[c]=3;S.m[c]=true});run(Array.from({length:10},(_,i)=>[CON[i%8][0],3]),Array(10).fill(1));chk('10-question test is not enough',!S.ready);
   S=fresh();CON.forEach(([c])=>{S.lv[c]=3;S.m[c]=true});S.off=['M'];run(Array.from({length:15},(_,i)=>[CON[i%7][0],3]),Array(15).fill(1));chk('unticked section blocks ready',!S.ready);
+  S=fresh();run([['P',1],['P',1],['P',1]],[1,1,1],[1,1,1]);chk('helped answers still count below Level 3',S.lv.P===2);
+  S=fresh();S.lv.U=3;run([['U',3],['U',3],['U',3],['U',3]],[1,1,1,1],[1,1,1,1]);chk('helped answers do not count toward mastering',!S.m.U&&S.st.U===0);
+  S=fresh();S.lv.U=3;S.m.U=true;run([['U',3],['U',3]],[0,0],[1,1]);chk('helped misses at Mastered are ignored',S.m.U&&S.lv.U===3);
+  S=fresh();CON.forEach(([c])=>{S.lv[c]=3;S.m[c]=true});run(Array.from({length:15},(_,i)=>[CON[i%8][0],3]),Array(15).fill(1),[1]);chk('help used blocks test-ready',!S.ready);
   S=JSON.parse(keep);save();renderDash();newTest();
   return{count,failures:bad.length+rules.length,examples:[...rules,...new Set(bad)].slice(0,15),samples}};
 
