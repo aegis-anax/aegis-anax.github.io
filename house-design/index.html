@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}[hidden]{display:none!important}</style>
+<title>House Design Test Drill</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: drafting-sheet workbook. A header strip with the test spec, a question map, then one sheet per question. */
+:root{
+  --paper:#eef2f6;--sheet:#ffffff;--ink:#1b2532;--ink2:#38475a;--muted:#5d6b7a;--line:#cbd4de;--grid:rgba(60,90,130,.07);
+  --accent:#d35a14;--accent-soft:#fbe9dd;--ok:#2c7d47;--ok-soft:#e2f2e7;--bad:#b9342c;--bad-soft:#f8e3e1;--warn:#9a6a00;
+  --wood:#e2c194;--wood-edge:#9b7246;--wood-hi:#f4dcb8;--mark:#d35a14;
+  --f-display:'Barlow Condensed',system-ui,sans-serif;--f-body:'Inter',system-ui,-apple-system,sans-serif;--f-mono:'JetBrains Mono',ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0e1a2b;--sheet:#132338;--ink:#e6edf5;--ink2:#c3cfdc;--muted:#93a6bd;--line:#2a405c;--grid:rgba(140,180,230,.07);
+  --accent:#ff8a3d;--accent-soft:#3a2516;--ok:#5cc47f;--ok-soft:#163323;--bad:#ff7a70;--bad-soft:#3a1c1b;--warn:#f0c060;
+  --wood:#b48a5c;--wood-edge:#e0b98a;--wood-hi:#c89c6a;--mark:#ff8a3d;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0e1a2b;--sheet:#132338;--ink:#e6edf5;--ink2:#c3cfdc;--muted:#93a6bd;--line:#2a405c;--grid:rgba(140,180,230,.07);
+  --accent:#ff8a3d;--accent-soft:#3a2516;--ok:#5cc47f;--ok-soft:#163323;--bad:#ff7a70;--bad-soft:#3a1c1b;--warn:#f0c060;
+  --wood:#b48a5c;--wood-edge:#e0b98a;--wood-hi:#c89c6a;--mark:#ff8a3d;color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+body{background:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px;color:var(--ink);font:15px/1.55 var(--f-body);margin:0}
+.wrap{max-width:900px;margin:0 auto;padding-block:20px 120px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:16px}
+h1,h2,h3{font-family:var(--f-display);letter-spacing:.01em;margin:0;text-wrap:balance}
+h1{font-size:2.2rem;line-height:1.05}
+h2{font-size:1.35rem}
+.muted{color:var(--muted)}
+.mono{font-family:var(--f-mono)}
+.sheet{background:var(--sheet);border:1px solid var(--line);border-radius:6px;padding:18px}
+.titleblock{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start}
+.spec{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.spec span{font:500 .78rem var(--f-mono);border:1px solid var(--line);border-radius:4px;padding:3px 8px;color:var(--ink2)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+button{font:600 .9rem var(--f-body);border-radius:6px;border:1px solid var(--line);background:var(--sheet);color:var(--ink);padding:8px 14px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button[aria-pressed="true"]{background:var(--ink);color:var(--sheet);border-color:var(--ink)}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button[disabled]{opacity:.55;cursor:default}
+.qmap{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:6px;margin-top:10px}
+.qmap button{padding:6px 0;font:500 .8rem var(--f-mono);position:relative}
+.qmap button.s1{background:var(--accent-soft);border-color:var(--accent)}
+.qmap button.s2{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.qmap button.cur{outline:2px solid var(--ink);outline-offset:1px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.8rem;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px;border:1px solid var(--line)}
+.q{display:flex;flex-direction:column;gap:12px}
+.qhead{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.qno{font:700 1.4rem var(--f-display);color:var(--accent)}
+.qsec{font:500 .75rem var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.qmarks{margin-left:auto;font:500 .85rem var(--f-mono);color:var(--ink2)}
+.prompt{font-size:1.02rem;max-width:68ch}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font:600 .8rem var(--f-body);color:var(--ink2)}
+input[type=text],textarea{font:15px/1.4 var(--f-body);color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:9px 10px;width:100%}
+textarea{resize:vertical;min-height:70px}
+.field.ok input,.field.ok textarea{border-color:var(--ok);background:var(--ok-soft)}
+.field.bad input,.field.bad textarea{border-color:var(--bad);background:var(--bad-soft)}
+.fres{font-size:.82rem}
+.fres.ok{color:var(--ok)}.fres.bad{color:var(--bad)}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media (max-width:560px){.opts{grid-template-columns:minmax(0,1fr)}.titleblock{grid-template-columns:1fr}}
+.opt{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:6px;padding:9px 11px;cursor:pointer;background:var(--sheet)}
+.opt input{accent-color:var(--accent)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt.crossed{opacity:.5;text-decoration:line-through}
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.result{border-left:3px solid var(--accent);background:var(--accent-soft);border-radius:0 6px 6px 0;padding:10px 14px;display:flex;flex-direction:column;gap:6px}
+.result.full{border-left-color:var(--ok);background:var(--ok-soft)}
+.result b.score{font:700 1.15rem var(--f-display)}
+.model{font-size:.93rem}
+.note{font-size:.85rem;color:var(--ink2)}
+.note b{color:var(--ink)}
+.fig{display:block;max-width:100%;height:auto}
+.figwrap{overflow-x:auto}
+/* labelling */
+.labelgrid{display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:14px;align-items:start}
+@media (max-width:700px){.labelgrid{grid-template-columns:minmax(0,1fr)}}
+.bank{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:600 .85rem var(--f-body);border:1px dashed var(--accent);background:var(--sheet);color:var(--ink);border-radius:999px;padding:5px 12px;cursor:grab;user-select:none}
+.chip.sel{background:var(--accent);color:#fff;border-style:solid}
+.chip.used{opacity:.35;cursor:default}
+.slots{display:flex;flex-direction:column;gap:6px}
+.slot{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:6px;padding:5px 8px;min-height:38px;background:var(--paper);cursor:pointer}
+.slot .n{font:700 .85rem var(--f-mono);width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--mark);color:#fff;flex:none}
+.slot .v{font-weight:600;font-size:.9rem}
+.slot .v:empty::after{content:'tap a term, then tap here';color:var(--muted);font-weight:400;font-size:.78rem}
+.slot.over{border-color:var(--accent)}
+.slot.ok{border-color:var(--ok);background:var(--ok-soft)}.slot.bad{border-color:var(--bad);background:var(--bad-soft)}
+.wood{fill:var(--wood);stroke:var(--wood-edge);stroke-width:1.2}
+.woodhi{fill:var(--wood-hi);stroke:var(--wood-edge);stroke-width:1.2}
+.mk circle{fill:var(--mark);stroke:var(--sheet);stroke-width:2.5}
+.mk text{fill:#fff;font:700 12px var(--f-mono);text-anchor:middle;dominant-baseline:central}
+.mk{cursor:pointer}
+.ln{stroke:var(--ink2);stroke-width:1.4;fill:none}
+.fl{fill:var(--ink2);font:600 12px var(--f-body)}
+.fl2{fill:var(--muted);font:500 11px var(--f-mono)}
+.order{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.order li{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:6px;padding:6px 8px;background:var(--paper)}
+.order li span{flex:1;min-width:0}
+.order li button{padding:2px 9px}
+.order li.ok{border-color:var(--ok);background:var(--ok-soft)}.order li.bad{border-color:var(--bad);background:var(--bad-soft)}
+.kit .item{cursor:pointer}
+.kit .item rect,.kit .item circle{stroke:var(--ink2);stroke-width:1.3}
+.kit .item.on rect{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2.5}
+.kit .tri{stroke:var(--accent);stroke-width:3;fill:none;stroke-dasharray:6 4}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--sheet);border-top:1px solid var(--line);padding-block:10px calc(10px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));z-index:5}
+.bar .in{max-width:900px;margin:0 auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.bar .stat{font:500 .85rem var(--f-mono);color:var(--ink2)}
+.timer{font:600 .95rem var(--f-mono)}.timer.low{color:var(--bad)}
+.toprow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+.total{font:700 2.4rem var(--f-display)}
+.sec-scores{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:8px}
+.sec-scores div{border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:.85rem}
+.sec-scores b{font:700 1.1rem var(--f-display);display:block}
+.tip{font-size:.82rem;color:var(--muted)}
+a{color:var(--accent)}
+#updbar{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:20;display:flex;gap:10px;align-items:center;max-width:calc(100% - 32px);padding:10px 12px 10px 16px;border-radius:8px;background:var(--sheet);border:1px solid var(--accent);box-shadow:0 8px 24px rgba(0,0,0,.2)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="sheet">
+    <div class="titleblock">
+      <div>
+        <div class="qsec">TDJ3M1 · Design Technology</div>
+        <h1>House Design Test Drill</h1>
+        <p class="muted" style="margin:.4rem 0 0;max-width:62ch">Test #2 question by question, checked against the class notes. Typed answers accept small typos and your own wording. Full marks twice in a row turns a question green.</p>
+        <div class="spec" id="spec"></div>
+      </div>
+      <div class="tabs" role="group" aria-label="Mode">
+        <button type="button" id="m-study" aria-pressed="true">Study</button>
+        <button type="button" id="m-test" aria-pressed="false">Full test</button>
+        <button type="button" id="m-missed" aria-pressed="false">Not solid yet</button>
+      </div>
+    </div>
+    <div class="qmap" id="qmap" aria-label="Questions"></div>
+    <div class="legend"><span><i></i>not tried</span><span><i style="background:var(--accent-soft);border-color:var(--accent)"></i>got it once / partly</span><span><i style="background:var(--ok-soft);border-color:var(--ok)"></i>solid (full marks twice in a row)</span></div>
+  </header>
+  <main id="main"></main>
+  <p class="tip">Found a mistake? Email Aegis: <span class="mono">aegis.anax@gmail.com</span></p>
+</div>
+<div class="bar"><div class="in" id="bar"></div></div>
+
+<script>
+// ================= answer matching =================
+// Text is normalized, then each "alt" is looked for as a phrase or, word by word, with a small typo allowance.
+const norm=s=>(s||'').toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+function osa(a,b){const m=a.length,n=b.length;if(Math.abs(m-n)>2)return 9;const d=[];for(let i=0;i<=m;i++){d[i]=[i]}for(let j=0;j<=n;j++)d[0][j]=j;
+ for(let i=1;i<=m;i++)for(let j=1;j<=n;j++){const c=a[i-1]===b[j-1]?0:1;d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+c);if(i>1&&j>1&&a[i-1]===b[j-2]&&a[i-2]===b[j-1])d[i][j]=Math.min(d[i][j],d[i-2][j-2]+1)}return d[m][n]}
+function wordIn(toks,w){if(w.length<4)return toks.some(t=>t===w||(t.startsWith(w)&&t.length<=w.length+3));
+ const tol=w.length>=8?2:1;return toks.some(t=>t.includes(w)||osa(t,w)<=tol||(t.length>w.length&&osa(t.slice(0,w.length),w)<=tol-(w.length<8?0:1)))}
+function has(text,alt){const T=norm(text),A=norm(alt);if(!A)return false;const toks=T.split(' ');
+ if(A.length>=4&&(' '+T+' ').includes(' '+A))return true;const ws=A.split(' ');return ws.every(w=>wordIn(toks,w))}
+const all=(t,groups)=>groups.every(g=>g.some(a=>has(t,a)));
+const anyRule=(t,rules)=>rules.some(r=>all(t,r));
+
+// ================= the test (exact wording) + answer key from the notes =================
+const SECS={lay:'House layouts',sty:'House types & styles',rw:'Roofs & walls',code:'Building code',sk:'SketchUp'};
+const GUIDE=[
+ ['Garage to kitchen is direct and short',[[['garage'],['kitchen']]]],
+ ['Foyer/entrance is central and convenient',[[['foyer','entrance','entry','front door'],['central','centre','center','middle','convenient']]]],
+ ['All bedrooms are close to a bathroom',[[['bedroom'],['bathroom','washroom','bath','toilet']]]],
+ ['Utility rooms central, away from corners',[[['utility'],['central','centre','center','corner','middle']]]],
+ ['Few rooms have traffic planned through them',[[['through','thru'],['room','traffic','walk','pass']]]],
+ ['1st-floor laundry near the kitchen',[[['laundry'],['kitchen']]]],
+ ['2nd-floor laundry central to the bedrooms',[[['laundry'],['bedroom','second','2nd','upstairs','upper']]]],
+ ['A closet near every entry door',[[['closet'],['entry','entrance','door','front']]]],
+ ['Hallways central, no wasted space ("hallway to nowhere")',[[['hall','hallway'],['central','centre','center','waste','wasted','wasting','nowhere','short']]]],
+ ['Closets/storage placed to block noise and add privacy (not on outside walls)',[[['closet','storage'],['noise','privacy','sound','outside wall','private']]]],
+ ['1 storey: plumbing fixtures share a common wall',[[['plumbing','pipes','fixtures','bathroom','kitchen'],['common wall','share','shared','same wall','sharing']]]],
+ ['2 storey: plumbing fixtures stacked above/below each other',[[['plumbing','pipes','fixtures','bathroom'],['above','below','stack','stacked','on top','under','over each']]]],
+ ['Group common and private areas, keep them separate',[[['common','public','living','social'],['private'],['group','separate','apart','together']]]]];
+const Q=[
+{id:'1',sec:'lay',marks:2,type:'fields',prompt:'List a positive and a negative feature of having open space in a house',
+ fields:[{label:'Positive',marks:1,rules:[[['bigger','larger','spacious','roomy','more space','feel big','appear big','look big','big']],[['pleasant','inviting','bright','light','airy','nice']],[['flow','social','together','connected','interact','supervise','watch','see the kids']]]},
+  {label:'Negative',marks:1,rules:[[['privacy','private']],[['noise','loud','sound']],[['heat','cool','heating','cooling','energy','temperature']],[['smell','odour','odor']]]}],
+ model:'Positive: it makes the house feel bigger and more pleasant. Negative: less privacy.',
+ note:'Notes (House Layouts): "open spaces are more pleasant, and make the space feel larger... However, large open spaces reduce privacy."'},
+{id:'2',sec:'lay',marks:5,type:'fields',prompt:'One of the major aspects of house design is traffic flow and use of space. We covered several guidelines for traffic flow and room sizes. List five of those guidelines that are important when designing a living space.',
+ pool:GUIDE,fields:[1,2,3,4,5].map(n=>({label:'Guideline '+n,marks:1,pool:true})),
+ model:'Any five of the 13 traffic flow guidelines, e.g. 1) Garage to kitchen is direct and short. 2) All bedrooms close to a bathroom. 3) Hallways central to avoid wasted space. 4) Utility rooms central, away from corners. 5) 1st-floor laundry near the kitchen.',
+ note:'All 13 from the notes: '+GUIDE.map((g,i)=>(i+1)+') '+g[0]).join('; ')+'. Each box must be a different guideline.'},
+{id:'3',sec:'lay',marks:1,type:'fields',prompt:'This photo shows one of the major concepts in kitchen design. What is this called?',fig:'kitchen',
+ fields:[{label:'Answer',marks:1,rules:[[['work triangle','kitchen triangle','triangle']]]}],
+ model:'The work triangle (sink, stove and fridge).',
+ note:'Notes: "The most important feature of the kitchen is a properly designed work triangle" connecting the sink, stove and fridge. Total length no more than 26 ft; each side 4 to 9 ft.'},
+{id:'3b',sec:'lay',marks:2,type:'essay',prompt:'This concept tries to balance or ‘trade-off’ two characteristics. List the two competing characteristics and explain how we try to balance them to achieve a functional design.',
+ placeholder:'_____ vs. _____, and how we balance them',
+ concepts:[{name:'The two competing characteristics',marks:1,rules:[[['distance','short','close','steps','travel','efficien','walking'],['space','room','counter','size','cramped','large','big']],[['money','cost','price','cheap','budget'],['size','space']]]},
+  {name:'How we balance them',marks:1,rules:[[['26']],[['4 to 9','4 9','4-9','4 and 9','between']],[['not too small','not too big','not too large','too small','too large','too big']],[['balance','compromise','keep','middle','limit']]]}],
+ model:'Short distances (efficiency, fewer steps) vs. enough space (room to work, counter space). We balance them by keeping the triangle not too small and not too large: total length 26 ft or less, each side 4 to 9 ft, with nothing (island, traffic) blocking it.',
+ note:'Notes: "The best designs are not too small or too large but balance the need for space with the need to keep the distances short." On the marked test, "money + size" also got 2/2, but distance vs. space is what the notes say.'},
+{id:'4',sec:'lay',marks:2,type:'fields',prompt:'Which house layout would you recommend for an occupant who wants the living spaces within the house to be connected and flow from one to the next? List one draw-back to this layout.',
+ fields:[{label:'Layout',marks:1,rules:[[['split']]]},{label:'Draw-back',marks:1,rules:[[['noise','sound','loud']],[['heat','head','cool','heating','cooling','temperature']],[['privacy','private']],[['stairs','steps','elderly','mobility','wheelchair','older']],[['basement','crawl']]]}],
+ model:'Split level (back split or side split). Draw-back: noise and heat travel easily through the open centre, so privacy and heating/cooling are harder (also lots of stairs, and only half a basement).',
+ note:'Notes (House Types): split level "creates a natural flow from one area of the house to the next with open spaces connecting everything together." Disadvantages: half basement / crawl space, noise and heat transmit through the open centre, many stairs.'},
+{id:'5',sec:'sty',marks:1,type:'mc',prompt:'This house style is typically a single or one and a half storey home with a broad low pitched roof. In most cases this style includes a large porches, veranda’s or overhangs. This house style is called:',
+ options:['1-1/2 Storey','Cape Cod','Bungalow','Modern'],answer:2,model:'c) Bungalow',note:'Bungalow: single or 1-1/2 storey, broad low-pitched roof, large porches, overhangs and verandas.'},
+{id:'6',sec:'sty',marks:1,type:'mc',prompt:'This house style is typically a one and a half storey building with steep pitched roof, end gables and a central chimney. Other features include a simple symmetrical design, storm shutters and white is a common colour choice. This house style is called:',
+ options:['Split Level','Bungalow','Georgian','Cape Cod'],answer:3,model:'d) Cape Cod',note:'Cape Cod (New England, 1800s): low wide 1-1/2 storey, steep pitched roof, end gables, central chimney, shutters, white.'},
+{id:'7',sec:'sty',marks:1,type:'mc',prompt:'This house style uses a portion of the attic as living space. This style makes efficient use of materials. However, widows can only be placed on the end walls on the upper floor, unless dormers are added. This house style is called:',
+ options:['Victorian','1-1/2 Storey','Georgian','Center Hall Plan'],answer:1,model:'b) 1-1/2 Storey',note:'1-1/2 storey: uses part of the attic as living space; short upstairs side walls, so windows only on the end walls unless dormers are added.'},
+{id:'8',sec:'sty',marks:1,type:'mc',prompt:'This house style is characterized by a simple box layout with strict symmetry. The main entrance is always centered on the long side of the house with two windows on each side. Chimneys are on both ends of the home maintaining symmetry. This house style is called:',
+ options:['Victorian','1-1/2 Storey','Georgian','Center Hall Plan'],answer:2,model:'c) Georgian',note:'Georgian/Colonial: simple box layout, strict symmetry, chimneys on both sides, brick or stone.'},
+{id:'9',sec:'sty',marks:1,type:'mc',prompt:'This house style uses materials such as metal and glass. It usually includes an open concept layout, straight lines and removal of unnecessary features. This house style is called:',
+ options:['Modern','Split Level','Bungalow','Center Hall Plan'],answer:0,model:'a) Modern',note:'Modern: open concept, glass and metal, straight lines, simplified (no unnecessary detail).'},
+{id:'10',sec:'rw',marks:2,type:'fields',prompt:'Headers and trimmers are an important structural components of a wall. Explain the function (or purpose) of both the header and trimmer.',
+ fields:[{label:'Header',marks:1,rules:[[['support','hold','carry','carries','bear','transfer','spread'],['weight','load','structure','above','over','roof','floor']]]},
+  {label:'Trimmer',marks:1,rules:[[['support','hold','carry','carries','bear','under'],['header']],[['side','beside','frame','edge'],['opening','door','window']]]}],
+ model:'Header: carries the weight of the structure above an opening (door or window). Trimmer: the stud on each side of the opening that holds up the header and carries that load down to the bottom plate.',
+ note:'On the wall diagram, the header is the thick horizontal piece over each opening; the trimmers are the studs right beside the opening, under the header.'},
+{id:'11',sec:'rw',marks:2,type:'fields',prompt:'Wood frame walls are the most common type, however walls can be made of different materials. List another type of wall construction discussed in class and give one explain an advantage it has over standard wood frame construction.',
+ fields:[{label:'Type of wall construction',marks:1,rules:[[['metal','steel','masonry','concrete','brick','block','cinder','stone']]]},
+  {label:'Advantage over wood frame',marks:1,rules:[[['strong','stronger','durable','fire','rot','termite','insect','pest','straight','warp','last','sound','noise','mould','mold','water']]]}],
+ model:'Metal (steel) frame: stronger and more durable, does not rot and resists fire. (Masonry or concrete also count: very strong, durable, fire resistant.)',
+ note:'Notes (Wall Construction): most houses use wood frame; walls can also be masonry, concrete or metal.'},
+{id:'12',sec:'rw',marks:4,type:'label',prompt:'Label the following parts of a wall: Top Plate, Bottom Plate, Stud, Rough Opening (2 places), Header, Trimmer, Sill, Jack Stud',
+ model:'1 Top plate, 2 Bottom plate, 3 Stud, 4 Rough opening (door), 5 Header, 6 Trimmer, 7 Sill, 8 Jack stud, 9 Rough opening (window).',
+ note:'Jack studs are the short studs ABOVE a header (between the header and the top plate). Trimmers are beside the opening, under the header. The sill is the flat piece under a window. Each term is worth 0.5; rough opening needs both places.'},
+{id:'13',sec:'rw',marks:1,type:'essay',prompt:'Explain why it is important to know the difference between a load-bearing and a partition wall.',
+ concepts:[{name:'Why it matters',marks:1,rules:[[['support','hold','carry','carries','bear'],['weight','structure','above','load','roof','floor']],[['remove','removing','move','take out','knock','demolish','renovat','cut'],['safe','collapse','fall','support','careful','cannot','cant','beam','danger']],[['collapse','cave in','fall down']]]}],
+ model:'Load-bearing walls hold up the weight of the structure above them, so they can’t be removed or moved (for example in a renovation) without adding support, or the house could sag or collapse. Partition walls only divide rooms and can be changed safely.',
+ note:'Notes: load-bearing walls support the weight of the structure above; partition walls do not support weight, they divide the house for privacy and functionality.'},
+{id:'14',sec:'lay',marks:1,type:'fields',prompt:'When designing a house it is important to know about the standard sizes of building materials. List the standard size L x W of a sheet of plywood or drywall.',
+ fields:[{label:'Size',marks:1,check:t=>/(^|\D)(4\s*(ft|feet|foot)?\s*(x|by|\*)\s*8|8\s*(ft|feet|foot)?\s*(x|by|\*)\s*4|48\s*(in|inch|inches)?\s*(x|by|\*)\s*96|96\s*(in|inch|inches)?\s*(x|by|\*)\s*48)(\D|$)/.test(norm(t).replace(/\s+/g,' ').replace(/ x /g,'x').replace(/(\d) (x|by)/g,'$1$2').replace(/(x|by) (\d)/g,'$1$2').replace(/by/g,'x'))}],
+ model:'4’ x 8’ (4 ft by 8 ft)',note:'Notes: plywood and drywall both come in 4’ x 8’ sheets.'},
+{id:'15',sec:'lay',marks:2,type:'fields',prompt:'Explain how you will save money (two ways) by incorporating standard material sizes into your room and building dimensions.',
+ pool:[['Less labour: less cutting to fit',[[['labour','labor','cutting','cut','time','work','install','faster','quicker','workers']]]],['Less waste: less wasted material',[[['waste','wasted','wasting','scrap','leftover','left over','offcut']],[['less','fewer','buy less','not buy'],['material','sheet','plywood','drywall','lumber']]]]],
+ fields:[{label:'Way 1',marks:1,pool:true},{label:'Way 2',marks:1,pool:true}],
+ model:'1) Reduce labour: rooms sized to full sheets (multiples of 4’ or 2’) need less cutting to fit, so less work time. 2) Reduce waste: fewer cut-off scraps, so you buy less material.',
+ note:'Notes (Dimensions and Materials): using standard sizes will "reduce labour – less cutting to fit" and "reduce waste – less waste material." The marked test got 0/2 for "adjust room size... less rooms" because it did not say labour and waste.'},
+{id:'16',sec:'rw',marks:1,type:'fields',prompt:'Name the most common type of roof used in residential construction',
+ fields:[{label:'Answer',marks:1,rules:[[['gable']]]}],model:'Gable roof',note:'Notes (Roof Styles): gable is "the most common roof used on homes." The triangle at each end wall is the gable.'},
+{id:'17',sec:'rw',marks:1,type:'fields',prompt:'Name the roof type shown here',fig:'hip',
+ fields:[{label:'Answer',marks:1,rules:[[['hip']]]}],model:'Hip roof',note:'A hip roof slopes down on all four sides, so there is no gable (triangle wall) at the ends.'},
+{id:'18',sec:'code',marks:1,type:'essay',prompt:'What is the purpose of the Ontario Building Code? (Why do we need the building code?)',
+ concepts:[{name:'Purpose',marks:1,rules:[[['safe','safety','well being','wellbeing','protect','health','harm','injur']]]}],
+ model:'To make sure minimum standards are met for building design, construction, access and energy efficiency, so buildings are safe for the people who live in them (their safety and well-being).',
+ note:'Notes: the code ensures minimum standards are met, and "These standards ensure the safety and well-being of the building occupants." The marked test lost this mark for leaving out the safety part.'},
+{id:'19',sec:'code',marks:3,type:'fields',prompt:'Who enforces the building code? How do they enforce it (two ways)?',
+ pool:[['Building permits',[[['permit']]]],['Inspections',[[['inspect','inspection','inspector','check']]]]],
+ fields:[{label:'Who enforces it',marks:1,rules:[[['municipal','municipality','city','town','local government','region','building department','building inspector','chief building official']]]},{label:'Way 1',marks:1,pool:true},{label:'Way 2',marks:1,pool:true}],
+ model:'The municipality (city/town building department). 1) Requiring a building permit for new construction and major renovations (plans must meet the code). 2) Inspecting construction to make sure it matches the approved permit.',
+ note:'Notes: build without a permit and the municipality can fine you and make you tear it down.'},
+{id:'20',sec:'code',marks:1,type:'essay',prompt:'What is a live load in a building? Give an example.',
+ concepts:[{name:'Definition + example',marks:1,rules:[[['change','changing','variable','varies','not permanent','temporary','moving','moves','use','occupan'],['people','person','furniture','occupant','snow','car','appliance','crowd','students','table']]]}],
+ model:'A variable (changing) load from how the building is used and who is in it, not part of the building itself. Example: people and furniture.',
+ note:'Building Code: live load is "a variable load due to the intended use and occupancy." Dead load is the permanent weight of the building itself. Snow is listed as its own load (S), but the marked test got the mark with snow, so people/furniture is the safest example.'},
+{id:'21',sec:'sk',marks:1,type:'fields',prompt:'In SketchUp which command would you use to create a rotated solid like this vase?',fig:'vase',
+ fields:[{label:'Command',marks:1,rules:[[['follow me','followme']]]}],model:'Follow Me',note:'Follow Me sweeps a face (the profile) along a path (a circle) to make a lathe-turned solid.'},
+{id:'22',sec:'sk',marks:3,type:'essay',prompt:'List IN DETAIL the steps you would take to create the rotated object from Q21.',order:true,
+ concepts:[{name:'Draw the 2D profile (half outline) of the vase',marks:1,rules:[[['outline','profile','2d','2 d','half','side shape','shape','cross section','face']]]},
+  {name:'Draw a circle as the path',marks:1,rules:[[['circle','path']]]},
+  {name:'Use Follow Me to sweep the profile around the circle',marks:1,rules:[[['follow me','followme'],['rotate','around','circle','path','profile','outline','face','line','click']]]}],
+ model:'1) Draw the 2D half-outline (profile) of the vase standing upright, starting from the centre line (Line and 2-point/3-point arc tools). 2) Draw a circle flat on the ground, centred on the bottom of that centre line (this is the path). 3) Select the circle, choose Follow Me, then click the profile face. It sweeps around the circle to make the vase.',
+ note:'Three marks: profile, circle path, Follow Me around the circle.'},
+{id:'23',sec:'sk',marks:1,type:'fields',prompt:'What does this sketch-up tool do?',fig:'scale',
+ fields:[{label:'Answer',marks:1,rules:[[['scale','resize','size','bigger','smaller','stretch','enlarge','shrink']]]}],model:'It is the Scale tool: it changes the size of (scales) an object.',note:'Scale tool: drag the grips to make geometry bigger or smaller; hold Ctrl to scale about the centre, or type a factor like 2 or 0.5.'},
+{id:'24',sec:'sk',marks:2,type:'essay',prompt:'Describe a situation where you have used this tool and explain why it was useful.',
+ concepts:[{name:'A situation using Scale',marks:1,rules:[[['scale','resize','bigger','smaller','size','enlarge','shrink','multipl','stretch','fit']]]},
+  {name:'Why it was useful',marks:1,rules:[[['easier','useful','fit','faster','detail','small','proportion','match','quick','edit','instead of','redraw','save time','exact']]]}],
+ model:'When I modelled a very small part, I scaled it up 10 times so it was easier to draw the small details, then scaled it back down by 10 when I was done. It was useful because I did not have to redraw anything.',
+ note:'Any real situation works: say what you scaled and why it saved time or made it easier.'},
+{id:'25',sec:'sk',marks:3,type:'essay',prompt:'Explain the BEST way to make multiple copies of an object (Ex: stair baluster)',
+ concepts:[{name:'Use the Move tool',marks:1,rules:[[['move']]]},{name:'Press Ctrl to make a copy',marks:1,rules:[[['ctrl','control','copy']]]},
+  {name:'Type x# (e.g. x10) to make that many copies (array)',marks:1,rules:[[['x10','x 10','10x','times','multiply','array','divide','x5','x4','x3','x2','x6','x8','x12','x20','repeat']]],check:t=>/(^|\s)(x\s*\d+|\d+\s*x|\*\s*\d+|\/\s*\d+)(\s|$)/i.test(t.replace(/[^a-z0-9*\/ ]/gi,' '))}],
+ model:'Make the baluster a component, then use the Move tool and tap Ctrl to make a copy, move it the spacing distance, then type x10 (and Enter) to make 10 evenly spaced copies. (Typing /10 instead divides the copies evenly between the first and the copy.)',
+ note:'Three marks: Move tool, Ctrl (copy), and x10 for an array of copies.'},
+{id:'26',sec:'sk',marks:1,type:'fields',prompt:'What feature of SketchUp do you use to keep touching geometry separated?',
+ fields:[{label:'Answer',marks:1,rules:[[['group','grup','groop','component','compnent']]]}],model:'Groups (or components)',note:'Loose geometry that touches sticks together; make it a group or component to keep it separate.'},
+{id:'27',sec:'sk',marks:1,type:'fields',prompt:'What feature of SketchUp do you use to turn geometry visibility on or off?',
+ fields:[{label:'Answer',marks:1,rules:[[['tag','layer']]]}],model:'Tags (called Layers in older SketchUp)',note:'Put geometry on a tag, then click the eye in the Tags panel to show or hide it. X-ray only makes faces see-through; it does not turn geometry off.'}];
+
+// ================= scoring =================
+function poolMatch(texts,pool){ // max matching: each text -> a distinct pool item
+ const can=texts.map(t=>pool.map((p,k)=>t.trim()&&anyRule(t,p[1])?k:-1).filter(k=>k>=0));const owner=pool.map(()=>-1);const got=texts.map(()=>-1);
+ function tryA(i,seen){for(const k of can[i]){if(seen.has(k))continue;seen.add(k);if(owner[k]<0||tryA(owner[k],seen)){owner[k]=i;got[i]=k;return true}}return false}
+ texts.forEach((_,i)=>tryA(i,new Set()));return got}
+const LBL_KEY=['Top Plate','Bottom Plate','Stud','Rough Opening','Header','Trimmer','Sill','Jack Stud','Rough Opening'];
+function score(q,a){ // a: answer object -> {got, parts:[{ok,label,marks,match}]}
+ if(q.type==='mc'){const ok=a===q.answer;return{got:ok?q.marks:0,parts:[{ok,marks:q.marks}]}}
+ if(q.type==='label'){const v=a||[];const terms=['Top Plate','Bottom Plate','Stud','Rough Opening','Header','Trimmer','Sill','Jack Stud'];
+  const okSlot=LBL_KEY.map((k,i)=>v[i]===k);let got=0;terms.forEach(t=>{const idx=LBL_KEY.map((k,i)=>k===t?i:-1).filter(i=>i>=0);if(idx.every(i=>okSlot[i]))got+=.5});return{got,parts:okSlot.map(ok=>({ok}))}}
+ if(q.type==='essay'){const t=a||'';const parts=q.concepts.map(c=>{const ok=!!t.trim()&&(anyRule(t,c.rules)||(c.check?c.check(t):false));return{ok,label:c.name,marks:c.marks}});return{got:parts.reduce((s,p)=>s+(p.ok?p.marks:0),0),parts}}
+ const v=a||[];const poolIdx=q.fields.map((f,i)=>f.pool?i:-1).filter(i=>i>=0);const pm=q.pool?poolMatch(poolIdx.map(i=>v[i]||''),q.pool):[];
+ const parts=q.fields.map((f,i)=>{const t=v[i]||'';if(f.pool){const k=pm[poolIdx.indexOf(i)];return{ok:k>=0,marks:f.marks,match:k>=0?q.pool[k][0]:null}}
+  const ok=!!t.trim()&&(f.check?f.check(t):anyRule(t,f.rules));return{ok,marks:f.marks}});
+ return{got:parts.reduce((s,p)=>s+(p.ok?p.marks:0),0),parts}}
+const TOTAL=Q.reduce((s,q)=>s+q.marks,0);
+
+// ================= state =================
+const KEY='tdj3m1-test2-drill-v1';
+let S=(()=>{try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.st)return s}catch(_){}return{st:{},best:null,timed:false}})();
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(_){}};
+const st=id=>S.st[id]||{streak:0,tries:0};
+function record(id,full){const x=st(id);x.tries++;x.streak=full?x.streak+1:0;S.st[id]=x;save()}
+const level=id=>{const x=st(id);return x.streak>=2?2:x.tries?1:0};
+let MODE='study',CUR=0,ANS={},DONE=false,LIST=Q.map((_,i)=>i),TSTART=0,TTICK=null,XO={};
+const el=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+// ================= figures (original drawings) =================
+function wallSVG(){const W=[];const r=(x,y,w,h,c='wood')=>W.push(`<rect class="${c}" x="${x}" y="${y}" width="${w}" height="${h}"/>`);
+ r(20,26,600,12,'woodhi');r(20,38,600,12);r(20,360,600,14,'woodhi'); // top plate (double), bottom plate
+ for(const x of [20,74,318,364,576,608])r(x,50,12,310); // full studs
+ r(126,50,12,310);r(272,50,12,310);r(396,50,12,310);r(532,50,12,310); // king studs
+ r(138,150,12,210);r(260,150,12,210);r(408,150,12,210);r(520,150,12,210); // trimmers
+ r(138,130,134,20,'woodhi');r(408,130,124,20,'woodhi'); // headers
+ for(const x of [168,199,230])r(x,50,12,80); for(const x of [436,464,492])r(x,50,12,80); // jack studs above headers
+ r(420,250,100,12,'woodhi'); for(const x of [436,464,492])r(x,262,12,98); // sill + short studs under it
+ const M=[[60,32],[340,367],[80,230],[205,265],[205,140],[144,300],[452,256],[174,90],[470,200]];
+ const mk=M.map(([x,y],i)=>`<g class="mk" data-slot="${i}"><circle cx="${x}" cy="${y}" r="13"/><text x="${x}" y="${y}">${i+1}</text></g>`).join('');
+ return `<svg viewBox="0 0 640 390" class="fig" role="img" aria-label="Wood-frame wall with a door opening and a window opening, nine numbered parts">${W.join('')}${mk}</svg>`}
+function hipSVG(){return `<svg viewBox="0 0 460 250" class="fig" role="img" aria-label="House with a roof that slopes down on all four sides">
+ <polygon points="60,130 300,130 300,220 60,220" class="woodhi" style="fill:var(--paper);stroke:var(--ink2)"/><polygon points="300,130 410,100 410,180 300,220" style="fill:var(--line);stroke:var(--ink2);stroke-width:1.2"/>
+ <polygon points="40,132 140,58 270,58 320,132" style="fill:var(--ink2);stroke:var(--ink);stroke-width:1.2"/><polygon points="320,132 270,58 360,44 430,100" style="fill:var(--muted);stroke:var(--ink);stroke-width:1.2"/></svg>`}
+function vaseSVG(){return `<svg viewBox="0 0 160 240" class="fig" style="max-width:150px" role="img" aria-label="Vase shape, round like a lathe-turned object"><path d="M80 14c-16 0-24 4-24 9s6 7 10 9c-2 8-30 40-30 110 0 50 22 80 44 80s44-30 44-80c0-70-28-102-30-110 4-2 10-4 10-9s-8-9-24-9z" style="fill:var(--line);stroke:var(--ink2);stroke-width:2"/><ellipse cx="80" cy="22" rx="24" ry="6" style="fill:var(--paper);stroke:var(--ink2);stroke-width:2"/></svg>`}
+function scaleSVG(){return `<svg viewBox="0 0 80 80" class="fig" style="max-width:80px" role="img" aria-label="Tool icon: a small box inside a larger box with a diagonal arrow"><rect x="6" y="6" width="68" height="68" rx="4" style="fill:var(--paper);stroke:var(--ink2);stroke-width:2"/><rect x="14" y="34" width="32" height="32" style="fill:var(--accent);opacity:.85"/><rect x="14" y="14" width="52" height="52" style="fill:none;stroke:var(--ink2);stroke-width:2;stroke-dasharray:5 3"/><path d="M40 40 L62 18 M50 18 H62 V30" style="fill:none;stroke:var(--ink);stroke-width:3"/></svg>`}
+function kitchenSVG(){const it=[['fridge','Fridge',30,40,56,64],['sink','Sink',190,20,84,40],['dw','DW',280,20,44,40],['stove','Stove',380,140,64,56],['micro','Microwave',30,190,70,40],['pantry','Pantry',110,20,70,40]];
+ return `<svg viewBox="0 0 480 260" class="fig kit" role="img" aria-label="Kitchen floor plan with fridge, sink, dishwasher, stove, microwave and pantry">
+ <rect x="10" y="10" width="460" height="240" style="fill:var(--paper);stroke:var(--ink2);stroke-width:3"/>
+ <polyline class="tri" id="kt" points=""/>
+ ${it.map(([id,t,x,y,w,h])=>`<g class="item" data-k="${id}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" style="fill:var(--sheet)"/><text class="fl" x="${x+w/2}" y="${y+h/2+4}" text-anchor="middle">${t}</text></g>`).join('')}
+ <text class="fl2" x="240" y="240" text-anchor="middle">KITCHEN 10'0" x 16'2"</text></svg>`}
+const FIG={hip:hipSVG,vase:vaseSVG,scale:scaleSVG,kitchen:kitchenSVG};
+const KCEN={fridge:[58,72],sink:[232,40],dw:[302,40],stove:[412,168],micro:[65,210],pantry:[145,40]};
+
+// ================= rendering =================
+function inputsHTML(q,i){const a=ANS[q.id];
+ if(q.type==='mc')return `<div class="opts">${q.options.map((o,j)=>`<label class="opt" data-q="${q.id}" data-o="${j}"><input type="radio" name="q${q.id}" id="q${q.id}o${j}" value="${j}" ${a===j?'checked':''}><span><b class="mono">${'abcd'[j]})</b> ${esc(o)}</span></label>`).join('')}</div><p class="tip">Right-click (or press and hold) a choice to cross it off.</p>`;
+ if(q.type==='label'){const v=a||[];const used=v.filter(Boolean);const bank=['Top Plate','Bottom Plate','Stud','Rough Opening','Rough Opening','Header','Trimmer','Sill','Jack Stud'];const cnt={};used.forEach(u=>cnt[u]=(cnt[u]||0)+1);
+  const chips=bank.map((t,k)=>{const n=bank.slice(0,k+1).filter(x=>x===t).length;const isUsed=(cnt[t]||0)>=n;return `<span class="chip${isUsed?' used':''}" draggable="${!isUsed}" data-t="${t}" tabindex="0" role="button">${t}</span>`}).join('');
+  return `<div class="labelgrid"><div class="figwrap">${wallSVG()}</div><div class="slots">${LBL_KEY.map((_,k)=>`<div class="slot" data-slot="${k}" tabindex="0" role="button"><span class="n">${k+1}</span><span class="v">${v[k]?esc(v[k]):''}</span></div>`).join('')}</div></div><div class="bank" aria-label="Terms">${chips}</div><p class="tip">Tap a term, then tap a number (on the drawing or in the list). Or drag a term onto a number. Tap a filled number to clear it.</p>`}
+ if(q.type==='essay')return `<div class="field"><label for="f${q.id}">Your answer</label><textarea id="f${q.id}" rows="4" placeholder="${esc(q.placeholder||'')}">${esc(a||'')}</textarea></div>${q.order&&MODE==='study'?orderHTML():''}`;
+ const v=a||[];return q.fields.map((f,k)=>`<div class="field" id="w${q.id}_${k}"><label for="f${q.id}_${k}">${esc(f.label)}</label><input type="text" id="f${q.id}_${k}" value="${esc(v[k]||'')}" autocomplete="off"></div>`).join('')}
+const STEPS=['Draw the 2D half-outline (profile) of the vase standing upright, from the centre line','Draw a circle flat on the ground, centred under the centre line (the path)','Select the circle','Choose the Follow Me tool','Click the profile face so it sweeps around the circle'];
+let ORD=null;
+function orderHTML(){if(!ORD){ORD=STEPS.map((_,i)=>i);for(let i=ORD.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[ORD[i],ORD[j]]=[ORD[j],ORD[i]]}}
+ return `<div class="sheet" style="padding:12px"><b>Practice: put the steps in order</b><ol class="order" id="ord">${ORD.map((s,k)=>`<li data-k="${k}"><span>${esc(STEPS[s])}</span><button type="button" data-up="${k}" aria-label="Move up">&uarr;</button><button type="button" data-dn="${k}" aria-label="Move down">&darr;</button></li>`).join('')}</ol><div class="actions" style="margin-top:8px"><button type="button" id="ordchk">Check order</button><span id="ordres" class="note"></span></div></div>`}
+function readAnswer(q){if(q.type==='mc'){const r=document.querySelector(`input[name="q${q.id}"]:checked`);return r?+r.value:null}
+ if(q.type==='label')return ANS[q.id]||[];if(q.type==='essay'){const t=el('f'+q.id);return t?t.value:''}
+ return q.fields.map((_,k)=>{const t=el(`f${q.id}_${k}`);return t?t.value:''})}
+function resultHTML(q,r){const full=r.got===q.marks;let parts='';
+ if(q.type==='essay')parts=r.parts.map(p=>`<div class="note">${p.ok?'✔':'✖'} ${esc(p.label)} (${p.marks})</div>`).join('');
+ return `<div class="result${full?' full':''}"><div><b class="score">${r.got} / ${q.marks}</b> ${full?'Full marks.':'Not quite, compare with the answer below.'}</div>${parts}<div class="model"><b>Answer:</b> ${esc(q.model)}</div><div class="note"><b>From the notes:</b> ${esc(q.note)}</div></div>`}
+function markFields(q,r){if(q.type==='fields')q.fields.forEach((f,k)=>{const w=el(`w${q.id}_${k}`);if(!w)return;w.classList.remove('ok','bad');w.classList.add(r.parts[k].ok?'ok':'bad');
+  let fr=w.querySelector('.fres');if(!fr){fr=document.createElement('div');w.appendChild(fr)}fr.className='fres '+(r.parts[k].ok?'ok':'bad');fr.textContent=r.parts[k].ok?('✔ '+(r.parts[k].match||'')):'✖ no mark'});
+ if(q.type==='mc')document.querySelectorAll(`.opt[data-q="${q.id}"]`).forEach(o=>{const j=+o.dataset.o;o.classList.remove('right','wrong');if(j===q.answer)o.classList.add('right');else if(ANS[q.id]===j)o.classList.add('wrong')});
+ if(q.type==='label')document.querySelectorAll(`#card${q.id} .slot`).forEach((s,k)=>{s.classList.remove('ok','bad');s.classList.add(r.parts[k].ok?'ok':'bad')})}
+function cardHTML(q,i,withActions){return `<article class="sheet q" id="card${q.id}"><div class="qhead"><span class="qno">${q.id==='3b'?'3 (cont.)':q.id}.</span><span class="qsec">${SECS[q.sec]}</span><span class="qmarks">/${q.marks}</span></div>
+ <div class="prompt">${esc(q.prompt)}</div>${q.fig?`<div>${FIG[q.fig]()}</div>`:''}${q.fig==='kitchen'&&MODE==='study'?'<p class="tip">Try it: tap the three items that make the work triangle.</p><div id="kres" class="note"></div>':''}
+ ${inputsHTML(q,i)}${withActions?`<div class="actions"><button type="button" class="primary" id="chk">Check</button><button type="button" id="show">Show answer</button><span class="muted" style="margin-left:auto;font-size:.82rem">${st(q.id).tries?`Tried ${st(q.id).tries}× · streak ${st(q.id).streak}`:''}</span></div>`:''}<div id="res${q.id}"></div></article>`}
+
+function renderMap(){el('qmap').innerHTML=Q.map((q,i)=>`<button type="button" class="s${level(q.id)}${MODE!=='test'&&LIST[CUR]===i?' cur':''}" data-i="${i}" title="Question ${q.id}">${q.id}</button>`).join('');
+ el('qmap').querySelectorAll('button').forEach(b=>b.onclick=()=>{if(MODE==='test'){el('card'+Q[+b.dataset.i].id).scrollIntoView({behavior:'smooth',block:'start'});return}if(MODE==='missed'&&!LIST.includes(+b.dataset.i))setMode('study');CUR=LIST.indexOf(+b.dataset.i);renderStudy()});
+ const secs={};Q.forEach(q=>secs[q.sec]=(secs[q.sec]||0)+q.marks);el('spec').innerHTML=`<span>${TOTAL} marks</span>`+Object.entries(secs).map(([k,v])=>`<span>${SECS[k]} ${v}</span>`).join('')+`<span>${Q.filter(q=>level(q.id)===2).length}/${Q.length} solid</span>`}
+function renderStudy(){const main=el('main');if(!LIST.length){main.innerHTML=`<section class="sheet"><h2>Everything is solid</h2><p>Every question has full marks twice in a row. Take a full test to make sure it sticks.</p><button type="button" class="primary" id="go">Take a full test</button></section>`;el('go').onclick=()=>setMode('test');renderMap();renderBar();return}
+ CUR=Math.max(0,Math.min(CUR,LIST.length-1));const q=Q[LIST[CUR]];ORD=null;main.innerHTML=cardHTML(q,LIST[CUR],true);wire(q);
+ el('chk').onclick=()=>{const a=readAnswer(q);ANS[q.id]=a;const r=score(q,a);el('res'+q.id).innerHTML=resultHTML(q,r);markFields(q,r);record(q.id,r.got===q.marks);renderMap();renderBar()};
+ el('show').onclick=()=>{el('res'+q.id).innerHTML=`<div class="result"><div class="model"><b>Answer:</b> ${esc(q.model)}</div><div class="note"><b>From the notes:</b> ${esc(q.note)}</div></div>`;const x=st(q.id);x.streak=0;S.st[q.id]=x;save();renderMap()};
+ renderMap();renderBar()}
+function renderTest(){const main=el('main');main.innerHTML=(DONE?summaryHTML():'')+Q.map((q,i)=>cardHTML(q,i,false)).join('');Q.forEach(q=>{wire(q);if(DONE){const r=score(q,ANS[q.id]);el('res'+q.id).innerHTML=resultHTML(q,r);markFields(q,r)}});
+ if(DONE){el('again').onclick=()=>{ANS={};DONE=false;XO={};startTimer();renderTest();scrollTo({top:0,behavior:'smooth'})}}renderMap();renderBar()}
+let LAST=null;
+function summaryHTML(){const R=LAST;const secs={};Q.forEach(q=>{const s=secs[q.sec]=secs[q.sec]||{g:0,t:0};s.t+=q.marks;s.g+=R.per[q.id]});
+ return `<section class="sheet" id="summary"><div class="toprow"><div><div class="qsec">Test total</div><div class="total">${R.got} / ${TOTAL}</div><div class="muted">${Math.round(100*R.got/TOTAL)}%${R.time?` · ${fmt(R.time)} used`:''}${R.timeout?' · time ran out':''}</div></div><button type="button" class="primary" id="again">Take it again</button></div>
+ <div class="sec-scores">${Object.entries(secs).map(([k,v])=>`<div>${SECS[k]}<b>${v.g} / ${v.t}</b></div>`).join('')}</div><p class="tip">Scroll down to see every question marked, with the answer and the notes.</p></section>`}
+function grade(timeout){stopTimer();Q.forEach(q=>{ANS[q.id]=readAnswer(q)});let got=0;const per={};Q.forEach(q=>{const r=score(q,ANS[q.id]);per[q.id]=r.got;got+=r.got;record(q.id,r.got===q.marks)});
+ const time=TSTART?Math.round((Date.now()-TSTART)/1000):0;LAST={got,per,time:S.timed?time:0,timeout};if(!S.best||got>S.best)S.best=got;save();DONE=true;renderTest();scrollTo({top:0,behavior:'smooth'})}
+function wire(q){const card=el('card'+q.id);if(!card)return;
+ if(q.type==='mc'){card.querySelectorAll('.opt').forEach(o=>{o.oncontextmenu=e=>{e.preventDefault();o.classList.toggle('crossed')};o.querySelector('input').onchange=e=>{ANS[q.id]=+e.target.value;o.classList.remove('crossed');renderBar()}})}
+ if(q.type==='label')wireLabel(q,card);
+ if(q.type==='fields'||q.type==='essay')card.querySelectorAll('input[type=text],textarea').forEach(t=>t.oninput=()=>{ANS[q.id]=readAnswer(q);renderBar()});
+ if(q.fig==='kitchen'&&MODE==='study')wireKitchen(card);
+ if(q.order&&MODE==='study'&&el('ord'))wireOrder()}
+let SEL=null;
+function wireLabel(q,card){const put=(slot,t)=>{const v=(ANS[q.id]||[]).slice();v.length=LBL_KEY.length;if(v[slot]){v[slot]=undefined}else if(t){v[slot]=t}ANS[q.id]=v;SEL=null;refreshLabel(q,card)};
+ card.querySelectorAll('.chip').forEach(c=>{c.onclick=()=>{if(c.classList.contains('used'))return;SEL=SEL===c.dataset.t?null:c.dataset.t;card.querySelectorAll('.chip').forEach(x=>x.classList.toggle('sel',x.dataset.t===SEL&&!x.classList.contains('used')))};
+  c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();c.click()}};c.ondragstart=e=>{e.dataTransfer.setData('text/plain',c.dataset.t)}});
+ const targets=[...card.querySelectorAll('.slot'),...card.querySelectorAll('.mk')];
+ targets.forEach(tg=>{const k=+tg.dataset.slot;tg.onclick=()=>{const v=ANS[q.id]||[];if(v[k])put(k,null);else if(SEL)put(k,SEL)};tg.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tg.onclick()}};
+  tg.ondragover=e=>{e.preventDefault();tg.classList&&tg.classList.add('over')};tg.ondragleave=()=>tg.classList&&tg.classList.remove('over');tg.ondrop=e=>{e.preventDefault();const t=e.dataTransfer.getData('text/plain');const v=ANS[q.id]||[];if(t&&!v[k])put(k,t)}})}
+function refreshLabel(q,card){const holder=card.querySelector('.labelgrid').parentNode;const tmp=document.createElement('div');tmp.innerHTML=inputsHTML(q);
+ card.querySelector('.labelgrid').replaceWith(tmp.querySelector('.labelgrid'));card.querySelector('.bank').replaceWith(tmp.querySelector('.bank'));wireLabel(q,card);renderBar()}
+function wireKitchen(card){let picked=[];card.querySelectorAll('.kit .item').forEach(g=>g.onclick=()=>{const k=g.dataset.k;if(picked.includes(k))picked=picked.filter(x=>x!==k);else if(picked.length<3)picked.push(k);
+  card.querySelectorAll('.kit .item').forEach(x=>x.classList.toggle('on',picked.includes(x.dataset.k)));const pts=picked.map(k=>KCEN[k]);if(pts.length===3)pts.push(pts[0]);el('kt').setAttribute('points',pts.map(p=>p.join(',')).join(' '));
+  const good=['fridge','sink','stove'];el('kres').textContent=picked.length<3?'':(picked.every(k=>good.includes(k))?'Right: sink, stove and fridge. Each side should be 4 to 9 ft, total 26 ft or less.':'Not quite. The work triangle joins the three most used items.')})}
+function wireOrder(){document.querySelectorAll('#ord [data-up],#ord [data-dn]').forEach(b=>b.onclick=()=>{const k=+(b.dataset.up??b.dataset.dn),j=b.dataset.up!=null?k-1:k+1;if(j<0||j>=ORD.length)return;[ORD[k],ORD[j]]=[ORD[j],ORD[k]];
+  const box=el('ord').closest('.sheet');const tmp=document.createElement('div');tmp.innerHTML=orderHTML();box.replaceWith(tmp.firstElementChild);wireOrder()});
+ el('ordchk').onclick=()=>{const lis=document.querySelectorAll('#ord li');let ok=0;lis.forEach((li,k)=>{const good=ORD[k]===k;li.classList.toggle('ok',good);li.classList.toggle('bad',!good);if(good)ok++});el('ordres').textContent=ok===5?'All in order.':`${ok} of 5 in the right spot.`}}
+// ================= bar, timer, modes =================
+const fmt=x=>{x=Math.max(0,Math.round(x));return Math.floor(x/60)+':'+String(x%60).padStart(2,'0')};
+const TLIM=75*60;
+function stopTimer(){if(TTICK)clearInterval(TTICK);TTICK=null}
+function startTimer(){stopTimer();TSTART=Date.now();if(MODE==='test'&&S.timed){TTICK=setInterval(()=>{const left=TLIM-(Date.now()-TSTART)/1000;const t=el('timer');if(t){t.textContent='⏱ '+fmt(left)+' left';t.classList.toggle('low',left<=300)}if(left<=0&&!DONE)grade(true)},1000)}}
+function renderBar(){const b=el('bar');if(MODE==='test'){const answered=Q.filter(q=>{const a=ANS[q.id];return q.type==='mc'?a!=null:q.type==='label'?(a||[]).some(Boolean):Array.isArray(a)?a.some(x=>x&&x.trim()):!!(a&&a.trim())}).length;
+  b.innerHTML=DONE?`<span class="stat">${LAST.got} / ${TOTAL}${S.best!=null?` · best ${S.best}`:''}</span><button type="button" class="primary" id="b2" style="margin-left:auto">Take it again</button>`:
+  `<span class="stat">${answered} / ${Q.length} answered</span><label class="stat" style="display:inline-flex;gap:6px;align-items:center"><input type="checkbox" id="timed" ${S.timed?'checked':''}> Timed (75 min class period)</label><span class="timer" id="timer"></span><button type="button" class="primary" id="b2" style="margin-left:auto">Hand in test</button>`;
+  el('b2').onclick=()=>{if(DONE){el('again').click()}else grade(false)};const tb=el('timed');if(tb)tb.onchange=()=>{S.timed=tb.checked;save();startTimer();if(!S.timed)el('timer').textContent=''};return}
+ b.innerHTML=`<span class="stat">Question ${CUR+1} of ${LIST.length}${MODE==='missed'?' not solid yet':''}</span><button type="button" id="prev" ${CUR===0?'disabled':''}>Previous</button><button type="button" class="primary" id="next" ${CUR>=LIST.length-1?'disabled':''}>Next</button>`;
+ el('prev').onclick=()=>{CUR--;renderStudy();scrollTo({top:0})};el('next').onclick=()=>{CUR++;renderStudy();scrollTo({top:0})}}
+function setMode(m){MODE=m;['study','test','missed'].forEach(x=>el('m-'+x).setAttribute('aria-pressed',x===m));stopTimer();
+ if(m==='test'){ANS={};DONE=false;startTimer();renderTest()}else{LIST=m==='missed'?Q.map((q,i)=>level(q.id)<2?i:-1).filter(i=>i>=0):Q.map((_,i)=>i);CUR=0;renderStudy()}}
+['study','test','missed'].forEach(m=>el('m-'+m).onclick=()=>setMode(m));
+
+// ================= self-test: the marked test must score exactly what the teacher gave (44.5/48) =================
+const FRIEND={ // answers written on the marked copy, with the teacher's marks
+ '1':[['makes the house appear biggor & pleasent','less privacy'],2],
+ '2':[['Place bedrooms near bathrooms','Hallways should be central to avoid wasting space','Garage should be close to kitchen','utility room should be center & away from corners','1st floor - Laundry should be close to kitchen'],5],
+ '3':[['The work triangle'],1],'3b':['Money + size. A solution could be to keep the amount of space desired but use cheaper materials. Ex. wood frame construction',2],
+ '4':[['split house','the noise & head it would be easily transfferd making heating, cooling & even privacy hard to maintain'],2],
+ '5':[2,1],'6':[3,1],'7':[1,1],'8':[2,1],'9':[0,1],
+ '10':[['used to support the weight of the structure above it','used to support the header & support entrance'],2],
+ '11':[['Metal frames construction is typically used in commerical buildings','Pros - stronger, durable'],2],
+ '12':[['Top Plate','Bottom Plate','Rough Opening','Rough Opening','Header','Trimmer','Sill','Jack Stud','Stud'].map((x,i)=>i===2?'Rough Opening':x),3.5],
+ '13':['load-bearing wall is used to support the weight of the structure above it. partition divides the house for privacy & functionality',1],
+ '14':[["4'x8'"],1],'15':[['Adjust room size to the amount of material needed','less rooms'],0],
+ '16':[['Gable roof'],1],'17':[['Hip roof'],1],
+ '18':['To ensure requirement are met for construction, access, building design & energy efficiency.',0],
+ '19':[['Municipal government','Requiring a building permit for new structures or renovations','Inspecting building projects to ensure compliance with approved permits'],3],
+ '20':['The weight of parts of the building that are not permanent & can change over time. E.g. - snow',1],
+ '21':[['follow-me'],1],'22':['1) create a 2-D outline of vase using 2-point or 3-point curve tools will help 2) create a circle going from one point of the side of the 2-D outline around to the other end alligne to x-axis 3) using follow me tool, command the 2-D line to rotate around circle',3],
+ '23':[['Changes size & scales object'],1],'24':['editing & creating very small object, however, multiplying the scale action by 10x makes it easier to edit the object. when done decrease the scale 10x',2],
+ '25':['Instead of copying & pasting an object, simply using the move tool, press "CTRL" to keep the original object in place while having & type x10 for multiple copies. Repeat.',3],
+ '26':[['Groups + components'],1],'27':[['Tags','x-ray tool'],1]};
+function selftest(){const out=[];let tot=0,bad=0;
+ for(const q of Q){const f=FRIEND[q.id];let a=f[0];if(q.id==='12')a=['Top Plate','Bottom Plate','Rough Opening','Rough Opening','Header','Trimmer','Sill','Jack Stud','Rough Opening'];const r=score(q,a);tot+=r.got;if(r.got!==f[1]){bad++;out.push(`MISMATCH Q${q.id}: drill ${r.got}, teacher ${f[1]}`)}
+  // model answer must earn full marks
+  const m=modelAnswer(q);const rm=score(q,m);if(rm.got!==q.marks){bad++;out.push(`MODEL Q${q.id}: ${rm.got}/${q.marks}`)}
+  // blank must earn 0
+  const rb=score(q,q.type==='mc'?null:q.type==='essay'?'':[]);if(rb.got!==0){bad++;out.push(`BLANK Q${q.id}: ${rb.got}`)}}
+ // typo / wording checks
+ const T=[['21',['folow me'],1],['16',['gabel roof'],1],['17',['hipp roof'],1],['19',['municiple','building permitt','inspecton'],3],['4',['split levle','noise travels'],2],['14',['4 by 8'],1],['14',['8ft x 4ft'],1],['14',['48" x 96"'],1],['14',['4x10'],0],['27',['layers'],1],['26',['grups'],1],['3',['work traingle'],1],['17',['gable'],0],['16',['hip'],0],['2',['garage near kitchen','garage near kitchen','bedrooms near bathroom','','' ],2],['15',['less cutting so less labour','less waste material'],2],['15',['less waste','less scrap'],1],['18','to keep people safe',1],['20','a load that changes, like people walking around the house',1],['20','people walking around the house',0],['25','use move tool hold ctrl and type 10x',3]];
+ for(const [id,a,exp] of T){const q=Q.find(x=>x.id===id);const r=score(q,a);if(r.got!==exp){bad++;out.push(`WORDING Q${id} ${JSON.stringify(a)}: got ${r.got}, expected ${exp}`)}}
+ if(tot!==44.5){bad++;out.push('FRIEND TOTAL '+tot)}
+ return{friendTotal:tot,expected:44.5,checks:Q.length*3+T.length+1,failures:bad,details:out}}
+function modelAnswer(q){if(q.type==='mc')return q.answer;if(q.type==='label')return LBL_KEY.slice();if(q.type==='essay')return q.model;
+ const M={'1':['feels bigger and more pleasant','less privacy'],'2':GUIDE.slice(0,5).map(g=>g[0]),'3':['work triangle'],'4':['split level','noise and heat travel'],'10':['carries the weight of the structure above the opening','holds up the header beside the opening'],'11':['metal (steel) frame','stronger, does not rot, fire resistant'],'14':["4' x 8'"],'15':['less labour, less cutting','less waste material'],'16':['gable'],'17':['hip'],'19':['municipality','building permit','inspections'],'21':['Follow Me'],'23':['scales an object (changes its size)'],'26':['groups'],'27':['tags']};return M[q.id]}
+window.__selftest=selftest;
+
+// ================= update check (hosted copy only) =================
+(()=>{const live=/github\.io$/.test(location.hostname);let base=null,shown=false;const get=()=>fetch(location.pathname+'?u='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():null).catch(()=>null);
+ async function check(){const t=await get();if(t==null)return;if(base===null){base=t;return}if(t!==base&&!shown){shown=true;const b=document.createElement('div');b.id='updbar';b.innerHTML='<span>House Design Test Drill has been updated!</span><button type="button" class="primary">Refresh</button>';b.querySelector('button').onclick=()=>location.reload();document.body.appendChild(b)}}
+ if(live){check();setInterval(check,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)check()})}})();
+
+setMode('study');
+if(location.hash==='#selftest'){const r=selftest();const p=document.createElement('pre');p.id='selftest';p.className='sheet';p.style.whiteSpace='pre-wrap';p.textContent='SELFTEST '+JSON.stringify(r,null,1);document.querySelector('.wrap').prepend(p)}
+</script>
+</body>
+</html>
