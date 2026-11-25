@@ -766,11 +766,20 @@ G.T[2].push(()=>{const E=randE(),A=Math.abs(E.a),cs=rnd(0,2);E.c=cs===0?pick([1,
 const QN=['I','II','III','IV'];
 const angT=(n,d)=>{const s=pt(n,d);return s.startsWith('-')?`\\left(${s}\\right)`:s};
 function normA(n,d){const m=((n%(2*d))+2*d)%(2*d);return m} // numerator in [0,2d)
-function nonAxis(){let n,d;do{d=pick([3,4,6]);n=rnd(-4*d,6*d)}while(n%d===0||(2*n)%d===0||gcd(Math.abs(n),d)!==1||(n>=0&&n<2*d));return[n,d]}
+function nonAxis(){let n,d;do{d=pick([3,4,6,3,4,6,5,8,10,12]);n=rnd(-6*d,12*d)}while(n%d===0||(2*n)%d===0||gcd(Math.abs(n),d)!==1||(n>=0&&n<2*d));return[n,d]}
 G.U[1].push(()=>{const[n,d]=nonAxis(),m=normA(n,d),q=Math.floor(m/(d/2))+1;
  return Q('U',1,`In which quadrant is the terminal arm of $\\theta=${pt(n,d)}$?`,mc('Quadrant '+QN[q-1],QN.map(x=>'Quadrant '+x),null,x=>x),`Add or subtract $2\\pi=${pt(2*d,d)}$ until the angle is between $0$ and $2\\pi$: $${pt(n,d)}\\to${pt(m,d)}$. $${pt(m,d)}$ is between $${pt((q-1)*d,2*d)||'0'}$ and $${pt(q*d,2*d)}$, so Quadrant ${QN[q-1]}.`,ucSVG(m*PI/d))});
 G.U[1].push(()=>{const[n,d]=nonAxis(),k=pick([-2,-1,1,2]),ans=n+2*d*k;
  return Q('U',1,`Which angle is coterminal with $${pt(n,d)}$?`,mc(pt(ans,d),[pt(n+d,d),pt(-n,d),pt(n+2*d*k+d,d),pt(2*d-n,d)],()=>pt(n+(2*rnd(-2,2)+1)*d,d)),`Coterminal angles differ by a multiple of $2\\pi$ (one full turn). $${pt(n,d)}${k>0?'+':'-'}${Math.abs(k)===1?'':Math.abs(k)}(2\\pi)=${pt(ans,d)}$.`)});
+// combined: coterminal angle in [0,2π), quadrant, and reference angle in one question
+function cqrQ(lv){const[n,d]=nonAxis(),m=normA(n,d),q=Math.floor(m/(d/2))+1,b=rel([m,d]);
+ const T=(mm,qq,bb)=>`${pt(mm,d)},\\ \\text{Quadrant ${['I','II','III','IV'][qq-1]}},\\;${pt(...bb)}`;
+ const wrongRef={1:[d-m,d],2:[m,d],3:[2*d-m,d],4:[m-d,d]}[q];const m2=(m+d)%(2*d),q2=Math.floor(m2/(d/2))+1;
+ const ans=T(m,q,b);
+ return Q('U',lv,`For the rotation $\\theta=${pt(n,d)}$, find the coterminal angle with $0\\le\\theta<2\\pi$, the quadrant, and the reference angle.<br><span class="muted" style="font-size:.85rem">Answers are listed as: coterminal angle, quadrant, reference angle.</span>`,
+  mc(ans,[T(m,q===4?1:q+1,b),T(m,q,wrongRef),T(m2,q2,b),T(m,q===1?4:q-1,b),T(m2,q2,rel([m2,d]).map((x,i)=>i?x:d-x))],null),
+  `1) Coterminal: add or subtract $2\\pi=${pt(2*d,d)}$ until it is in $[0,2\\pi)$: $${pt(n,d)}\\to${pt(m,d)}$.<br>2) Quadrant: $${pt(m,d)}\\approx${dec(m/d,3)}\\pi$, between $${pt((q-1)*d,2*d)}$ and $${pt(q*d,2*d)}$, so Quadrant ${QN[q-1]}.<br>3) Reference angle (Quadrant ${QN[q-1]}: ${['$\\beta=\\theta$','$\\beta=\\pi-\\theta$','$\\beta=\\theta-\\pi$','$\\beta=2\\pi-\\theta$'][q-1]}): $${pt(...b)}$.`,ucSVG(m*PI/d))}
+G.U[2].push(()=>cqrQ(2));G.U[3].push(()=>cqrQ(3));
 G.U[2].push(()=>{const[n,d]=nonAxis(),m=normA(n,d),b=rel([m,d]);
  return Q('U',2,`What is the reference angle of $\\theta=${pt(n,d)}$?`,mc(pt(...b),[pt(m,d),pt(d-b[0]*(d/b[1]),d),pt(2*b[0],b[1]),pt(Math.abs(n),d)],()=>pt(rnd(1,5),pick([3,4,6,12]))),`First find the coterminal angle in $[0,2\\pi)$: $${pt(m,d)}$. Then measure to the $x$-axis: reference angle $${pt(...b)}$.`,ucSVG(m*PI/d))});
 G.U[2].push(()=>{const d=pick([3,4,5,6,7,8,9,10,12]);let k;do{k=rnd(1,Math.ceil(d/2)-1)}while(gcd(k,d)!==1||2*k>=d);const q=rnd(1,4);
@@ -784,7 +793,7 @@ G.U[3].push(()=>{const fn=pick(['sin','cos','tan']);const[n0,d]=pick(NONAX);cons
 // ================= self-test (open with #selftest) =================
 window.__selftest=(n=150)=>{const bad=[];let count=0;for(const c in G)for(const lv in G[c])G[c][lv].forEach((g,gi)=>{for(let i=0;i<n;i++){count++;let q;try{q=g()}catch(e){bad.push(`${c}${lv}.${gi} threw: ${e.message}`);continue}
   const txt=q.q+q.choices.join('|')+q.why;if(q.choices.length!==4)bad.push(`${c}${lv}.${gi} has ${q.choices.length} choices: ${q.q}`);else if(new Set(q.choices).size!==4)bad.push(`${c}${lv}.${gi} duplicate choices`);
-  if(!(q.answer>=0&&q.answer<4))bad.push(`${c}${lv}.${gi} bad answer index`);if(/NaN|Infinity|(^|[^a-z ])undefined/.test(txt.replace(/\\text\{undefined\}/g,'')))bad.push(`${c}${lv}.${gi} bad text: ${txt.slice(0,160)}`)}});
+  if(!(q.answer>=0&&q.answer<4))bad.push(`${c}${lv}.${gi} bad answer index`);if(/NaN|Infinity|(^|[^a-z ])undefined/.test(txt.replace(/\\text\{undefined\}/g,'')))bad.push(`${c}${lv}.${gi} bad text: ${txt.slice(0,160)}`);if(q.choices.some(ch=>/\\\\[a-zA-Z]/.test(ch)))bad.push(`${c}${lv}.${gi} broken TeX (\\\\ before a command) in a choice`)}});
   const samples=[];for(const c in G)for(const lv of[4,5])G[c][lv].forEach(g=>{try{const q=g();samples.push(`[${c}${lv}] ${q.q} => ${q.choices[q.answer]}`)}catch(e){samples.push(`[${c}${lv}] THREW ${e.message}`)}});
   // rule scenarios: fake tests through the real grade()
   const keep=JSON.stringify(S),rules=[];const run=(qs,ok,hp)=>{TEST=qs.map(([c,lv])=>({c,lv,q:'x',choices:['a','b','c','d'],answer:0,why:'',svg:''}));ANS=TEST.map((_,i)=>ok[i]?0:1);HELP=TEST.map((_,i)=>!!(hp&&hp[i]));grade()};
