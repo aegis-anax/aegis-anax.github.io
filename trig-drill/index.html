@@ -88,7 +88,8 @@ svg.fig{width:280px}
 .ch{position:relative;display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer;min-width:0}
 .ch input{position:absolute;opacity:0;pointer-events:none}
 .lt{flex:none;width:24px;height:24px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-family:var(--f-mono);font-size:.75rem;color:var(--ink2)}
-.ct{min-width:0;overflow-x:auto}
+.ct{min-width:0;overflow-x:auto;overflow-y:hidden;padding:4px 0}
+.ct mjx-container[jax="SVG"]{margin:0!important}
 .ch:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
 .ch:has(input:checked) .lt{background:var(--accent);border-color:var(--accent);color:var(--paper)}
 .done .ch{cursor:default}
@@ -689,7 +690,11 @@ function buildTest(){const on=CON.map(c=>c[0]).filter(c=>!S.off.includes(c));con
   if(N>=on.length){on.forEach(c=>cnt[c]=1);left-=on.length}
   const w=on.map(c=>S.m[c]&&!S.beyond&&S.lv[c]<4?0.4:1+(S.acc[c]!=null?(1-S.acc[c])*2:0.5));const tot=w.reduce((a,b)=>a+b,0);
   while(left>0){let r=Math.random()*tot,i=0;while(r>w[i]&&i<on.length-1){r-=w[i];i++}cnt[on[i]]++;left--}
-  const qs=[],seen=new Set();for(const c of on)for(let i=0;i<cnt[c];i++){let q;for(let t=0;t<10;t++){let lv=S.lv[c];if(!masteryFinal&&lv>1&&Math.random()<.25)lv=lv>3?rnd(3,lv-1):rnd(1,lv-1);q=gen(c,lv);q.base=S.lv[c];if(!seen.has(q.q+q.choices.join()))break}seen.add(q.q+q.choices.join());qs.push(q)}
+  const qs=[],seen=new Set(),rev={};for(const c of on)for(let i=0;i<cnt[c];i++){let q;
+    // at most one easier review question per section per test
+    const useRev=!masteryFinal&&S.lv[c]>1&&!rev[c]&&Math.random()<.25;
+    for(let t=0;t<10;t++){let lv=S.lv[c];if(useRev)lv=lv>3?rnd(3,lv-1):rnd(1,lv-1);q=gen(c,lv);q.base=S.lv[c];if(!seen.has(q.q+q.choices.join()))break}
+    if(useRev)rev[c]=true;seen.add(q.q+q.choices.join());qs.push(q)}
   return qs}
 let TEST=null,ANS=[],DONE=false,CONFIRM=false,RESULT=null,HELP=[],XO=[];
 // Help: a method/formula card per section (no answers, no AI). Helped questions don't count toward Mastered or higher.
@@ -841,7 +846,7 @@ function startTimer(){stopTimer();TIMEOUT=false;TLIM=0;el('timer').textContent='
 function newTest(){TEST=buildTest();ANS=TEST.map(()=>null);HELP=TEST.map(()=>false);HS=TEST.map(()=>0);XO=TEST.map(()=>new Set());EXQ=TEST.map(()=>null);DONE=false;CONFIRM=false;RESULT=null;renderTest();startTimer()}
 function renderTest(){let h='';if(!DONE)h+=`<p class="xtip">Tip: right-click a choice (or press and hold on a touchscreen) to cross it off. Do it again to bring it back.</p>`;
   if(DONE&&RESULT)h+=resultCard();
-  TEST.forEach((q,i)=>{h+=`<article class="card q${DONE?' done':''}" id="q${i}"><div class="qhead"><span class="qnum">Q${i+1}</span><span>${NAME[q.c]}</span><span class="tag"${q.lv<(q.base||q.lv)?` title="Review question from a lower level. Your section is at Level ${q.base}."`:''}>${q.lv<(q.base||q.lv)?'Review · ':''}Lv ${q.lv}</span>${DONE?(ANS[i]===q.answer?'<span class="tag ok">Correct</span>':'<span class="tag bad">'+(ANS[i]==null?'Blank':'Wrong')+'</span>'):''}${HELP[i]&&DONE?'<span class="tag gold">Helped</span>':''}${DONE?`<a class="qreport" href="${reportHref(q,i)}" title="Email Aegis about this question">Report this question</a>`:''}${DONE?'':`<button type="button" class="helpbtn" data-help="${i}" ${HS[i]?'disabled':''}>${HS[i]===1?'Help…':HS[i]?'Help shown':'Help'}</button>`}</div>
+  TEST.forEach((q,i)=>{h+=`<article class="card q${DONE?' done':''}" id="q${i}"><div class="qhead"><span class="qnum">Q${i+1}</span><span>${NAME[q.c]}</span><span class="tag"${q.lv<(q.base||q.lv)?` title="An easier review question (from Level ${q.lv}) to keep older skills fresh. Your level in this section has not changed."`:''}>${q.lv<(q.base||q.lv)?'Review (easier question)':'Lv '+q.lv}</span>${DONE?(ANS[i]===q.answer?'<span class="tag ok">Correct</span>':'<span class="tag bad">'+(ANS[i]==null?'Blank':'Wrong')+'</span>'):''}${HELP[i]&&DONE?'<span class="tag gold">Helped</span>':''}${DONE?`<a class="qreport" href="${reportHref(q,i)}" title="Email Aegis about this question">Report this question</a>`:''}${DONE?'':`<button type="button" class="helpbtn" data-help="${i}" ${HS[i]?'disabled':''}>${HS[i]===1?'Help…':HS[i]?'Help shown':'Help'}</button>`}</div>
   <div class="stem">${q.q}</div>${DONE?'':`<div id="ha${i}">${helpArea(i)}</div>`}${q.svg?`<div class="fig-wrap">${q.svg}</div>`:''}<div class="choices">${q.choices.map((c,j)=>{let cls='ch';if(DONE){if(j===q.answer)cls+=' right';else if(ANS[i]===j)cls+=' wrong'}
    if(!DONE&&XO[i]&&XO[i].has(j))cls+=' crossed';return `<label class="${cls}" data-q="${i}" data-c="${j}"><input type="radio" name="q${i}" value="${j}" ${ANS[i]===j?'checked':''} ${DONE?'disabled':''}><span class="lt">${'ABCD'[j]}</span><span class="ct">${c}</span></label>`}).join('')}</div>
   ${DONE?(ANS[i]===q.answer?`<details><summary>How to do it</summary><div class="why">${q.why}</div></details>`:`<div class="why">${q.why}</div>`):''}</article>`});
