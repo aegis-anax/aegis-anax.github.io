@@ -177,7 +177,7 @@ const num=x=>{const r=Math.round(x*1000)/1000;return ''+r};
 function fr(p,q){if(q<0){p=-p;q=-q}const g=gcd(p,q);p/=g;q/=g;if(q===1)return ''+p;return (p<0?'-':'')+'\\frac{'+Math.abs(p)+'}{'+q+'}'}
 function pt(n,d=1){if(n===0)return '0';if(d<0){n=-n;d=-d}const g=gcd(n,d);n/=g;d/=g;const s=n<0?'-':'',a=Math.abs(n),nu=(a===1?'':a)+'\\pi';return d===1?s+nu:s+'\\frac{'+nu+'}{'+d+'}'}
 function pText(n,d=1){if(n===0)return '0';if(d<0){n=-n;d=-d}const g=gcd(n,d);n/=g;d/=g;const s=n<0?'−':'',a=Math.abs(n),nu=(a===1?'':a)+'π';return d===1?s+nu:s+nu+'/'+d}
-const EX=[[0,'0'],[.5,'\\frac{1}{2}'],[S2/2,'\\frac{\\sqrt{2}}{2}'],[S3/2,'\\frac{\\sqrt{3}}{2}'],[1,'1'],[S3,'\\sqrt{3}'],[1/S3,'\\frac{1}{\\sqrt{3}}'],[2,'2'],[S2,'\\sqrt{2}'],[2/S3,'\\frac{2}{\\sqrt{3}}']];
+const EX=[[0,'0'],[.5,'\\frac{1}{2}'],[S2/2,'\\frac{\\sqrt{2}}{2}'],[S3/2,'\\frac{\\sqrt{3}}{2}'],[1,'1'],[S3,'\\sqrt{3}'],[1/S3,'\\frac{\\sqrt{3}}{3}'],[2,'2'],[S2,'\\sqrt{2}'],[2/S3,'\\frac{2\\sqrt{3}}{3}']];
 const UND='\\text{undefined}';
 function exT(v){if(v===null)return UND;const a=Math.abs(v);for(const[x,t]of EX)if(Math.abs(a-x)<1e-9)return (v<0&&a>1e-9?'-':'')+t;throw new Error('no exact value for '+v)}
 function tv(fn,x){const s=Math.sin(x),c=Math.cos(x),z=u=>Math.abs(u)<1e-9;
@@ -336,7 +336,8 @@ G.U[3]=[
  return Q('U',3,`Find the exact value of $\\${fn}\\left(${shown}\\right)$.`,exactMC(fn,x),`$${shown}$ is coterminal with $${pt(...A)}$ (they differ by $2\\pi$). So it equals $\\${fn}${pt(...A)}=${exT(tv(fn,x))}$.`)}];
 // ---- 4.4 Cartesian plane
 function sqrtS(n){let k=1;for(let i=2;i*i<=n;i++)while(n%(i*i)===0){n/=i*i;k*=i}return[k,n]}
-function rq(p,k,m){if(m===1)return fr(p,k);const g=gcd(p,k);p/=g;k/=g;return (p<0?'-':'')+`\\frac{${Math.abs(p)}}{${k===1?'':k}\\sqrt{${m}}}`}
+// p/(k√m) written rationalized: p√m/(k·m), reduced
+function rq(p,k,m){if(m===1)return fr(p,k);let d=k*m;const g=gcd(Math.abs(p),d);let P=Math.abs(p)/g;d/=g;const nu=(P===1?'':P)+`\\sqrt{${m}}`;return (p<0?'-':'')+(d===1?nu:`\\frac{${nu}}{${d}}`)}
 function rinv(k,m,p){if(m===1)return fr(k,p);const g=gcd(k,p);k/=g;p/=g;const nu=(k===1?'':k)+`\\sqrt{${m}}`;return (p<0?'-':'')+(Math.abs(p)===1?nu:`\\frac{${nu}}{${Math.abs(p)}}`)}
 function six(x,y){const[k,m]=sqrtS(x*x+y*y);return{sin:rq(y,k,m),cos:rq(x,k,m),tan:fr(y,x),csc:rinv(k,m,y),sec:rinv(k,m,x),cot:fr(x,y),k,m,
   neg:{sin:rq(-y,k,m),cos:rq(-x,k,m),tan:fr(-y,x),csc:rinv(k,m,-y),sec:rinv(k,m,-x),cot:fr(-x,y)}}}
@@ -859,7 +860,7 @@ G.U[3].push(()=>{const fn=pick(['sin','cos','tan']);const[n0,d]=pick(NONAX);cons
 // ================= self-test (open with #selftest) =================
 window.__selftest=(n=150)=>{const bad=[];let count=0;for(const c in G)for(const lv in G[c])G[c][lv].forEach((g,gi)=>{for(let i=0;i<n;i++){count++;let q;try{q=g()}catch(e){bad.push(`${c}${lv}.${gi} threw: ${e.message}`);continue}
   const txt=q.q+q.choices.join('|')+q.why;if(q.choices.length!==4)bad.push(`${c}${lv}.${gi} has ${q.choices.length} choices: ${q.q}`);else if(new Set(q.choices).size!==4)bad.push(`${c}${lv}.${gi} duplicate choices`);
-  if(!(q.answer>=0&&q.answer<4))bad.push(`${c}${lv}.${gi} bad answer index`);if(/NaN|Infinity|(^|[^a-z ])undefined/.test(txt.replace(/\\text\{undefined\}/g,'')))bad.push(`${c}${lv}.${gi} bad text: ${txt.slice(0,160)}`);if(q.choices.some(ch=>/\\\\[a-zA-Z]/.test(ch)))bad.push(`${c}${lv}.${gi} broken TeX (\\\\ before a command) in a choice`);if(+lv<6&&!guideFor(q.q))bad.push(`${c}${lv}.${gi} has no "how to" help guide: ${q.q.slice(0,90)}`)}});
+  if(!(q.answer>=0&&q.answer<4))bad.push(`${c}${lv}.${gi} bad answer index`);if(/NaN|Infinity|(^|[^a-z ])undefined/.test(txt.replace(/\\text\{undefined\}/g,'')))bad.push(`${c}${lv}.${gi} bad text: ${txt.slice(0,160)}`);if(q.choices.some(ch=>/\\\\[a-zA-Z]/.test(ch)))bad.push(`${c}${lv}.${gi} broken TeX (\\\\ before a command) in a choice`);if([q.q,...q.choices].some(t=>/\}\{-?[0-9]*\\sqrt/.test(t)))bad.push(`${c}${lv}.${gi} root in a denominator (not rationalized): ${[q.q,...q.choices].find(t=>/\}\{-?[0-9]*\\sqrt/.test(t)).slice(0,90)}`);if(+lv<6&&!guideFor(q.q))bad.push(`${c}${lv}.${gi} has no "how to" help guide: ${q.q.slice(0,90)}`)}});
   const samples=[];for(const c in G)for(const lv of[4,5])G[c][lv].forEach(g=>{try{const q=g();samples.push(`[${c}${lv}] ${q.q} => ${q.choices[q.answer]}`)}catch(e){samples.push(`[${c}${lv}] THREW ${e.message}`)}});
   // rule scenarios: fake tests through the real grade()
   const keep=JSON.stringify(S),rules=[];const run=(qs,ok,hp)=>{TEST=qs.map(([c,lv])=>({c,lv,q:'x',choices:['a','b','c','d'],answer:0,why:'',svg:''}));ANS=TEST.map((_,i)=>ok[i]?0:1);HELP=TEST.map((_,i)=>!!(hp&&hp[i]));grade()};
