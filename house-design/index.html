@@ -142,7 +142,7 @@ a{color:var(--accent)}
       </div>
     </div>
     <div class="qmap" id="qmap" aria-label="Questions"></div>
-    <div class="legend"><span><i></i>not tried</span><span><i style="background:var(--accent-soft);border-color:var(--accent)"></i>got it once / partly</span><span><i style="background:var(--ok-soft);border-color:var(--ok)"></i>solid (full marks twice in a row)</span></div>
+    <div class="legend"><span><i></i>not tried</span><span><i style="background:var(--accent-soft);border-color:var(--accent)"></i>got it once / partly</span><span><i style="background:var(--ok-soft);border-color:var(--ok)"></i>solid (full marks on two separate visits in a row)</span></div>
   </header>
   <main id="main"></main>
   <p class="tip">Found a mistake? Email Aegis: <span class="mono">aegis.anax@gmail.com</span></p>
@@ -363,9 +363,9 @@ function renderMap(){el('qmap').innerHTML=Q.map((q,i)=>`<button type="button" cl
  el('qmap').querySelectorAll('button').forEach(b=>b.onclick=()=>{if(MODE==='test'){el('card'+Q[+b.dataset.i].id).scrollIntoView({behavior:'smooth',block:'start'});return}if(MODE==='missed'&&!LIST.includes(+b.dataset.i))setMode('study');CUR=LIST.indexOf(+b.dataset.i);renderStudy()});
  const secs={};Q.forEach(q=>secs[q.sec]=(secs[q.sec]||0)+q.marks);el('spec').innerHTML=`<span>${TOTAL} marks</span>`+Object.entries(secs).map(([k,v])=>`<span>${SECS[k]} ${v}</span>`).join('')+`<span>${Q.filter(q=>level(q.id)===2).length}/${Q.length} solid</span>`}
 function renderStudy(){const main=el('main');if(!LIST.length){main.innerHTML=`<section class="sheet"><h2>Everything is solid</h2><p>Every question has full marks twice in a row. Take a full test to make sure it sticks.</p><button type="button" class="primary" id="go">Take a full test</button></section>`;el('go').onclick=()=>setMode('test');renderMap();renderBar();return}
- CUR=Math.max(0,Math.min(CUR,LIST.length-1));const q=Q[LIST[CUR]];ORD=null;main.innerHTML=cardHTML(q,LIST[CUR],true);wire(q);
- el('chk').onclick=()=>{const a=readAnswer(q);ANS[q.id]=a;const r=score(q,a);el('res'+q.id).innerHTML=resultHTML(q,r);markFields(q,r);record(q.id,r.got===q.marks);renderMap();renderBar()};
- el('show').onclick=()=>{el('res'+q.id).innerHTML=`<div class="result"><div class="model"><b>Answer:</b> ${esc(q.model)}</div><div class="note"><b>From the notes:</b> ${esc(q.note)}</div></div>`;const x=st(q.id);x.streak=0;S.st[q.id]=x;save();renderMap()};
+ CUR=Math.max(0,Math.min(CUR,LIST.length-1));const q=Q[LIST[CUR]];ORD=null;main.innerHTML=cardHTML(q,LIST[CUR],true);wire(q);let counted=false;
+ el('chk').onclick=()=>{const a=readAnswer(q);ANS[q.id]=a;const r=score(q,a);el('res'+q.id).innerHTML=resultHTML(q,r);markFields(q,r);if(!counted){counted=true;record(q.id,r.got===q.marks)}else{el('res'+q.id).insertAdjacentHTML('beforeend','<p class="muted" style="font-size:.82rem;margin:6px 0 0">Only your first Check each time you visit a question counts toward solid. Come back to it later for your second full-marks try.</p>')}renderMap();renderBar()};
+ el('show').onclick=()=>{el('res'+q.id).innerHTML=`<div class="result"><div class="model"><b>Answer:</b> ${esc(q.model)}</div><div class="note"><b>From the notes:</b> ${esc(q.note)}</div></div>`;counted=true;const x=st(q.id);x.streak=0;S.st[q.id]=x;save();renderMap()};
  renderMap();renderBar()}
 function renderTest(){const main=el('main');main.innerHTML=(DONE?summaryHTML():'')+Q.map((q,i)=>cardHTML(q,i,false)).join('');Q.forEach(q=>{wire(q);if(DONE){const r=score(q,ANS[q.id]);el('res'+q.id).innerHTML=resultHTML(q,r);markFields(q,r)}});
  if(DONE){el('again').onclick=()=>{ANS={};DONE=false;XO={};startTimer();renderTest();scrollTo({top:0,behavior:'smooth'})}}renderMap();renderBar()}
@@ -440,8 +440,8 @@ function selftest(){const out=[];let tot=0,bad=0;
  // typo / wording checks
  const T=[['21',['folow me'],1],['16',['gabel roof'],1],['17',['hipp roof'],1],['19',['municiple','building permitt','inspecton'],3],['4',['split levle','noise travels'],2],['14',['4 by 8'],1],['14',['8ft x 4ft'],1],['14',['48" x 96"'],1],['14',['4x10'],0],['27',['layers'],1],['26',['grups'],1],['3',['work traingle'],1],['17',['gable'],0],['16',['hip'],0],['2',['garage near kitchen','garage near kitchen','bedrooms near bathroom','','' ],2],['15',['less cutting so less labour','less waste material'],2],['15',['less waste','less scrap'],1],['18','to keep people safe',1],['20','a load that changes, like people walking around the house',1],['20','people walking around the house',0],['25','use move tool hold ctrl and type 10x',3]];
  for(const [id,a,exp] of T){const q=Q.find(x=>x.id===id);const r=score(q,a);if(r.got!==exp){bad++;out.push(`WORDING Q${id} ${JSON.stringify(a)}: got ${r.got}, expected ${exp}`)}}
- if(tot!==44.5){bad++;out.push('FRIEND TOTAL '+tot)}
- return{friendTotal:tot,expected:44.5,checks:Q.length*3+T.length+1,failures:bad,details:out}}
+ {const saved=JSON.stringify(S.st),m0=MODE;S.st={};setMode('study');const id=Q[LIST[0]].id;el('chk').click();el('chk').click();el('show').click();el('chk').click();if(st(id).tries!==1){bad++;out.push('RECHECK counted '+st(id).tries+' tries on one visit')}S.st=JSON.parse(saved);save();setMode(m0)}
+ return{friendTotal:tot,expected:44.5,checks:Q.length*3+T.length+2,failures:bad,details:out}}
 function modelAnswer(q){if(q.type==='mc')return q.answer;if(q.type==='label')return LBL_KEY.slice();if(q.type==='essay')return q.model;
  const M={'1':['feels bigger and more pleasant','less privacy'],'2':GUIDE.slice(0,5).map(g=>g[0]),'3':['work triangle'],'4':['split level','noise and heat travel'],'10':['carries the weight of the structure above the opening','holds up the header beside the opening'],'11':['metal (steel) frame','stronger, does not rot, fire resistant'],'14':["4' x 8'"],'15':['less labour, less cutting','less waste material'],'16':['gable'],'17':['hip'],'19':['municipality','building permit','inspections'],'21':['Follow Me'],'23':['scales an object (changes its size)'],'26':['groups'],'27':['tags']};return M[q.id]}
 window.__selftest=selftest;
