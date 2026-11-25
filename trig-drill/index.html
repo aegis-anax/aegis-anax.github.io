@@ -770,7 +770,7 @@ function helpArea(i){const q=TEST[i],s=HS[i]||0;if(s===0)return '';
 function setHelp(i,s){HS[i]=s;if(s>=2){HELP[i]=true}const b=document.querySelector(`.helpbtn[data-help="${i}"]`);
  if(b){b.disabled=s>=1;b.textContent=s===1?'Help…':s>=2?'Help shown':'Help'}const a=el('ha'+i);a.innerHTML=helpArea(i);wireHelp(i);typeset(a)}
 function wireHelp(i){el('ha'+i).querySelectorAll('[data-act]').forEach(x=>x.onclick=()=>{const act=x.dataset.act;
- if(act==='yes')setHelp(i,2);else if(act==='no')setHelp(i,0);else if(act==='sol')setHelp(i,3);else if(act==='ex'){EXQ[i]=makeExample(i);setHelp(i,HS[i])}})}
+ if(act==='yes'){S.helpAck=true;save();setHelp(i,2)}else if(act==='no')setHelp(i,0);else if(act==='sol')setHelp(i,3);else if(act==='ex'){EXQ[i]=makeExample(i);setHelp(i,HS[i])}})}
 
 // ================= rendering =================
 const el=id=>document.getElementById(id);
@@ -842,7 +842,7 @@ function renderTest(){let h='';
   if(DONE)h+=`<div style="display:flex;justify-content:center"><button class="primary" id="next2">Next test</button></div>`;
   el('test').innerHTML=h;
   if(!DONE)TEST.forEach((q,i)=>document.querySelectorAll(`input[name=q${i}]`).forEach(r=>r.onchange=()=>{ANS[i]=+r.value;CONFIRM=false;updBar()}));
-  if(!DONE){document.querySelectorAll('.helpbtn').forEach(b=>b.onclick=()=>{const i=+b.dataset.help;if(!HS[i])setHelp(i,S.lv[TEST[i].c]>=3?1:2)});TEST.forEach((q,i)=>wireHelp(i))}
+  if(!DONE){document.querySelectorAll('.helpbtn').forEach(b=>b.onclick=()=>{const i=+b.dataset.help;if(!HS[i])setHelp(i,S.lv[TEST[i].c]>=3&&!S.helpAck?1:2)}); /* the warning is the same rule for every section, so it shows once; the note inside Help keeps reminding */TEST.forEach((q,i)=>wireHelp(i))}
   else{el('next').onclick=el('next2').onclick=()=>{newTest();el('test').scrollIntoView({behavior:'smooth'})}}
   updBar();typeset(el('test'))}
 function resultCard(){const R=RESULT;return `<section class="card" id="result"><div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap"><div class="score">${R.s}/${R.n}</div><div><div style="font-weight:600">${R.s===R.n?'Perfect score.':R.s/R.n>=.8?'Strong. Fix the red ones and go again.':'Read every explanation below, then take the next test.'}</div><div class="muted" style="font-size:.9rem">${Math.round(100*R.s/R.n)}% · test #${S.hist.length}${R.time?` · ⏱ ${fmtT(R.time.used)} of ${fmtT(R.time.lim)}${R.time.out?' (time ran out)':R.time.used<=R.time.lim*0.75?' (ahead of test pace)':' (on test pace)'}`:''}</div>${R.time&&R.time.out?`<div class="muted" style="font-size:.85rem">Time ran out, so the test was handed in. Questions you didn't get to are marked Blank but didn't affect your levels.</div>`:''}</div><button class="primary" id="next" style="margin-left:auto">Next test</button></div>
