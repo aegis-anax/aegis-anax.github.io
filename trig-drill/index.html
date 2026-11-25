@@ -206,7 +206,13 @@ function mc(ans,cands,fill,wrap=$m){const out=[ans],seen=new Set([ans]);
   for(const c of cands){if(c==null||seen.has(c))continue;seen.add(c);out.push(c);if(out.length===4)break}
   let g=0;while(out.length<4&&fill&&g++<300){const c=fill();if(c!=null&&!seen.has(c)){seen.add(c);out.push(c)}}
   const ch=shuffle(out);return{choices:ch.map(wrap),answer:ch.indexOf(ans)}}
-function Q(c,lv,q,m,why,svg){return{c,lv,q,choices:m.choices,answer:m.answer,why,svg:svg||''}}
+// Class form: odd multiples are written (2n-1)π/2 (or (2n-1)π/(2k) for a stretch), never π/2+nπ.
+// The one exception is the question that asks you to match the two forms.
+function classForm(t){if(typeof t!=='string')return t;
+ return t.replace(/\\frac\{\\pi\}\{(\d+)\}\+\\frac\{n\\pi\}\{(\d+)\}/g,(m,d,k)=>+d===2*+k?`\\frac{(2n-1)\\pi}{${d}}`:m)
+  .replace(/\\frac\{\\pi\}\{2\}\+n\\pi/g,'\\frac{(2n-1)\\pi}{2}')
+  .replace(/x=\\pi\+2n\\pi/g,'x=(2n-1)\\pi')}
+function Q(c,lv,q,m,why,svg){const f=/gives the same|Substitute \$n/.test(q)?(t=>t):classForm;return{c,lv,q:f(q),choices:m.choices.map(f),answer:m.answer,why:f(why),svg:svg||''}}
 function exactMC(fn,x){const v=tv(fn,x),ans=exT(v),cv=tv(CO[fn],x);const inv=u=>u===null?0:u===0?null:1/u;
   const c=[];if(v!==null&&v!==0)c.push(exT(-v));c.push(exT(cv));c.push(exT(inv(v)));if(cv!==null&&cv!==0)c.push(exT(-cv));
   return mc(ans,shuffle(c.slice(0,3)).concat(c.slice(3)),()=>pick(EXPOOL))}
@@ -745,7 +751,7 @@ function makeExample(i){const q=TEST[i],g=guideFor(q.q);let best=null,any=null;
 function helpHTML(i){const q=TEST[i],c=q.c,g=guideFor(q.q);
  const forms=`<ul>${HELPTXT[c].map(t=>`<li>${t}</li>`).join('')}</ul>`;
  return `<div class="hint"><div class="hinthead"><strong>${g?'How to do this type: '+g[1]:'Help: '+NAME[c]}</strong><span class="hintbtns2"><button type="button" class="solbtn" data-act="ex" ${EXQ[i]?'disabled':''}>Worked example</button><button type="button" class="solbtn" data-act="sol" ${HS[i]===3?'disabled':''}>Step-by-step solution</button></span></div>
- ${g?`<ol class="steps">${g[2].map(t=>`<li>${t}</li>`).join('')}</ol>${g[3]?`<div class="eg"><b>Example:</b> ${g[3]}</div>`:''}<details class="forms"><summary>All formulas for ${NAME[c]}</summary>${forms}</details>`:forms}
+ ${g?`<ol class="steps">${g[2].map(t=>`<li>${/formula$/.test(g[1])?t:classForm(t)}</li>`).join('')}</ol>${g[3]?`<div class="eg"><b>Example:</b> ${/formula$/.test(g[1])?g[3]:classForm(g[3])}</div>`:''}<details class="forms"><summary>All formulas for ${NAME[c]}</summary>${forms}</details>`:forms}
  ${SPECIAL_RX.test(q.q)?`<details class="forms" open><summary>Special triangles (where the angles come from)</summary>${specialFig()}${specialTable()}</details>`:''}
  ${S.lv[c]>=3?`<div class="note">Using help is fine for learning. A right answer won't count toward Mastered or higher levels, but a wrong answer still counts as a miss.</div>`:''}</div>`}
 let EXQ=[];
@@ -974,10 +980,11 @@ GUIDES.unshift(
  [/zeros of \$y=[^$]*\(/,'Zeros of a stretched graph',['Zeros of the basic graph: sin and tan at $n\\pi$; cos at $\\frac{\\pi}{2}+n\\pi$.','Set the inside ($kx$) equal to that and divide by $k$.','The number in front ($a$) does not move the zeros.'],'$y=4\\sin(2x)$: $2x=n\\pi$ → $x=\\frac{n\\pi}{2}$.'],
  [/Solve for the \$x\$-intercepts/,'Finding x-intercepts by solving',['Set $y=0$ and get the trig part alone: e.g. $2\\sin x-\\sqrt3=0$ → $\\sin x=\\frac{\\sqrt3}{2}$.','Reference angle from the special values (ignore the sign).','CAST gives the two quadrants; place the reference angle in each.'],'$\\sin x=\\frac{\\sqrt3}{2}$: $\\frac{\\pi}{3}$ and $\\frac{2\\pi}{3}$.']);
 HELPTXT.Gr=HELPTXT.Gr.filter(t=>!/rate of change/i.test(t)).concat(['$y=a\\sin(kx)+c$: max $c+|a|$, min $c-|a|$, period $\\frac{2\\pi}{k}$. Turning points and zeros: divide the basic $x$-values by $k$.']);
-// ================= self-test (open with #selftest) =================
+// ---- the two test formulas, x = nπ and x = (2n-1)π/2 (n ∈ I), also at Level 3 so Mastered students keep seeing them
+G.Gr[3].push(()=>locQ('Gr',3,['sin','cos','tan']),()=>oddFormQ('Gr',3));G.X[3].push(()=>locQ('X',3,['sin','cos','tan','csc','sec','cot']));// ================= self-test (open with #selftest) =================
 window.__selftest=(n=150)=>{const bad=[];let count=0;for(const c in G)for(const lv in G[c])G[c][lv].forEach((g,gi)=>{for(let i=0;i<n;i++){count++;let q;try{q=g()}catch(e){bad.push(`${c}${lv}.${gi} threw: ${e.message}`);continue}
   const txt=q.q+q.choices.join('|')+q.why;if(q.choices.length!==4)bad.push(`${c}${lv}.${gi} has ${q.choices.length} choices: ${q.q}`);else if(new Set(q.choices).size!==4)bad.push(`${c}${lv}.${gi} duplicate choices`);
-  if(!(q.answer>=0&&q.answer<4))bad.push(`${c}${lv}.${gi} bad answer index`);if(/NaN|Infinity|(^|[^a-z ])undefined/.test(txt.replace(/\\text\{undefined\}/g,'')))bad.push(`${c}${lv}.${gi} bad text: ${txt.slice(0,160)}`);if(q.choices.some(ch=>/\\\\[a-zA-Z]/.test(ch)))bad.push(`${c}${lv}.${gi} broken TeX (\\\\ before a command) in a choice`);if([q.q,...q.choices].some(t=>/\}\{-?[0-9]*\\sqrt/.test(t)))bad.push(`${c}${lv}.${gi} root in a denominator (not rationalized): ${[q.q,...q.choices].find(t=>/\}\{-?[0-9]*\\sqrt/.test(t)).slice(0,90)}`);if(+lv<6&&!guideFor(q.q))bad.push(`${c}${lv}.${gi} has no "how to" help guide: ${q.q.slice(0,90)}`)}});
+  if(!(q.answer>=0&&q.answer<4))bad.push(`${c}${lv}.${gi} bad answer index`);if(/NaN|Infinity|(^|[^a-z ])undefined/.test(txt.replace(/\\text\{undefined\}/g,'')))bad.push(`${c}${lv}.${gi} bad text: ${txt.slice(0,160)}`);if(q.choices.some(ch=>/\\\\[a-zA-Z]/.test(ch)))bad.push(`${c}${lv}.${gi} broken TeX (\\\\ before a command) in a choice`);if([q.q,...q.choices].some(t=>/\}\{-?[0-9]*\\sqrt/.test(t)))bad.push(`${c}${lv}.${gi} root in a denominator (not rationalized): ${[q.q,...q.choices].find(t=>/\}\{-?[0-9]*\\sqrt/.test(t)).slice(0,90)}`);if(!/gives the same|Substitute \$n/.test(q.q)&&[q.q,...q.choices,q.why].some(t=>/\\frac\{\\pi\}\{2\}\+n\\pi/.test(t)))bad.push(`${c}${lv}.${gi} not in class form ((2n-1)π/2): ${q.q.slice(0,80)}`);if(+lv<6&&!guideFor(q.q))bad.push(`${c}${lv}.${gi} has no "how to" help guide: ${q.q.slice(0,90)}`)}});
   const samples=[];for(const c in G)for(const lv of[4,5])G[c][lv].forEach(g=>{try{const q=g();samples.push(`[${c}${lv}] ${q.q} => ${q.choices[q.answer]}`)}catch(e){samples.push(`[${c}${lv}] THREW ${e.message}`)}});
   // rule scenarios: fake tests through the real grade()
   const keep=JSON.stringify(S),rules=[];const run=(qs,ok,hp)=>{TEST=qs.map(([c,lv])=>({c,lv,q:'x',choices:['a','b','c','d'],answer:0,why:'',svg:''}));ANS=TEST.map((_,i)=>ok[i]?0:1);HELP=TEST.map((_,i)=>!!(hp&&hp[i]));grade()};
