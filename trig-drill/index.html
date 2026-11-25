@@ -634,7 +634,7 @@ for(const c of ['P','R','U','C','Gr','X','T','M'])G[c][6]=[()=>{
 }];
 
 // ================= adaptive engine =================
-const CON=[['P','4.1','Trig prereq skills','Special triangles, related angles, CAST in degrees'],['R','4.2','Radian measure','Converting, arc length, angular speed'],['U','4.3','Unit circle & exact values','Exact values, coterminal & reference angles, equivalent ratios'],['C','4.4','Trig on the Cartesian plane','Point on terminal arm, solving for θ'],['Gr','4.5','Graphs of trig functions','Properties: domain, range, zeros, symmetry, period, rates of change'],['X','4.6','Graphs of reciprocal functions','csc, sec, cot: domain, range, asymptotes, turning points'],['T','4.7','Transformations','Amplitude, period, phase shift, matching graphs'],['M','4.8','Modelling','Writing equations, Ferris wheels, tides']];
+const CON=[['P','4.1','Trig prereq skills','Special triangles, related angles, CAST in degrees'],['R','4.2','Radian measure','Converting, arc length, angular speed'],['U','4.3','Unit circle & exact values','Exact values, coterminal & reference angles, equivalent ratios'],['C','4.4','Trig on the Cartesian plane','Point on terminal arm, solving for θ'],['Gr','4.5','Graphs of trig functions','Properties: domain, range, zeros, turning points, period, symmetry'],['X','4.6','Graphs of reciprocal functions','csc, sec, cot: domain, range, asymptotes, turning points'],['T','4.7','Transformations','Amplitude, period, phase shift, matching graphs'],['M','4.8','Modelling','Writing equations, Ferris wheels, tides']];
 const NAME=Object.fromEntries(CON.map(c=>[c[0],c[1]+' '+c[2]]));
 const UP=3,MASTER=4,DROP=2,FINAL_N=15,KEY='unit4-trig-drill-v1';
 function fresh(){const o={lv:{},st:{},ms:{},m:{},g:{},best:{},ready:false,masteryPass:false,acc:{},hist:[],len:15,off:[],beyond:false};CON.forEach(([c])=>{o.lv[c]=1;o.st[c]=0;o.m[c]=false;o.best[c]=1});return o}
@@ -889,6 +889,53 @@ GUIDES.unshift(
  [/Which acute angle/,'Angle from a special value',['Remember the special values: $\\sin30^\\circ=\\frac12$, $\\sin45^\\circ=\\frac{\\sqrt2}{2}$, $\\sin60^\\circ=\\frac{\\sqrt3}{2}$ (cos is the reverse order).','$\\tan30^\\circ=\\frac{\\sqrt3}{3}$, $\\tan45^\\circ=1$, $\\tan60^\\circ=\\sqrt3$.','Match the value to the angle.'],'$\\cos\\theta=\\frac{\\sqrt3}{2}$ → $\\theta=30^\\circ$.'],
  [/is in Quadrant \d and/,'Angle from a value and a quadrant',['Ignore the minus sign and find the related angle $\\beta$ from the special values.','Place it in the quadrant: Q1 $\\beta$, Q2 $180^\\circ-\\beta$, Q3 $180^\\circ+\\beta$, Q4 $360^\\circ-\\beta$.'],'$\\cos\\theta=-\\frac{\\sqrt2}{2}$ in Q2: $\\beta=45^\\circ$, $\\theta=180^\\circ-45^\\circ=135^\\circ$.'],
  [/Find all angles|for \$0\^\\circ/,'Solving for angles in degrees',['Find the related angle $\\beta$ from the positive value (special values).','CAST: which two quadrants give that sign? (All in Q1, Sin in Q2, Tan in Q3, Cos in Q4.)','Place $\\beta$ in both: Q2 $180^\\circ-\\beta$, Q3 $180^\\circ+\\beta$, Q4 $360^\\circ-\\beta$.'],'$\\sin\\theta=-\\frac12$: $\\beta=30^\\circ$, negative in Q3 and Q4 → $210^\\circ,\\ 330^\\circ$.']);
+// ---- 4.5 graph features of y = a·sin(kx) + c and y = a·cos(kx) + c (replaces the rate-of-change questions, which the class didn't cover)
+G.Gr[2]=G.Gr[2].filter(g=>{try{return !/rate of change/.test(g().q)}catch(_){return true}});
+const KF=[[1,1],[2,1],[3,1],[4,1],[1,2]]; // k = kp/kq
+const kTx=([p,q])=>q===1?(p===1?'':''+p):`\\frac{${p}}{${q}}`;
+const fnTx=(f,a,k,c,x='x')=>{const kt=kTx(k);const arg=kt?`(${kt}${x})`:` ${x}`;return `y=${a===1?'':a===-1?'-':a}\\${f}${arg}${c>0?'+'+c:c<0?c:''}`};
+// n·(period) written like the class: 2nπ, nπ, 2nπ/3, nπ/2, 4nπ
+const perN=([p,q],half)=>{let n=2*q,d=p;if(half)d*=2;const g=gcd(n,d);n/=g;d/=g;const t=(n===1?'':n)+'n\\pi';return d===1?t:`\\frac{${t}}{${d}}`};
+const xAt=(bn,bd,[p,q])=>pt(bn*q,bd*p); // (bn/bd)π divided by k
+function turnX(f,a,k,wantMax){const top=(a>0)===wantMax;const base=f==='sin'?(top?[1,2]:[3,2]):(top?[0,1]:[1,1]);return base}
+function featPt(xs,y,k,half){const per=perN(k,half);return PNT(xs==='0'?per:`${xs}+${per}`,y)+NI}
+function maxMinQ(lv,ks){const f=pick(['sin','cos']),k=pick(ks);let a;do{a=rnd(-4,4)}while(a===0||a===1&&Math.random()<.5);const c=rnd(-3,3),wantMax=Math.random()<.5,A=Math.abs(a);
+ const B=turnX(f,a,k,wantMax),Bw=turnX(f,a,k,!wantMax),Bflip=turnX(f,-a,k,wantMax),y=wantMax?c+A:c-A;
+ const ans=featPt(xAt(...B,k),y,k);
+ const cands=[featPt(xAt(...Bw,k),wantMax?c-A:c+A,k),featPt(xAt(...B,[1,1]),y,[1,1]),featPt(xAt(...Bflip,k),y,k),featPt(xAt(...B,k),wantMax?A:-A,k),featPt(xAt(...B,k),y,k,true)];
+ const word=wantMax?'maximum':'minimum';
+ return Q('Gr',lv,`Where are the ${word} points of $${fnTx(f,a,k,c)}$?`,mc(ans,cands,()=>featPt(pt(rnd(1,5),pick([2,3,4,6])),y,k)),
+  `Start from $y=\\${f} x$: its ${f==='sin'?'max is at $\\frac{\\pi}{2}$ and min at $\\frac{3\\pi}{2}$':'max is at $0$ and min at $\\pi$'}.${a<0?' Here $a<0$ flips the graph, so max and min swap.':''} Divide the $x$-values by $k=${kTx(k)||1}$ and repeat every period $\\frac{2\\pi}{k}$. The ${word} value is $c${wantMax?'+':'-'}|a|=${y}$. So: $${ans}$.`,
+  ePlot({f,a,p:k[0],q:k[1],j:0,c}))}
+function yIntQ(lv,ks){const f=pick(['sin','cos']),k=pick(ks);let a;do{a=rnd(-4,4)}while(a===0);const c=rnd(-3,3);const y=f==='sin'?c:a+c;const P=v=>PNT(0,v);
+ return Q('Gr',lv,`What is the $y$-intercept of $${fnTx(f,a,k,c)}$?`,mc(P(y),[P(f==='sin'?a+c:c),P(a),P(c-a),P(f==='sin'?a:-a+c),P(k[0])],()=>P(rnd(-6,6))),`Put $x=0$: $\\${f}(0)=${f==='sin'?0:1}$, so $y=${a}(${f==='sin'?0:1})${c>=0?'+':''}${c}=${y}$. The $y$-intercept is $${P(y)}$.`)}
+function zerosKQ(lv){const f=pick(['sin','cos','tan']),k=pick(KF.slice(1));let a;do{a=rnd(-4,4)}while(a===0);
+ const half=f!=='cos'?null:true;const per=perN(k,true); // zeros repeat every half period (π/k)
+ const z=f==='cos'?`x=${xAt(1,2,k)}+${per}`+NI:`x=${per}`+NI;
+ const wrong=[f==='cos'?`x=${per}`+NI:`x=${xAt(1,2,k)}+${per}`+NI,f==='cos'?`x=\\frac{\\pi}{2}+n\\pi`+NI:`x=n\\pi`+NI,f==='cos'?`x=${xAt(1,2,k)}+${perN(k)}`+NI:`x=${perN(k)}`+NI];
+ const eq=f==='tan'?`y=${a===1?'':a===-1?'-':a}\\tan(${kTx(k)}x)`:fnTx(f,a,k,0);
+ return Q('Gr',lv,`Where are the zeros of $${eq}$?`,mc(z,wrong,()=>`x=${pt(1,pick([3,4,6,8]))}+${perN(pick(KF))}`+NI),`The zeros of $y=\\${f} x$ are at $x=${f==='cos'?'\\frac{\\pi}{2}+n\\pi':'n\\pi'}$. Here the inside is $${kTx(k)}x$, so set $${kTx(k)}x=${f==='cos'?'\\frac{\\pi}{2}+n\\pi':'n\\pi'}$ and divide by $${kTx(k)}$: $${z}$. ($a$ doesn't move zeros.)`)}
+function tanKQ(lv){const k=pick(KF.slice(1)),ask=pick(['per','asy']);const per=perN(k,true);
+ const ans=ask==='per'?pt(k[1],k[0]):`x=${xAt(1,2,k)}+${per}`+NI;
+ const wrong=ask==='per'?[pt(2*k[1],k[0]),'\\pi',pt(k[0],k[1])]:[`x=${per}`+NI,`x=\\frac{\\pi}{2}+n\\pi`+NI,`x=${xAt(1,2,k)}+${perN(k)}`+NI];
+ return Q('Gr',lv,`What ${ask==='per'?'is the period':'are the vertical asymptotes'} of $y=\\tan(${kTx(k)}x)$?`,mc(ans,wrong,ask==='per'?()=>pt(rnd(1,4),pick([1,2,3,4])):()=>`x=${pt(1,pick([3,6,8,12]))}+${perN(pick(KF),true)}`+NI),ask==='per'?`$y=\\tan x$ has period $\\pi$ (not $2\\pi$). Divide by $k=${kTx(k)}$: $${ans}$.`:`$y=\\tan x$ has asymptotes at $x=\\frac{\\pi}{2}+n\\pi$. Set $${kTx(k)}x=\\frac{\\pi}{2}+n\\pi$ and divide by $${kTx(k)}$: $${ans}$.`)}
+// x-intercepts of y = 2·sin x − √3 etc. in [0, 2π): solve with special values + CAST
+function xIntQ(lv){const f=pick(['sin','cos']),m=pick([1,2,3]),sg=pick([1,-1]);const vT=['\\frac{1}{2}','\\frac{\\sqrt{2}}{2}','\\frac{\\sqrt{3}}{2}'][m-1];
+ const cT=['1','\\sqrt{2}','\\sqrt{3}'][m-1];const d=f==='sin'?[6,4,3][m-1]:[3,4,6][m-1];
+ const qs=[1,2,3,4].filter(q=>SIGN[f][q-1]===sg);const ang=q=>q===1?pt(1,d):q===2?pt(d-1,d):q===3?pt(d+1,d):pt(2*d-1,d);const P=(q1,q2)=>`x=${ang(q1)},\\ ${ang(q2)}`;const ans=P(...qs);
+ const eq=`y=2\\${f} x${sg>0?'-':'+'}${cT}`;
+ return Q('Gr',lv,`Solve for the $x$-intercepts of $${eq}$, $0\\le x<2\\pi$.`,mc(ans,shuffle([[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]].filter(p=>p[0]!==qs[0]||p[1]!==qs[1]).map(p=>P(...p))),null),
+  `$x$-intercepts are where $y=0$: $2\\${f} x${sg>0?'-':'+'}${cT}=0$, so $\\${f} x=${sg<0?'-':''}${vT}$. Reference angle $${pt(1,d)}$. $\\${f}$ is ${sg>0?'positive':'negative'} in Quadrants ${qs.join(' and ')}: $${ans}$.`)}
+G.Gr[3]=[()=>maxMinQ(3,[[1,1],[2,1]]),()=>yIntQ(3,KF),()=>zerosKQ(3)];
+G.Gr[4]=[()=>maxMinQ(4,KF.slice(1)),()=>tanKQ(4),()=>zerosKQ(4)];
+G.Gr[5]=[()=>xIntQ(5),()=>maxMinQ(5,[[3,1],[4,1],[1,2]])];
+GUIDES.unshift(
+ [/(maximum|minimum) points of \$y=(?!\\(sin|cos|tan|csc|sec|cot) x\$)/,'Max and min points of a stretched graph',['Basic graph: sin has its max at $\\frac{\\pi}{2}$ and min at $\\frac{3\\pi}{2}$; cos has its max at $0$ and min at $\\pi$.','If $a$ is negative, max and min swap.','Divide those $x$-values by $k$, and repeat every period $\\frac{2\\pi}{k}$ (that is the "$+\\dots n\\pi$" part). The $y$-value is $c+|a|$ for a max, $c-|a|$ for a min.'],'$y=3\\cos(2x)+1$: max at $x=0$, period $\\pi$ → $(n\\pi,\\ 4)$.'],
+ [/intercept of \$y=(?!\\(sin|cos|tan|csc|sec|cot) x\$)/,'y-intercept of a stretched graph',['Put $x=0$.','$\\sin0=0$ and $\\cos0=1$.','So for sin the $y$-intercept is $c$; for cos it is $a+c$.'],'$y=-2\\cos(3x)+5$: $y=-2(1)+5=3$ → $(0,3)$.'],
+ [/\\tan\(/,'Stretched tangent',['$y=\\tan x$ has period $\\pi$, zeros at $n\\pi$, asymptotes at $\\frac{\\pi}{2}+n\\pi$.','With $\\tan(kx)$: divide all of those by $k$. Period $\\frac{\\pi}{k}$.'],'$y=\\tan(2x)$: period $\\frac{\\pi}{2}$, asymptotes $x=\\frac{\\pi}{4}+\\frac{n\\pi}{2}$.'],
+ [/zeros of \$y=[^$]*\(/,'Zeros of a stretched graph',['Zeros of the basic graph: sin and tan at $n\\pi$; cos at $\\frac{\\pi}{2}+n\\pi$.','Set the inside ($kx$) equal to that and divide by $k$.','The number in front ($a$) does not move the zeros.'],'$y=4\\sin(2x)$: $2x=n\\pi$ → $x=\\frac{n\\pi}{2}$.'],
+ [/Solve for the \$x\$-intercepts/,'Finding x-intercepts by solving',['Set $y=0$ and get the trig part alone: e.g. $2\\sin x-\\sqrt3=0$ → $\\sin x=\\frac{\\sqrt3}{2}$.','Reference angle from the special values (ignore the sign).','CAST gives the two quadrants; place the reference angle in each.'],'$\\sin x=\\frac{\\sqrt3}{2}$: $\\frac{\\pi}{3}$ and $\\frac{2\\pi}{3}$.']);
+HELPTXT.Gr=HELPTXT.Gr.filter(t=>!/rate of change/i.test(t)).concat(['$y=a\\sin(kx)+c$: max $c+|a|$, min $c-|a|$, period $\\frac{2\\pi}{k}$. Turning points and zeros: divide the basic $x$-values by $k$.']);
 // ================= self-test (open with #selftest) =================
 window.__selftest=(n=150)=>{const bad=[];let count=0;for(const c in G)for(const lv in G[c])G[c][lv].forEach((g,gi)=>{for(let i=0;i<n;i++){count++;let q;try{q=g()}catch(e){bad.push(`${c}${lv}.${gi} threw: ${e.message}`);continue}
   const txt=q.q+q.choices.join('|')+q.why;if(q.choices.length!==4)bad.push(`${c}${lv}.${gi} has ${q.choices.length} choices: ${q.q}`);else if(new Set(q.choices).size!==4)bad.push(`${c}${lv}.${gi} duplicate choices`);
