@@ -782,7 +782,7 @@ if(location.hash==='#selftest'){const r=window.__selftest(150);const d=document.
 (()=>{const live=/github\.io$/.test(location.hostname);let base=null,shown=false;
  const get=()=>fetch(location.pathname+'?u='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():null).catch(()=>null);
  function banner(){if(shown)return;shown=true;const b=document.createElement('div');b.id='updbar';b.setAttribute('role','status');
-  b.innerHTML='<span>This page was updated.</span><button type="button">Refresh</button>';b.querySelector('button').onclick=()=>location.reload();document.body.appendChild(b)}
+  b.innerHTML='<span>Trig Drill has been updated!</span><button type="button">Refresh</button>';b.querySelector('button').onclick=()=>location.reload();document.body.appendChild(b)}
  async function check(fetcher=get){const t=await fetcher();if(t==null)return;if(base===null){base=t;return}if(t!==base)banner()}
  window.__updCheck=check;
  if(live){check();setInterval(check,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)check()})}
