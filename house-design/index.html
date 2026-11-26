@@ -400,12 +400,12 @@ function wireOrder(){document.querySelectorAll('#ord [data-up],#ord [data-dn]').
  el('ordchk').onclick=()=>{const lis=document.querySelectorAll('#ord li');let ok=0;lis.forEach((li,k)=>{const good=ORD[k]===k;li.classList.toggle('ok',good);li.classList.toggle('bad',!good);if(good)ok++});el('ordres').textContent=ok===5?'All in order.':`${ok} of 5 in the right spot.`}}
 // ================= bar, timer, modes =================
 const fmt=x=>{x=Math.max(0,Math.round(x));return Math.floor(x/60)+':'+String(x%60).padStart(2,'0')};
-const TLIM=75*60;
+const TLIM=70*60;
 function stopTimer(){if(TTICK)clearInterval(TTICK);TTICK=null}
 function startTimer(){stopTimer();TSTART=Date.now();if(MODE==='test'&&S.timed){TTICK=setInterval(()=>{const left=TLIM-(Date.now()-TSTART)/1000;const t=el('timer');if(t){t.textContent='⏱ '+fmt(left)+' left';t.classList.toggle('low',left<=300)}if(left<=0&&!DONE)grade(true)},1000)}}
 function renderBar(){const b=el('bar');if(MODE==='test'){const answered=Q.filter(q=>{const a=ANS[q.id];return q.type==='mc'?a!=null:q.type==='label'?(a||[]).some(Boolean):Array.isArray(a)?a.some(x=>x&&x.trim()):!!(a&&a.trim())}).length;
   b.innerHTML=DONE?`<span class="stat">${LAST.got} / ${TOTAL}${S.best!=null?` · best ${S.best}`:''}</span><button type="button" class="primary" id="b2" style="margin-left:auto">Take it again</button>`:
-  `<span class="stat">${answered} / ${Q.length} answered</span><label class="stat" style="display:inline-flex;gap:6px;align-items:center"><input type="checkbox" id="timed" ${S.timed?'checked':''}> Timed (75 min class period)</label><span class="timer" id="timer"></span><button type="button" class="primary" id="b2" style="margin-left:auto">Hand in test</button>`;
+  `<span class="stat">${answered} / ${Q.length} answered</span><label class="stat" style="display:inline-flex;gap:6px;align-items:center"><input type="checkbox" id="timed" ${S.timed?'checked':''}> Timed (70 min: 75 min class, 5 min to get set up)</label><span class="timer" id="timer"></span><button type="button" class="primary" id="b2" style="margin-left:auto">Hand in test</button>`;
   el('b2').onclick=()=>{if(DONE){el('again').click()}else grade(false)};const tb=el('timed');if(tb)tb.onchange=()=>{S.timed=tb.checked;save();startTimer();if(!S.timed)el('timer').textContent=''};return}
  b.innerHTML=`<span class="stat">Question ${CUR+1} of ${LIST.length}${MODE==='missed'?' not solid yet':''}</span><button type="button" id="prev" ${CUR===0?'disabled':''}>Previous</button><button type="button" class="primary" id="next" ${CUR>=LIST.length-1?'disabled':''}>Next</button>`;
  el('prev').onclick=()=>{CUR--;renderStudy();scrollTo({top:0})};el('next').onclick=()=>{CUR++;renderStudy();scrollTo({top:0})}}
